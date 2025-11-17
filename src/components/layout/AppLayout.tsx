@@ -9,7 +9,8 @@ import {
   LogoutOutlined,
   UserOutlined,
   HomeOutlined,
-  RiseOutlined
+  RiseOutlined,
+  DollarOutlined
 } from '@ant-design/icons';
 import { useAuthStore } from '../../store';
 import type { MenuProps } from 'antd';
@@ -33,6 +34,8 @@ export const AppLayout: React.FC = () => {
     if (path.includes('/dashboard')) return 'dashboard';
     if (path.includes('/cashbook')) return 'cashbook';
     if (path.includes('/predictions')) return 'predictions';
+    if (path.includes('/online-cih')) return 'online-cih';
+    if (path.includes('/bank-statements')) return 'bank-statements';
     if (path.includes('/branches')) return 'branches';
     if (path.includes('/reports')) return 'reports';
     if (path.includes('/ho-operations')) return 'ho-operations';
@@ -49,9 +52,9 @@ export const AppLayout: React.FC = () => {
         label: 'Dashboard',
         onClick: () => {
           if (user?.role === 'HO') {
-            navigate('/dashboard');
+            navigate('/app/dashboard');
           } else {
-            navigate('/dashboard/branch');
+            navigate('/app/dashboard/branch');
           }
         },
       },
@@ -64,25 +67,25 @@ export const AppLayout: React.FC = () => {
           key: 'branches',
           icon: <BankOutlined />,
           label: 'Branch Management',
-          onClick: () => navigate('/branches'),
+          onClick: () => navigate('/app/branches'),
         },
         {
           key: 'ho-operations',
           icon: <HomeOutlined />,
           label: 'HO Operations',
-          onClick: () => navigate('/ho-operations'),
+          onClick: () => navigate('/app/ho-operations'),
         },
         {
           key: 'reports',
           icon: <FileTextOutlined />,
           label: 'Reports',
-          onClick: () => navigate('/reports'),
+          onClick: () => navigate('/app/reports'),
         },
         {
           key: 'settings',
           icon: <SettingOutlined />,
           label: 'Settings',
-          onClick: () => navigate('/settings'),
+          onClick: () => navigate('/app/settings'),
         },
       ];
     } else {
@@ -93,13 +96,25 @@ export const AppLayout: React.FC = () => {
           key: 'cashbook',
           icon: <FileTextOutlined />,
           label: 'Daily Cashbook',
-          onClick: () => navigate('/cashbook'),
+          onClick: () => navigate('/app/cashbook'),
         },
         {
           key: 'predictions',
           icon: <RiseOutlined />,
           label: 'Predictions',
-          onClick: () => navigate('/predictions'),
+          onClick: () => navigate('/app/predictions'),
+        },
+        {
+          key: 'online-cih',
+          icon: <DollarOutlined />,
+          label: 'Online CIH',
+          onClick: () => navigate('/app/online-cih'),
+        },
+        {
+          key: 'bank-statements',
+          icon: <BankOutlined />,
+          label: 'Bank Statements',
+          onClick: () => navigate('/app/bank-statements'),
         },
       ];
     }
@@ -108,14 +123,16 @@ export const AppLayout: React.FC = () => {
   const getPageTitle = (): string => {
     const path = location.pathname;
     const titles: Record<string, string> = {
-      '/dashboard': user?.role === 'HO' ? 'Head Office Dashboard' : 'Branch Dashboard',
-      '/dashboard/branch': 'Branch Dashboard',
-      '/branches': 'Branch Management',
-      '/ho-operations': 'HO Operations',
-      '/cashbook': 'Daily Cashbook',
-      '/predictions': 'Predictions',
-      '/reports': 'Reports & Analytics',
-      '/settings': 'System Settings',
+      '/app/dashboard': user?.role === 'HO' ? 'Head Office Dashboard' : 'Branch Dashboard',
+      '/app/dashboard/branch': 'Branch Dashboard',
+      '/app/branches': 'Branch Management',
+      '/app/ho-operations': 'HO Operations',
+      '/app/cashbook': 'Daily Cashbook',
+      '/app/predictions': 'Predictions',
+      '/app/online-cih': 'Online CIH',
+      '/app/bank-statements': 'Bank Statements',
+      '/app/reports': 'Reports & Analytics',
+      '/app/settings': 'System Settings',
     };
     
     return titles[path] || 'Dashboard';

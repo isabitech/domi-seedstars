@@ -1,191 +1,350 @@
-import React, { useState } from 'react';
-import { Card, Row, Col, Typography, Space, Button, Tabs, DatePicker } from 'antd';
-import { LineChartOutlined, BarChartOutlined, PieChartOutlined, RiseOutlined } from '@ant-design/icons';
-import type { TabsProps } from 'antd';
-import type { Dayjs } from 'dayjs';
+import React, { useState, useEffect, useCallback } from 'react';
+import { 
+  Card, 
+  Row, 
+  Col, 
+  Typography, 
+  Space, 
+  Button, 
+  Form, 
+  InputNumber, 
+  DatePicker,
+  Alert,
+  Statistic,
+  Divider,
+  Table
+} from 'antd';
+import { 
+  RiseOutlined, 
+  SaveOutlined, 
+  CalculatorOutlined,
+  CalendarOutlined,
+  UserOutlined,
+  DollarOutlined
+} from '@ant-design/icons';
+import dayjs from 'dayjs';
+import { useAuthStore } from '../../store';
+import type { Prediction } from '../../types';
+import { predictionService } from '../../services/prediction';
 
 const { Title, Text } = Typography;
-const { RangePicker } = DatePicker;
-
-type PredictionType = 'revenue' | 'expenses' | 'growth' | 'trends';
 
 export const PredictionsPage: React.FC = () => {
-  const [selectedPrediction, setSelectedPrediction] = useState<PredictionType>('revenue');
-  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>(null);
+  const { user } = useAuthStore();
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [currentPrediction, setCurrentPrediction] = useState<Prediction | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const predictionTypes = [
-    {
-      key: 'revenue',
-      title: 'Revenue Predictions',
-      icon: <RiseOutlined />,
-      description: 'Forecast future revenue based on historical data',
-      color: '#1890ff',
-    },
-    {
-      key: 'expenses',
-      title: 'Expense Forecasting',
-      icon: <BarChartOutlined />,
-      description: 'Predict upcoming expenses and budget requirements',
-      color: '#52c41a',
-    },
-    {
-      key: 'growth',
-      title: 'Growth Analysis',
-      icon: <LineChartOutlined />,
-      description: 'Analyze growth patterns and future opportunities',
-      color: '#faad14',
-    },
-    {
-      key: 'trends',
-      title: 'Market Trends',
-      icon: <PieChartOutlined />,
-      description: 'Identify market trends and seasonal patterns',
-      color: '#722ed1',
-    },
-  ];
+  const tomorrow = dayjs().add(1, 'day');
 
-  const mockPredictions = {
-    revenue: {
-      current: 2500000,
-      predicted: 2800000,
-      growth: 12,
-      confidence: 85,
-    },
-    expenses: {
-      current: 1800000,
-      predicted: 1950000,
-      growth: 8.3,
-      confidence: 78,
-    },
-    growth: {
-      quarterlyGrowth: 15.5,
-      yearlyGrowth: 45.2,
-      confidence: 92,
-    },
+  // Load existing predictions
+  const loadPredictions = useCallback(async () => {
+    if (!user?.branchId) return;
+
+    try {
+      setLoading(true);
+      const allPredictionsResponse = await predictionService.getAllPredictions(user.branchId);
+      if (allPredictionsResponse.success && allPredictionsResponse.data) {
+        setPredictions(allPredictionsResponse.data);
+      }
+
+      // Check if there's a prediction for tomorrow
+      const tomorrowPredictionResponse = await predictionService.getPrediction(user.branchId, tomorrow.format('YYYY-MM-DD'));
+      if (tomorrowPredictionResponse.success && tomorrowPredictionResponse.data) {
+        const tomorrowPrediction = tomorrowPredictionResponse.data;
+        setCurrentPrediction(tomorrowPrediction);
+        form.setFieldsValue({
+          predictionNo: tomorrowPrediction.predictionNo,
+          predictionAmount: tomorrowPrediction.predictionAmount,
+          date: tomorrow
+        });
+      } else {
+        form.setFieldsValue({
+          predictionNo: 0,
+          predictionAmount: 0,
+          date: tomorrow
+        });
+      }
+    } catch (err) {
+      setError('Failed to load predictions');
+      console.error('Error loading predictions:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.branchId, tomorrow, form]);
+
+  // Handle form submission
+  const handleSubmit = async (values: {
+    predictionNo: number;
+    predictionAmount: number;
+    date: dayjs.Dayjs;
+  }) => {
+    if (!user?.branchId) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const predictionData = {
+        branchId: user.branchId,
+        date: values.date.format('YYYY-MM-DD'),
+        predictionNo: values.predictionNo,
+        predictionAmount: values.predictionAmount
+      };
+
+      const savedPredictionResponse = await predictionService.submitPrediction(predictionData);
+      if (savedPredictionResponse.success && savedPredictionResponse.data) {
+        setCurrentPrediction(savedPredictionResponse.data);
+        
+        // Reload predictions list
+        await loadPredictions();
+      } else {
+        setError(savedPredictionResponse.error || 'Failed to save prediction');
+      }
+      
+      // Success message could be added here
+    } catch (err) {
+      setError('Failed to save prediction');
+      console.error('Error saving prediction:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const tabItems: TabsProps['items'] = [
+  // Load predictions on component mount
+  useEffect(() => {
+    loadPredictions();
+  }, [loadPredictions]);
+
+  // Calculate average per client
+  const avgPerClient = currentPrediction && currentPrediction.predictionNo > 0
+    ? currentPrediction.predictionAmount / currentPrediction.predictionNo
+    : 0;
+
+  // Table columns for predictions history
+  const columns = [
     {
-      key: 'overview',
-      label: 'Overview',
-      children: (
-        <div>
-          <Row gutter={[16, 16]}>
-            <Col xs={24} md={8}>
-              <Card>
-                <div style={{ textAlign: 'center' }}>
-                  <RiseOutlined style={{ fontSize: 40, color: '#1890ff', marginBottom: 16 }} />
-                  <div style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 8 }}>
-                    ${mockPredictions.revenue.predicted.toLocaleString()}
-                  </div>
-                  <Text type="secondary">Predicted Revenue (Next Quarter)</Text>
-                  <div style={{ color: '#52c41a', marginTop: 8 }}>
-                    +{mockPredictions.revenue.growth}% growth
-                  </div>
-                </div>
-              </Card>
-            </Col>
-            <Col xs={24} md={8}>
-              <Card>
-                <div style={{ textAlign: 'center' }}>
-                  <BarChartOutlined style={{ fontSize: 40, color: '#faad14', marginBottom: 16 }} />
-                  <div style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 8 }}>
-                    ${mockPredictions.expenses.predicted.toLocaleString()}
-                  </div>
-                  <Text type="secondary">Predicted Expenses (Next Quarter)</Text>
-                  <div style={{ color: '#faad14', marginTop: 8 }}>
-                    +{mockPredictions.expenses.growth}% increase
-                  </div>
-                </div>
-              </Card>
-            </Col>
-            <Col xs={24} md={8}>
-              <Card>
-                <div style={{ textAlign: 'center' }}>
-                  <LineChartOutlined style={{ fontSize: 40, color: '#52c41a', marginBottom: 16 }} />
-                  <div style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 8 }}>
-                    {mockPredictions.growth.quarterlyGrowth}%
-                  </div>
-                  <Text type="secondary">Quarterly Growth Rate</Text>
-                  <div style={{ color: '#52c41a', marginTop: 8 }}>
-                    {mockPredictions.growth.confidence}% confidence
-                  </div>
-                </div>
-              </Card>
-            </Col>
-          </Row>
-        </div>
-      ),
+      title: 'Date',
+      dataIndex: 'date',
+      key: 'date',
+      render: (date: string) => dayjs(date).format('DD MMM YYYY')
     },
     {
-      key: 'detailed',
-      label: 'Detailed Analysis',
-      children: (
-        <div>
-          <p>Detailed prediction analysis coming soon...</p>
-          <p>Selected type: {selectedPrediction}</p>
-        </div>
-      ),
+      title: 'Prediction No.',
+      dataIndex: 'predictionNo',
+      key: 'predictionNo',
+      align: 'center' as const,
+      render: (value: number) => <Text strong>{value} clients</Text>
     },
+    {
+      title: 'Prediction Amount',
+      dataIndex: 'predictionAmount',
+      key: 'predictionAmount',
+      align: 'right' as const,
+      render: (value: number) => <Text strong>₦{value.toLocaleString()}</Text>
+    },
+    {
+      title: 'Avg per Client',
+      key: 'avgPerClient',
+      align: 'right' as const,
+      render: (_: unknown, record: Prediction) => {
+        const avg = record.predictionNo > 0 ? record.predictionAmount / record.predictionNo : 0;
+        return <Text>₦{avg.toLocaleString()}</Text>;
+      }
+    },
+    {
+      title: 'Status',
+      key: 'status',
+      render: (_: unknown, record: Prediction) => {
+        const isToday = dayjs(record.date).isSame(dayjs(), 'day');
+        const isTomorrow = dayjs(record.date).isSame(tomorrow, 'day');
+        const isPast = dayjs(record.date).isBefore(dayjs(), 'day');
+        
+        if (isTomorrow) return <span style={{ color: '#1890ff' }}>Tomorrow</span>;
+        if (isToday) return <span style={{ color: '#52c41a' }}>Today</span>;
+        if (isPast) return <span style={{ color: '#999' }}>Past</span>;
+        return <span style={{ color: '#722ed1' }}>Future</span>;
+      }
+    }
   ];
 
   return (
-    <div>
-      <div style={{ marginBottom: 24 }}>
-        <Title level={2}>Financial Predictions & Analytics</Title>
-        <Text type="secondary">
-          AI-powered predictions based on historical data and market trends
-        </Text>
-      </div>
+    <div className="page-container" style={{ padding: '24px' }}>
+      <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <div>
+          <Title level={2}>
+            <RiseOutlined /> Tomorrow's Disbursement Predictions
+          </Title>
+          <Text type="secondary">
+            Plan and predict tomorrow's loan disbursements for {tomorrow.format('dddd, DD MMMM YYYY')}
+          </Text>
+        </div>
 
-      {/* Prediction Type Selection */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        {predictionTypes.map((type) => (
-          <Col xs={24} sm={12} md={6} key={type.key}>
-            <Card
-              hoverable
-              className={selectedPrediction === type.key ? 'selected-card' : ''}
-              onClick={() => setSelectedPrediction(type.key as PredictionType)}
-              style={{
-                border: selectedPrediction === type.key ? `2px solid ${type.color}` : '1px solid #d9d9d9',
-                cursor: 'pointer',
-              }}
+        {error && (
+          <Alert
+            message="Error"
+            description={error}
+            type="error"
+            showIcon
+            closable
+            onClose={() => setError(null)}
+          />
+        )}
+
+        <Row gutter={[24, 24]}>
+          <Col xs={24} lg={12}>
+            <Card 
+              title={
+                <Space>
+                  <CalendarOutlined />
+                  <span>Prediction Entry</span>
+                </Space>
+              }
+              loading={loading}
             >
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ color: type.color, fontSize: 32, marginBottom: 16 }}>
-                  {type.icon}
-                </div>
-                <Title level={4} style={{ margin: '0 0 8px 0' }}>
-                  {type.title}
-                </Title>
-                <Text type="secondary">{type.description}</Text>
-              </div>
+              <Form
+                form={form}
+                layout="vertical"
+                onFinish={handleSubmit}
+                disabled={loading}
+              >
+                <Form.Item
+                  label="Prediction Date"
+                  name="date"
+                  rules={[{ required: true, message: 'Date is required' }]}
+                >
+                  <DatePicker
+                    style={{ width: '100%' }}
+                    format="YYYY-MM-DD"
+                    disabledDate={(current) => current && current <= dayjs().startOf('day')}
+                    defaultValue={tomorrow}
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="Prediction No. (Number of Clients)"
+                  name="predictionNo"
+                  rules={[
+                    { required: true, message: 'Number of clients is required' },
+                    { type: 'number', min: 0, message: 'Must be a positive number' }
+                  ]}
+                  help="Total number of clients you plan to disburse loans to tomorrow"
+                >
+                  <InputNumber
+                    style={{ width: '100%' }}
+                    min={0}
+                    placeholder="Enter number of clients"
+                    suffix={<UserOutlined />}
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="Prediction Amount (Total Disbursement)"
+                  name="predictionAmount"
+                  rules={[
+                    { required: true, message: 'Prediction amount is required' },
+                    { type: 'number', min: 0, message: 'Must be a positive amount' }
+                  ]}
+                  help="Total amount you plan to disburse tomorrow"
+                >
+                  <InputNumber
+                    style={{ width: '100%' }}
+                    min={0}
+                    placeholder="Enter total disbursement amount"
+                    formatter={value => `₦ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    prefix={<DollarOutlined />}
+                  />
+                </Form.Item>
+
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  icon={<SaveOutlined />}
+                  loading={loading}
+                  block
+                  size="large"
+                >
+                  Save Tomorrow's Prediction
+                </Button>
+              </Form>
             </Card>
           </Col>
-        ))}
-      </Row>
 
-      {/* Filters */}
-      <Card style={{ marginBottom: 24 }}>
-        <Space wrap>
-          <RangePicker
-            value={dateRange}
-            onChange={(dates) => setDateRange(dates as [Dayjs, Dayjs] | null)}
-            placeholder={['Start Date', 'End Date']}
+          <Col xs={24} lg={12}>
+            {currentPrediction && (
+              <Card 
+                title={
+                  <Space>
+                    <CalculatorOutlined />
+                    <span>Prediction Summary</span>
+                  </Space>
+                }
+              >
+                <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                  <Row gutter={16}>
+                    <Col span={12}>
+                      <Statistic
+                        title="Clients to Serve"
+                        value={currentPrediction.predictionNo}
+                        prefix={<UserOutlined />}
+                        valueStyle={{ color: '#1890ff' }}
+                      />
+                    </Col>
+                    <Col span={12}>
+                      <Statistic
+                        title="Total Amount"
+                        value={currentPrediction.predictionAmount}
+                        precision={0}
+                        prefix="₦"
+                        valueStyle={{ color: '#52c41a' }}
+                      />
+                    </Col>
+                  </Row>
+
+                  <Divider />
+
+                  <Statistic
+                    title="Average Amount per Client"
+                    value={avgPerClient}
+                    precision={0}
+                    prefix="₦"
+                    valueStyle={{ color: '#fa8c16', fontSize: '24px' }}
+                  />
+
+                  <Alert
+                    message="Prediction Insights"
+                    description={
+                      <Space direction="vertical" size="small">
+                        <Text>• This prediction helps plan cash flow and resource allocation</Text>
+                        <Text>• Average amount per client: ₦{avgPerClient.toLocaleString()}</Text>
+                        <Text>• Prediction date: {dayjs(currentPrediction.date).format('DD MMMM YYYY')}</Text>
+                      </Space>
+                    }
+                    type="info"
+                    showIcon
+                  />
+                </Space>
+              </Card>
+            )}
+          </Col>
+        </Row>
+
+        <Card title="Predictions History">
+          <Table
+            columns={columns}
+            dataSource={predictions}
+            rowKey="id"
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: false,
+              showTotal: (total) => `Total ${total} predictions`
+            }}
+            loading={loading}
           />
-          <Button type="primary">
-            Generate Predictions
-          </Button>
-          <Button>
-            Export Report
-          </Button>
-        </Space>
-      </Card>
-
-      {/* Prediction Content */}
-      <Card>
-        <Tabs items={tabItems} defaultActiveKey="overview" size="large" />
-      </Card>
+        </Card>
+      </Space>
     </div>
   );
 };

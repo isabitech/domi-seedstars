@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Form, 
   Input, 
@@ -10,67 +10,172 @@ import {
   Statistic, 
   Alert,
   Typography,
-  Divider 
+  Divider,
+  message,
+  Spin,
+  Tag,
+  Tooltip 
 } from 'antd';
-import { SaveOutlined, CalculatorOutlined } from '@ant-design/icons';
+import { SaveOutlined, CalculatorOutlined, ReloadOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useAuthStore } from '../store';
 import { calculations } from '../utils/calculations';
+import { cashbookService } from '../services/cashbook';
 import type { Cashbook1 } from '../types';
 
 const { Title, Text } = Typography;
 
 interface Cashbook1FormProps {
-  onSubmit: (data: Partial<Cashbook1>) => void;
+  onSubmit?: (data: Cashbook1) => void;
   initialData?: Partial<Cashbook1>;
   readonly?: boolean;
+  date?: string;
 }
 
 export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
   onSubmit,
   initialData,
-  readonly = false
+  readonly = false,
+  date
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [dataLoading, setDataLoading] = useState(false);
+  const [hasExistingData, setHasExistingData] = useState(false);
   const [calculatedValues, setCalculatedValues] = useState({
     total: 0,
     cbTotal1: 0
   });
   const { user } = useAuthStore();
+  const currentDate = date || new Date().toISOString().split('T')[0];
+
+  // Load existing data on component mount
+  useEffect(() => {
+    const loadExistingData = async () => {
+      if (user?.branchId && currentDate) {
+        setDataLoading(true);
+        try {
+          const response = await cashbookService.getCashbook1(user.branchId, currentDate);
+          if (response.success && response.data) {
+            const existingData = response.data;
+            form.setFieldsValue({
+              pcih: existingData.pcih,
+              savings: existingData.savings,
+              loanCollection: existingData.loanCollection,
+              charges: existingData.charges,
+              frmHO: existingData.frmHO,
+              frmBR: existingData.frmBR
+            });
+            setHasExistingData(true);
+            // Trigger calculation update
+            handleValuesChange();
+          }
+        } catch {
+          console.error('Error loading existing data');
+        } finally {
+          setDataLoading(false);
+        }
+      }
+    };
+
+    loadExistingData();
+  }, [user?.branchId, currentDate, form]);
 
   // Calculate values when form values change
   useEffect(() => {
-    const values = form.getFieldsValue();
-    const total = calculations.calculateCashbook1Total(values);
-    const cbTotal1 = calculations.calculateCashbook1CBTotal(values);
-    
-    setCalculatedValues({ total, cbTotal1 });
+    if (initialData) {
+      const total = calculations.calculateCashbook1Total(initialData);
+      const cbTotal1 = calculations.calculateCashbook1CBTotal(initialData);
+      setCalculatedValues({ total, cbTotal1 });
+    }
+  }, [initialData]);
+
+  const handleValuesChange = useCallback(() => {
+    try {
+      const values = form.getFieldsValue();
+      // Convert string values to numbers
+      const numericValues = {
+        pcih: Number(values.pcih) || 0,
+        savings: Number(values.savings) || 0,
+        loanCollection: Number(values.loanCollection) || 0,
+        charges: Number(values.charges) || 0,
+        frmHO: Number(values.frmHO) || 0,
+        frmBR: Number(values.frmBR) || 0
+      };
+      
+      const total = calculations.calculateCashbook1Total(numericValues);
+      const cbTotal1 = calculations.calculateCashbook1CBTotal(numericValues);
+      
+      setCalculatedValues({ total, cbTotal1 });
+    } catch {
+      console.error('Error calculating values');
+    }
   }, [form]);
 
-  const handleValuesChange = () => {
-    const values = form.getFieldsValue();
-    const total = calculations.calculateCashbook1Total(values);
-    const cbTotal1 = calculations.calculateCashbook1CBTotal(values);
-    
-    setCalculatedValues({ total, cbTotal1 });
-  };
-
   const handleSubmit = async (values: Record<string, number>) => {
+    if (!user?.branchId) {
+      message.error('User branch information is missing');
+      return;
+    }
+
     setLoading(true);
     try {
       const submitData = {
         ...values,
         total: calculatedValues.total,
         cbTotal1: calculatedValues.cbTotal1,
-        date: new Date().toISOString().split('T')[0],
-        branchId: user?.branchId || 'ho',
-        submittedBy: user?.id || '',
+        date: currentDate,
+        branchId: user.branchId,
+        submittedBy: user.id,
         submittedAt: new Date().toISOString()
       };
       
-      await onSubmit(submitData);
+      const response = await cashbookService.submitCashbook1(submitData);
+      
+      if (response.success && response.data) {
+        message.success(response.message || 'Cashbook 1 data submitted successfully!');
+        setHasExistingData(true);
+        
+        // Call parent onSubmit if provided
+        if (onSubmit) {
+          onSubmit(response.data);
+        }
+      } else {
+        message.error(response.error || 'Failed to submit data');
+      }
+    } catch {
+      message.error('An unexpected error occurred while submitting data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    if (!user?.branchId) return;
+    
+    setDataLoading(true);
+    try {
+      const response = await cashbookService.getCashbook1(user.branchId, currentDate);
+      if (response.success && response.data) {
+        const existingData = response.data;
+        form.setFieldsValue({
+          pcih: existingData.pcih,
+          savings: existingData.savings,
+          loanCollection: existingData.loanCollection,
+          charges: existingData.charges,
+          frmHO: existingData.frmHO,
+          frmBR: existingData.frmBR
+        });
+        setHasExistingData(true);
+        handleValuesChange();
+        message.success('Data refreshed successfully');
+      } else {
+        message.info('No existing data found for today');
+        setHasExistingData(false);
+      }
+    } catch {
+      message.error('Failed to refresh data');
+    } finally {
+      setDataLoading(false);
     }
   };
 
@@ -78,17 +183,56 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
     <div className="page-container">
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         <div>
-          <Title level={3}>
-            Cashbook 1 - Daily Input
-          </Title>
-          <Text type="secondary">
-            Enter daily operations data for {new Date().toLocaleDateString()}
-          </Text>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <Title level={3}>
+                Cashbook 1 - Daily Input
+                {hasExistingData && (
+                  <Tag color="green" style={{ marginLeft: 8 }}>Data Exists</Tag>
+                )}
+              </Title>
+              <Text type="secondary">
+                Enter daily operations data for {new Date(currentDate).toLocaleDateString()}
+              </Text>
+            </div>
+            <Button 
+              icon={<ReloadOutlined />} 
+              onClick={handleRefresh}
+              loading={dataLoading}
+              size="large"
+            >
+              Refresh
+            </Button>
+          </div>
         </div>
 
         <Row gutter={[16, 16]}>
           <Col span={16}>
-            <Card title="Daily Input Form" className="form-section">
+            <Card 
+              title={
+                <Space>
+                  Daily Input Form
+                  {user?.role === 'BR' && (
+                    <Tag color="blue">Branch User</Tag>
+                  )}
+                  {user?.role === 'HO' && (
+                    <Tag color="purple">Head Office</Tag>
+                  )}
+                </Space>
+              } 
+              className="form-section"
+              extra={
+                hasExistingData ? (
+                  <Tag color="success">Updated: {hasExistingData ? 'Today' : 'Never'}</Tag>
+                ) : null
+              }
+            >
+              {dataLoading ? (
+                <div style={{ textAlign: 'center', padding: '40px' }}>
+                  <Spin size="large" />
+                  <p style={{ marginTop: 16 }}>Loading existing data...</p>
+                </div>
+              ) : (
               <Form
                 form={form}
                 layout="vertical"
@@ -100,11 +244,18 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
                 <Row gutter={16}>
                   <Col span={12}>
                     <Form.Item
-                      label="Previous Cash in Hand (PCIH)"
+                      label={
+                        <Space>
+                          Previous Cash in Hand (PCIH)
+                          <Tooltip title="The amount of cash carried over from the previous day">
+                            <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                          </Tooltip>
+                        </Space>
+                      }
                       name="pcih"
                       rules={[
-                        { required: true, message: 'Required' },
-                        { type: 'number', min: 0, message: 'Must be positive' }
+                        { required: true, message: 'PCIH is required' },
+                        { type: 'number', min: 0, message: 'Must be a positive number' }
                       ]}
                     >
                       <Input
@@ -112,17 +263,25 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
                         placeholder="0.00"
                         prefix="₦"
                         size="large"
+                        step="0.01"
                       />
                     </Form.Item>
                   </Col>
                   
                   <Col span={12}>
                     <Form.Item
-                      label="Savings"
+                      label={
+                        <Space>
+                          Savings
+                          <Tooltip title="Total savings collected today">
+                            <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                          </Tooltip>
+                        </Space>
+                      }
                       name="savings"
                       rules={[
-                        { required: true, message: 'Required' },
-                        { type: 'number', min: 0, message: 'Must be positive' }
+                        { required: true, message: 'Savings amount is required' },
+                        { type: 'number', min: 0, message: 'Must be a positive number' }
                       ]}
                     >
                       <Input
@@ -130,6 +289,7 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
                         placeholder="0.00"
                         prefix="₦"
                         size="large"
+                        step="0.01"
                       />
                     </Form.Item>
                   </Col>
@@ -138,11 +298,18 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
                 <Row gutter={16}>
                   <Col span={12}>
                     <Form.Item
-                      label="Loan Collection"
+                      label={
+                        <Space>
+                          Loan Collection
+                          <Tooltip title="Total loan repayments collected today">
+                            <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                          </Tooltip>
+                        </Space>
+                      }
                       name="loanCollection"
                       rules={[
-                        { required: true, message: 'Required' },
-                        { type: 'number', min: 0, message: 'Must be positive' }
+                        { required: true, message: 'Loan collection amount is required' },
+                        { type: 'number', min: 0, message: 'Must be a positive number' }
                       ]}
                     >
                       <Input
@@ -150,17 +317,25 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
                         placeholder="0.00"
                         prefix="₦"
                         size="large"
+                        step="0.01"
                       />
                     </Form.Item>
                   </Col>
                   
                   <Col span={12}>
                     <Form.Item
-                      label="Charges Collection"
+                      label={
+                        <Space>
+                          Charges Collection
+                          <Tooltip title="Service charges and fees collected today">
+                            <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                          </Tooltip>
+                        </Space>
+                      }
                       name="charges"
                       rules={[
-                        { required: true, message: 'Required' },
-                        { type: 'number', min: 0, message: 'Must be positive' }
+                        { required: true, message: 'Charges amount is required' },
+                        { type: 'number', min: 0, message: 'Must be a positive number' }
                       ]}
                     >
                       <Input
@@ -168,28 +343,49 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
                         placeholder="0.00"
                         prefix="₦"
                         size="large"
+                        step="0.01"
                       />
                     </Form.Item>
                   </Col>
                 </Row>
 
-                <Divider orientation="left">Head Office Only Fields</Divider>
+                <Divider orientation="left">
+                  <Space>
+                    Head Office Only Fields
+                    {user?.role !== 'HO' && (
+                      <Tag color="orange">View Only</Tag>
+                    )}
+                  </Space>
+                </Divider>
                 
                 <Row gutter={16}>
                   <Col span={12}>
                     <Form.Item
-                      label="Fund from HO (FRM HO)"
+                      label={
+                        <Space>
+                          Fund from HO (FRM HO)
+                          <Tooltip title={user?.role !== 'HO' 
+                            ? 'Only Head Office can edit this field' 
+                            : 'Amount received from Head Office'
+                          }>
+                            <InfoCircleOutlined style={{ 
+                              color: user?.role !== 'HO' ? '#fa8c16' : '#1890ff' 
+                            }} />
+                          </Tooltip>
+                        </Space>
+                      }
                       name="frmHO"
-                      tooltip={user?.role !== 'HO' ? 'Only Head Office can edit this field' : ''}
                     >
                       <Input
                         type="number"
-                        placeholder="0.00"
+                        placeholder={user?.role !== 'HO' ? 'HO will fill this' : '0.00'}
                         prefix="₦"
                         size="large"
+                        step="0.01"
                         disabled={user?.role !== 'HO'}
                         style={{ 
-                          backgroundColor: user?.role !== 'HO' ? '#f5f5f5' : 'white' 
+                          backgroundColor: user?.role !== 'HO' ? '#fff2e8' : 'white',
+                          borderColor: user?.role !== 'HO' ? '#ffb366' : '#d9d9d9'
                         }}
                       />
                     </Form.Item>
@@ -197,18 +393,31 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
                   
                   <Col span={12}>
                     <Form.Item
-                      label="Fund from Branch (FRM BR)"
+                      label={
+                        <Space>
+                          Fund from Branch (FRM BR)
+                          <Tooltip title={user?.role !== 'HO' 
+                            ? 'Only Head Office can edit this field' 
+                            : 'Amount received from other branches'
+                          }>
+                            <InfoCircleOutlined style={{ 
+                              color: user?.role !== 'HO' ? '#fa8c16' : '#1890ff' 
+                            }} />
+                          </Tooltip>
+                        </Space>
+                      }
                       name="frmBR"
-                      tooltip={user?.role !== 'HO' ? 'Only Head Office can edit this field' : ''}
                     >
                       <Input
                         type="number"
-                        placeholder="0.00"
+                        placeholder={user?.role !== 'HO' ? 'HO will fill this' : '0.00'}
                         prefix="₦"
                         size="large"
+                        step="0.01"
                         disabled={user?.role !== 'HO'}
                         style={{ 
-                          backgroundColor: user?.role !== 'HO' ? '#f5f5f5' : 'white' 
+                          backgroundColor: user?.role !== 'HO' ? '#fff2e8' : 'white',
+                          borderColor: user?.role !== 'HO' ? '#ffb366' : '#d9d9d9'
                         }}
                       />
                     </Form.Item>
@@ -233,43 +442,70 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
                       loading={loading}
                       icon={<SaveOutlined />}
                       size="large"
+                      style={{ minWidth: '200px' }}
                     >
-                      Submit Cashbook 1
+                      {hasExistingData ? 'Update Cashbook 1' : 'Submit Cashbook 1'}
                     </Button>
                   </Form.Item>
                 )}
               </Form>
+              )}
             </Card>
           </Col>
 
           <Col span={8}>
             <Card 
-              title={<span><CalculatorOutlined /> Calculations</span>}
+              title={<span><CalculatorOutlined /> Live Calculations</span>}
               className="stats-card"
+              style={{ 
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white'
+              }}
+              headStyle={{ color: 'white', borderBottom: '1px solid rgba(255,255,255,0.2)' }}
             >
               <Space direction="vertical" size="large" style={{ width: '100%' }}>
                 <Statistic
-                  title="Total (Savings + Loan + Charges)"
+                  title={
+                    <span style={{ color: 'rgba(255,255,255,0.8)' }}>
+                      Collection Total
+                      <br />
+                      <small>(Savings + Loan + Charges)</small>
+                    </span>
+                  }
                   value={calculatedValues.total}
                   precision={2}
                   prefix="₦"
-                  valueStyle={{ color: '#3f8600' }}
+                  valueStyle={{ color: '#52c41a', fontSize: '18px', fontWeight: 'bold' }}
                 />
                 
+                <Divider style={{ borderColor: 'rgba(255,255,255,0.2)', margin: '8px 0' }} />
+                
                 <Statistic
-                  title="CB TOTAL 1"
+                  title={
+                    <span style={{ color: 'rgba(255,255,255,0.8)' }}>
+                      CB TOTAL 1
+                      <br />
+                      <small>(PCIH + Collection + FRM HO + FRM BR)</small>
+                    </span>
+                  }
                   value={calculatedValues.cbTotal1}
                   precision={2}
                   prefix="₦"
-                  valueStyle={{ color: '#1890ff' }}
+                  valueStyle={{ color: '#fff', fontSize: '24px', fontWeight: 'bold' }}
                 />
                 
-                <div className="calculation-result">
-                  <Text style={{ color: 'white' }}>
-                    <strong>Final Cashbook 1 Total</strong>
+                <div style={{ 
+                  background: 'rgba(255,255,255,0.1)', 
+                  padding: '16px', 
+                  borderRadius: '8px',
+                  textAlign: 'center',
+                  marginTop: '16px'
+                }}>
+                  <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px' }}>
+                    Final Cashbook 1 Total
                   </Text>
                   <br />
-                  <Text style={{ color: 'white', fontSize: '24px' }}>
+                  <Text style={{ color: '#fff', fontSize: '28px', fontWeight: 'bold' }}>
                     {calculations.formatCurrency(calculatedValues.cbTotal1)}
                   </Text>
                 </div>

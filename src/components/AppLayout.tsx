@@ -7,7 +7,8 @@ import {
   SettingOutlined,
   LogoutOutlined,
   UserOutlined,
-  HomeOutlined
+  HomeOutlined,
+  DollarOutlined
 } from '@ant-design/icons';
 import { useAuthStore } from '../store';
 import type { MenuProps } from 'antd';
@@ -82,6 +83,12 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
           onClick: () => onNavigate('cashbook'),
         },
         {
+          key: 'online-cih',
+          icon: <DollarOutlined />,
+          label: 'Online Cash in Hand',
+          onClick: () => onNavigate('online-cih'),
+        },
+        {
           key: 'prediction',
           icon: <SettingOutlined />,
           label: 'Predictions',
@@ -96,6 +103,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       <Sider
         collapsible
         theme="light"
+        width={280}
         style={{
           boxShadow: '2px 0 8px rgba(0,0,0,0.1)',
         }}
@@ -119,6 +127,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
           items={getMenuItems()}
           style={{ border: 'none', marginTop: '16px' }}
         />
+        
+
       </Sider>
       
       <Layout>
@@ -176,6 +186,7 @@ function getPageTitle(page: string, role?: string): string {
     branches: 'Branch Management',
     'ho-operations': 'HO Operations',
     cashbook: 'Daily Cashbook',
+    'online-cih': 'Online Cash in Hand',
     prediction: 'Predictions',
     reports: 'Reports & Analytics',
     settings: 'System Settings',

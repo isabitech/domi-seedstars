@@ -1,303 +1,278 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
-  Form, 
-  Input, 
-  Button, 
   Card, 
+  Form,
+  Input,
+  Button,
   Space, 
-  Row, 
-  Col, 
-  Statistic, 
-  Typography,
+  Typography, 
   Alert,
-  Table
+  Spin,
+  Tag,
+  Statistic,
+  message
 } from 'antd';
-import { 
-  SaveOutlined, 
-  EyeOutlined, 
-  RiseOutlined,
-  CalendarOutlined 
-} from '@ant-design/icons';
-import dayjs from 'dayjs';
+import { PlusOutlined, SaveOutlined, ReloadOutlined, FundProjectionScreenOutlined } from '@ant-design/icons';
 import { useAuthStore } from '../store';
+import { predictionService } from '../services/prediction';
 import { calculations } from '../utils/calculations';
 import type { Prediction } from '../types';
 
 const { Title, Text } = Typography;
 
-interface PredictionComponentProps {
-  onSubmit: (data: Partial<Prediction>) => void;
-  initialData?: Partial<Prediction>;
+interface PredictionFormProps {
+  date?: string;
+  onSubmit?: (data: Prediction) => void;
   readonly?: boolean;
 }
 
-export const PredictionComponent: React.FC<PredictionComponentProps> = ({
+export const PredictionComponent: React.FC<PredictionFormProps> = ({
+  date,
   onSubmit,
-  initialData,
   readonly = false
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [predictions, setPredictions] = useState<Prediction[]>([
-    {
-      id: '1',
-      date: dayjs().subtract(1, 'day').format('YYYY-MM-DD'),
-      branchId: 'br-001',
-      predictionNo: 15,
-      predictionAmount: 750000,
-      submittedBy: 'branch1'
-    },
-    {
-      id: '2',
-      date: dayjs().subtract(2, 'day').format('YYYY-MM-DD'),
-      branchId: 'br-001',
-      predictionNo: 12,
-      predictionAmount: 600000,
-      submittedBy: 'branch1'
-    }
-  ]);
+  const [dataLoading, setDataLoading] = useState(false);
+  const [hasExistingPrediction, setHasExistingPrediction] = useState(false);
+  const [predictionData, setPredictionData] = useState<Prediction | null>(null);
+  
   const { user } = useAuthStore();
+  const tomorrowDate = date || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-  const [currentPrediction, setCurrentPrediction] = useState({
-    predictionNo: 0,
-    predictionAmount: 0,
-    avgPerClient: 0
-  });
+  const loadExistingPrediction = useCallback(async () => {
+    if (!user?.branchId) return;
+    
+    setDataLoading(true);
+    try {
+      const response = await predictionService.getPrediction(user.branchId, tomorrowDate);
+      if (response.success && response.data) {
+        const existingData = response.data;
+        form.setFieldsValue({
+          predictionNo: existingData.predictionNo,
+          predictionAmount: existingData.predictionAmount
+        });
+        setPredictionData(existingData);
+        setHasExistingPrediction(true);
+      } else {
+        setHasExistingPrediction(false);
+        setPredictionData(null);
+      }
+    } catch {
+      console.error('Error loading existing prediction');
+    } finally {
+      setDataLoading(false);
+    }
+  }, [user?.branchId, tomorrowDate, form]);
 
+  // Load existing data on component mount
   useEffect(() => {
-    const values = form.getFieldsValue();
-    const { predictionNo = 0, predictionAmount = 0 } = values;
-    const avgPerClient = predictionNo > 0 ? predictionAmount / predictionNo : 0;
-    
-    setCurrentPrediction({
-      predictionNo,
-      predictionAmount,
-      avgPerClient
-    });
-  }, [form]);
+    loadExistingPrediction();
+  }, [loadExistingPrediction]);
 
-  const handleValuesChange = () => {
-    const values = form.getFieldsValue();
-    const { predictionNo = 0, predictionAmount = 0 } = values;
-    const avgPerClient = predictionNo > 0 ? predictionAmount / predictionNo : 0;
-    
-    setCurrentPrediction({
-      predictionNo,
-      predictionAmount,
-      avgPerClient
-    });
-  };
+  const handleSubmit = async (values: { predictionNo: number; predictionAmount: number }) => {
+    if (!user?.branchId) {
+      message.error('User branch information is missing');
+      return;
+    }
 
-  const handleSubmit = async (values: Record<string, number>) => {
+    // Only branches can submit predictions
+    if (user.role !== 'BR') {
+      message.error('Only branch users can submit predictions');
+      return;
+    }
+
     setLoading(true);
     try {
       const submitData = {
-        ...values,
-        date: dayjs().add(1, 'day').format('YYYY-MM-DD'), // Next day
-        branchId: user?.branchId || 'ho',
-        submittedBy: user?.id || '',
-        id: Date.now().toString()
+        predictionNo: Number(values.predictionNo),
+        predictionAmount: Number(values.predictionAmount),
+        date: tomorrowDate,
+        branchId: user.branchId,
+        submittedBy: user.id
       };
       
-      // Add to local predictions list
-      const newPrediction = submitData as Prediction;
-      setPredictions(prev => [newPrediction, ...prev.slice(0, 9)]); // Keep last 10
+      const response = await predictionService.submitPrediction(submitData);
       
-      await onSubmit(submitData);
+      if (response.success && response.data) {
+        message.success(response.message || 'Prediction submitted successfully!');
+        setPredictionData(response.data);
+        setHasExistingPrediction(true);
+        
+        if (onSubmit) {
+          onSubmit(response.data);
+        }
+      } else {
+        message.error(response.error || 'Failed to submit prediction');
+      }
+    } catch {
+      message.error('An unexpected error occurred while submitting prediction');
     } finally {
       setLoading(false);
     }
   };
 
-  const predictionColumns = [
-    {
-      title: 'Date',
-      dataIndex: 'date',
-      key: 'date',
-      render: (date: string) => dayjs(date).format('MMM DD, YYYY')
-    },
-    {
-      title: 'Predicted Clients',
-      dataIndex: 'predictionNo',
-      key: 'predictionNo',
-      render: (value: number) => <strong>{value}</strong>
-    },
-    {
-      title: 'Predicted Amount',
-      dataIndex: 'predictionAmount',
-      key: 'predictionAmount',
-      render: (value: number) => calculations.formatCurrency(value)
-    },
-    {
-      title: 'Avg per Client',
-      key: 'avgPerClient',
-      render: (_: unknown, record: Prediction) => 
-        calculations.formatCurrency(record.predictionAmount / record.predictionNo)
-    }
-  ];
+  const handleRefresh = async () => {
+    await loadExistingPrediction();
+    message.info('Prediction data refreshed');
+  };
 
-  const tomorrow = dayjs().add(1, 'day');
+  // Branch users can input, HO can only view
+  const canEdit = user?.role === 'BR' && !readonly;
 
   return (
-    <div className="page-container">
-      <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        <div>
-          <Title level={3}>
-            <RiseOutlined /> Next-Day Predictions
-          </Title>
-          <Text type="secondary">
-            Predict tomorrow's disbursement activity for planning purposes
-          </Text>
+    <Card 
+      title={
+        <Space>
+          <FundProjectionScreenOutlined />
+          Tomorrow's Prediction
+          {user?.role === 'BR' && (
+            <Tag color="blue">Branch Input</Tag>
+          )}
+          {user?.role === 'HO' && (
+            <Tag color="purple">HO View Only</Tag>
+          )}
+        </Space>
+      }
+      extra={
+        <Button 
+          icon={<ReloadOutlined />}
+          onClick={handleRefresh}
+          loading={dataLoading}
+          size="small"
+          type="text"
+        >
+          Refresh
+        </Button>
+      }
+      size="small"
+      style={{ marginTop: 16 }}
+    >
+      {dataLoading ? (
+        <div style={{ textAlign: 'center', padding: '20px' }}>
+          <Spin size="large" />
+          <p style={{ marginTop: 8 }}>Loading prediction data...</p>
         </div>
+      ) : (
+        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+          <div>
+            <Text type="secondary" style={{ fontSize: '12px' }}>
+              Prediction for: {new Date(tomorrowDate).toLocaleDateString()}
+            </Text>
+          </div>
 
-        <Alert
-          message="Prediction Purpose"
-          description="Help Head Office prepare adequate funds and resources by predicting tomorrow's disbursement requirements."
-          type="info"
-          showIcon
-          closable
-        />
+          {hasExistingPrediction && predictionData ? (
+            // Display existing prediction
+            <div style={{ 
+              background: '#f6ffed', 
+              border: '1px solid #b7eb8f',
+              borderRadius: '6px',
+              padding: '12px'
+            }}>
+              <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Text>Prediction No:</Text>
+                  <Text strong>{predictionData.predictionNo} clients</Text>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Text>Prediction Amount:</Text>
+                  <Text strong style={{ color: '#52c41a' }}>
+                    {calculations.formatCurrency(predictionData.predictionAmount)}
+                  </Text>
+                </div>
+                <div style={{ 
+                  borderTop: '1px solid #d9f7be',
+                  paddingTop: 8,
+                  marginTop: 8,
+                  textAlign: 'center'
+                }}>
+                  <Text type="success" style={{ fontSize: '12px' }}>
+                    ✓ Prediction submitted for tomorrow
+                  </Text>
+                </div>
+              </Space>
+            </div>
+          ) : (
+            // No existing prediction
+            <Alert
+              message="No Prediction Found"
+              description={`No disbursement prediction has been submitted for ${new Date(tomorrowDate).toLocaleDateString()}`}
+              type="info"
+              showIcon
+            />
+          )}
 
-        <Row gutter={[16, 16]}>
-          <Col span={14}>
-            <Card 
-              title={
-                <span>
-                  <CalendarOutlined /> Prediction for {tomorrow.format('dddd, MMMM DD, YYYY')}
-                </span>
-              }
-              className="form-section"
-            >
+          {canEdit && (
+            <>
+              <Title level={5} style={{ margin: 0 }}>
+                {hasExistingPrediction ? 'Update Prediction' : 'Submit Prediction'}
+              </Title>
+              
               <Form
                 form={form}
                 layout="vertical"
                 onFinish={handleSubmit}
-                onValuesChange={handleValuesChange}
-                initialValues={initialData}
-                disabled={readonly}
+                size="small"
               >
-                <Row gutter={16}>
-                  <Col span={12}>
-                    <Form.Item
-                      label="Number of Clients (PREDICTION NO)"
-                      name="predictionNo"
-                      rules={[
-                        { required: true, message: 'Required' },
-                        { type: 'number', min: 0, message: 'Must be positive' }
-                      ]}
-                    >
-                      <Input
-                        type="number"
-                        placeholder="Expected number of clients"
-                        size="large"
-                        suffix="clients"
-                      />
-                    </Form.Item>
-                  </Col>
-                  
-                  <Col span={12}>
-                    <Form.Item
-                      label="Total Amount (PREDICTION AMOUNT)"
-                      name="predictionAmount"
-                      rules={[
-                        { required: true, message: 'Required' },
-                        { type: 'number', min: 0, message: 'Must be positive' }
-                      ]}
-                    >
-                      <Input
-                        type="number"
-                        placeholder="0.00"
-                        prefix="₦"
-                        size="large"
-                      />
-                    </Form.Item>
-                  </Col>
-                </Row>
+                <Form.Item
+                  label="Prediction No (Number of Clients)"
+                  name="predictionNo"
+                  rules={[
+                    { required: true, message: 'Number of clients is required' },
+                    { type: 'number', min: 1, message: 'Must be at least 1 client' }
+                  ]}
+                >
+                  <Input
+                    type="number"
+                    placeholder="Number of clients"
+                    min="1"
+                    step="1"
+                  />
+                </Form.Item>
 
-                {!readonly && (
-                  <Form.Item>
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                      loading={loading}
-                      icon={<SaveOutlined />}
-                      size="large"
-                    >
-                      Submit Prediction
-                    </Button>
-                  </Form.Item>
-                )}
+                <Form.Item
+                  label="Prediction Amount (Total Disbursement)"
+                  name="predictionAmount"
+                  rules={[
+                    { required: true, message: 'Prediction amount is required' },
+                    { type: 'number', min: 0, message: 'Must be a positive amount' }
+                  ]}
+                >
+                  <Input
+                    type="number"
+                    placeholder="0.00"
+                    prefix="₦"
+                    step="0.01"
+                  />
+                </Form.Item>
+
+                <Form.Item>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    loading={loading}
+                    icon={hasExistingPrediction ? <SaveOutlined /> : <PlusOutlined />}
+                    size="small"
+                    style={{ width: '100%' }}
+                  >
+                    {hasExistingPrediction ? 'Update Prediction' : 'Submit Prediction'}
+                  </Button>
+                </Form.Item>
               </Form>
-            </Card>
-          </Col>
+            </>
+          )}
 
-          <Col span={10}>
-            <Card 
-              title={<span><EyeOutlined /> Prediction Summary</span>}
-              className="stats-card"
-            >
-              <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                <Statistic
-                  title="Expected Clients"
-                  value={currentPrediction.predictionNo}
-                  valueStyle={{ color: '#1890ff' }}
-                  suffix="clients"
-                />
-                
-                <Statistic
-                  title="Expected Amount"
-                  value={currentPrediction.predictionAmount}
-                  precision={2}
-                  prefix="₦"
-                  valueStyle={{ color: '#3f8600' }}
-                />
-                
-                <Statistic
-                  title="Average per Client"
-                  value={currentPrediction.avgPerClient}
-                  precision={2}
-                  prefix="₦"
-                  valueStyle={{ color: '#722ed1' }}
-                />
-
-                <div className="calculation-result">
-                  <Text style={{ color: 'white' }}>
-                    <strong>Fund Requirement</strong>
-                  </Text>
-                  <br />
-                  <Text style={{ color: 'white', fontSize: '20px' }}>
-                    {calculations.formatCurrency(currentPrediction.predictionAmount)}
-                  </Text>
-                </div>
-              </Space>
-            </Card>
-          </Col>
-        </Row>
-
-        <Card title="Previous Predictions" className="form-section">
-          <Table
-            columns={predictionColumns}
-            dataSource={predictions}
-            rowKey="id"
-            pagination={{ pageSize: 5 }}
-            size="small"
-          />
-        </Card>
-
-        <Alert
-          message="Planning Notes"
-          description={
-            <Space direction="vertical">
-              <Text>• Predictions help Head Office prepare adequate funding</Text>
-              <Text>• Consider historical patterns and market conditions</Text>
-              <Text>• Update predictions if circumstances change</Text>
-              <Text>• Accuracy improves operational efficiency</Text>
-            </Space>
-          }
-          type="warning"
-          showIcon
-        />
-      </Space>
-    </div>
+          {user?.role === 'HO' && !hasExistingPrediction && (
+            <Alert
+              message="Waiting for Branch Prediction"
+              description="Branch has not yet submitted tomorrow's disbursement prediction."
+              type="warning"
+              showIcon
+              style={{ fontSize: '12px' }}
+            />
+          )}
+        </Space>
+      )}
+    </Card>
   );
 };

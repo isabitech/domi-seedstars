@@ -53,9 +53,9 @@ export const LoginPage: React.FC = () => {
         } else {
           // Default navigation based on role
           if (response.data.role === 'HO') {
-            navigate('/dashboard', { replace: true });
+            navigate('/app/dashboard', { replace: true });
           } else {
-            navigate('/dashboard/branch', { replace: true });
+            navigate('/app/dashboard/branch', { replace: true });
           }
         }
       } else {

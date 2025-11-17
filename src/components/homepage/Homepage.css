@@ -1,0 +1,82 @@
+/* Homepage Styles */
+.homepage-layout .ant-layout-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.homepage-layout .ant-card {
+  transition: all 0.3s ease;
+}
+
+.homepage-layout .ant-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+}
+
+/* Hero section animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.homepage-layout .hero-content {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+/* Feature cards hover effect */
+.homepage-layout .feature-card {
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.homepage-layout .feature-card:hover {
+  border-color: #1890ff;
+  box-shadow: 0 8px 24px rgba(24, 144, 255, 0.15);
+}
+
+/* Statistics counter animation */
+@keyframes countUp {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.homepage-layout .ant-statistic {
+  animation: countUp 1s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .homepage-layout .ant-layout-header {
+    padding: 0 20px;
+  }
+  
+  .homepage-layout .hero-section {
+    padding: 60px 20px !important;
+  }
+  
+  .homepage-layout .content-section {
+    padding: 60px 20px !important;
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Button hover effects */
+.homepage-layout .ant-btn {
+  transition: all 0.3s ease;
+}
+
+.homepage-layout .ant-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}

@@ -6,17 +6,25 @@ import { RoleGuard } from '../guards/RoleGuard';
 import { HeadOfficeDashboard } from '../pages/dashboard/HeadOfficeDashboard';
 import { BranchDashboard } from '../pages/dashboard/BranchDashboard';
 import { CashbookPage } from '../pages/cashbook/CashbookPage';
+import { CombinedCashbookPage } from '../pages/cashbook/CombinedCashbookPage';
 import { PredictionsPage } from '../pages/predictions/PredictionsPage';
 import { BranchManagementPage } from '../pages/branches/BranchManagementPage';
 import { ReportsPage } from '../pages/reports/ReportsPage';
+import { BankStatementPage } from '../pages/bank-statements/BankStatementPage';
+import { OnlineCIHPage } from '../pages/online-cih/OnlineCIHPage';
+import { Homepage } from '../components/homepage';
 
 export const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Homepage />,
+  },
   {
     path: '/login',
     element: <LoginPage />,
   },
   {
-    path: '/',
+    path: '/app',
     element: (
       <ProtectedRoute>
         <AppLayout />
@@ -25,7 +33,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="/dashboard" replace />,
+        element: <Navigate to="/app/dashboard" replace />,
       },
       {
         path: 'dashboard',
@@ -50,9 +58,30 @@ export const router = createBrowserRouter([
       },
       {
         path: 'cashbook',
+        children: [
+          {
+            index: true,
+            element: (
+              <RoleGuard allowedRoles={['BR']}>
+                <CombinedCashbookPage />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'legacy',
+            element: (
+              <RoleGuard allowedRoles={['BR']}>
+                <CashbookPage />
+              </RoleGuard>
+            ),
+          },
+        ],
+      },
+      {
+        path: 'online-cih',
         element: (
           <RoleGuard allowedRoles={['BR']}>
-            <CashbookPage />
+            <OnlineCIHPage />
           </RoleGuard>
         ),
       },
@@ -61,6 +90,14 @@ export const router = createBrowserRouter([
         element: (
           <RoleGuard allowedRoles={['BR']}>
             <PredictionsPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'bank-statements',
+        element: (
+          <RoleGuard allowedRoles={['BR']}>
+            <BankStatementPage />
           </RoleGuard>
         ),
       },
