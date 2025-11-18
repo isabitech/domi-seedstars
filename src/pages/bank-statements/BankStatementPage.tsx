@@ -1,5 +1,5 @@
 import React from 'react';
-import { Space, Typography, Breadcrumb, Row, Col, Tabs } from 'antd';
+import { Space, Typography, Breadcrumb, Tabs } from 'antd';
 import { HomeOutlined, BankOutlined } from '@ant-design/icons';
 import { BankStatement1 } from '../../components/BankStatement1';
 import { BankStatement2 } from '../../components/BankStatement2';

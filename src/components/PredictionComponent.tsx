@@ -9,7 +9,6 @@ import {
   Alert,
   Spin,
   Tag,
-  Statistic,
   message
 } from 'antd';
 import { PlusOutlined, SaveOutlined, ReloadOutlined, FundProjectionScreenOutlined } from '@ant-design/icons';

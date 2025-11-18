@@ -15,7 +15,6 @@ export const CashbookPage: React.FC = () => {
   const [cashbook2Data, setCashbook2Data] = useState<Cashbook2 | null>(null);
   const [onlineCIH, setOnlineCIH] = useState<number>(0);
   const [sidebarRefresh, setSidebarRefresh] = useState<number>(0);
-  const [predictionData, setPredictionData] = useState<Prediction | null>(null);
 
   const handleCashbook1Submit = (data: Cashbook1) => {
     console.log('Cashbook 1 submitted:', data);
@@ -47,7 +46,6 @@ export const CashbookPage: React.FC = () => {
 
   const handlePredictionSubmit = (data: Prediction) => {
     console.log('Prediction submitted:', data);
-    setPredictionData(data);
   };
   const items: TabsProps['items'] = [
     {
