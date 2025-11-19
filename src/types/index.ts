@@ -23,6 +23,8 @@ export interface Branch {
   name: string;
   code: string;
   location: string;
+  email: string;
+  password: string;
   isActive: boolean;
   createdAt: string;
   users: User[];
@@ -131,6 +133,86 @@ export interface DisbursementRoll {
   previousDisbursement: number; // HO input
   currentDisbursement: number; // From daily DIS AMT
   total: number;
+}
+
+export interface CurrentBranchRegisterSavings {
+  branchId: string;
+  date: string;
+  savings: number; // From Cashbook1 SAVINGS field
+  previousTotalSavings: number; // HO input
+  savingsWithdrawal: number; // From Cashbook2 SAV WITH field
+  total: number; // savings + previousTotalSavings - savingsWithdrawal
+}
+
+export interface CurrentBranchRegisterLoan {
+  branchId: string;
+  date: string;
+  previousTotalLoanDisbursed: number; // HO input
+  loanDisbursementWithInterest: number; // From Cashbook2 DIS WIT INT field
+  loanCollection: number; // From Cashbook1 Loan collection field
+  total: number; // previousTotalLoanDisbursed + loanDisbursementWithInterest - loanCollection
+}
+
+export interface BranchDailyReportData {
+  branchId: string;
+  branchName: string;
+  date: string;
+  
+  // Cashbook 1 data
+  cashbook1: {
+    pcih: number;
+    savings: number;
+    loanCollection: number;
+    charges: number;
+    collectionTotal: number; // savings + loanCollection + charges
+    frmHO: number;
+    frmBR: number;
+    cbTotal1: number; // PCIH + savings + loan + charges + frmHO + frmBR
+  };
+  
+  // Cashbook 2 data
+  cashbook2: {
+    disNo: number;
+    disAmt: number;
+    disWithInt: number;
+    savWith: number;
+    domiBank: number;
+    posT: number;
+    cbTotal2: number; // disAmt + savWith + domiBank + posT
+  };
+  
+  // Online CIH
+  onlineCIH: number; // cbTotal1 - cbTotal2
+  
+  // Bank Statement 1
+  bankStatement1: {
+    opening: number;
+    recHO: number; // from frmHO
+    recBO: number; // from frmBR
+    domi: number; // from domiBank
+    pa: number; // from posT
+    bs1Total: number; // opening + recHO + recBO + domi + pa
+  };
+  
+  // Bank Statement 2
+  bankStatement2: {
+    withd: number; // from frmHO
+    tbo: number; // HO input
+    tboToBranch?: string; // branch name for transfer
+    exAmt: number;
+    exPurpose?: string;
+    bs2Total: number; // withd + tbo + exAmt
+  };
+  
+  // TSO
+  tso: number; // bs1Total - bs2Total
+  
+  // Current Branch Register
+  cbrSavings: number;
+  cbrLoan: number;
+  
+  // Disbursement Roll
+  disbursementRoll: number;
 }
 
 // Dashboard Types

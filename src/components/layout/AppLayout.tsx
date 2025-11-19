@@ -37,6 +37,7 @@ export const AppLayout: React.FC = () => {
     if (path.includes('/online-cih')) return 'online-cih';
     if (path.includes('/bank-statements')) return 'bank-statements';
     if (path.includes('/branches')) return 'branches';
+    if (path.includes('/reports/daily')) return 'daily-report';
     if (path.includes('/reports')) return 'reports';
     if (path.includes('/ho-operations')) return 'ho-operations';
     if (path.includes('/settings')) return 'settings';
@@ -79,7 +80,18 @@ export const AppLayout: React.FC = () => {
           key: 'reports',
           icon: <FileTextOutlined />,
           label: 'Reports',
-          onClick: () => navigate('/app/reports'),
+          children: [
+            {
+              key: 'reports-overview',
+              label: 'Reports Overview',
+              onClick: () => navigate('/app/reports'),
+            },
+            {
+              key: 'daily-report',
+              label: 'Branch Daily Report',
+              onClick: () => navigate('/app/reports/daily'),
+            },
+          ],
         },
         {
           key: 'settings',
@@ -132,6 +144,7 @@ export const AppLayout: React.FC = () => {
       '/app/online-cih': 'Online CIH',
       '/app/bank-statements': 'Bank Statements',
       '/app/reports': 'Reports & Analytics',
+      '/app/reports/daily': 'Branch Daily Report',
       '/app/settings': 'System Settings',
     };
     

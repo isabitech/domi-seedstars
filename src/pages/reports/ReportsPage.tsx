@@ -1,138 +1,157 @@
 import React, { useState } from 'react';
-import { Card, Row, Col, DatePicker, Button, Select, Typography, Space } from 'antd';
-import { FileTextOutlined, BarChartOutlined, DollarCircleOutlined } from '@ant-design/icons';
+import { Card, Tabs, DatePicker, Select, Space, Typography } from 'antd';
+import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
+
+// Import modular components
+import { FinancialSummaryComponent } from './components/FinancialSummaryComponent';
+import { FinancialTableComponent } from './components/FinancialTableComponent';
+import { BranchPerformanceComponent } from './components/BranchPerformanceComponent';
+import { TransactionLogComponent } from './components/TransactionLogComponent';
+
+// Import data service
+import {
+  generateMockFinancialData,
+  generateBranchPerformanceData,
+  generateTransactionData,
+  type FinancialData,
+  type FinancialSummary
+} from './utils/reportDataService';
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 
-type ReportType = 'financial' | 'performance' | 'transactions';
+const ReportsPage: React.FC = () => {
+  const [activeTab, setActiveTab] = useState('financial');
+  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>([
+    dayjs().subtract(30, 'days'),
+    dayjs()
+  ]);
+  const [branchFilter, setBranchFilter] = useState('all');
+  const loading = false; // Static for demo purposes
 
-export const ReportsPage: React.FC = () => {
-  const [selectedReport, setSelectedReport] = useState<ReportType>('financial');
-  const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>(null);
-  const [selectedBranch, setSelectedBranch] = useState<string>('all');
+  // Generate data using the data service
+  const financialData = generateMockFinancialData(dateRange[0], dateRange[1], branchFilter);
+  const branchPerformanceData = generateBranchPerformanceData(dateRange[0], dateRange[1], branchFilter);
+  const transactionData = generateTransactionData(dateRange[0], dateRange[1], branchFilter);
 
-  const reportOptions = [
+  // Calculate financial summary
+  const calculateFinancialSummary = (data: FinancialData[]): FinancialSummary => {
+    const totals = data.reduce(
+      (acc, item) => ({
+        totalIncome: acc.totalIncome + item.savings + item.loanCollection + item.charges,
+        totalExpenses: acc.totalExpenses + item.disbursements + item.expenses,
+        totalSavings: acc.totalSavings + item.savings,
+        totalLoans: acc.totalLoans + item.loanCollection,
+        totalDisbursements: acc.totalDisbursements + item.disbursements,
+        totalCharges: acc.totalCharges + item.charges,
+        totalTransferToSenate: acc.totalTransferToSenate + item.transferToSenate,
+      }),
+      {
+        totalIncome: 0,
+        totalExpenses: 0,
+        totalSavings: 0,
+        totalLoans: 0,
+        totalDisbursements: 0,
+        totalCharges: 0,
+        totalTransferToSenate: 0,
+      }
+    );
+
+    const netProfit = totals.totalIncome - totals.totalExpenses;
+    const profitMargin = totals.totalIncome > 0 ? (netProfit / totals.totalIncome) * 100 : 0;
+    const growthRate = Math.floor(Math.random() * 25) + 5; // Mock growth rate
+
+    return {
+      ...totals,
+      netProfit,
+      profitMargin,
+      growthRate,
+    };
+  };
+
+  const summary = calculateFinancialSummary(financialData);
+
+  // Financial Report Component
+  const FinancialReport = () => (
+    <div>
+      <FinancialSummaryComponent summary={summary} />
+      <FinancialTableComponent 
+        data={financialData} 
+        dateRange={dateRange}
+        loading={loading}
+      />
+    </div>
+  );
+
+  const tabItems = [
     {
       key: 'financial',
-      title: 'Financial Report',
-      icon: <DollarCircleOutlined />,
-      description: 'Revenue, expenses, and profitability analysis',
+      label: 'Financial Reports',
+      children: <FinancialReport />,
     },
     {
       key: 'performance',
-      title: 'Branch Performance',
-      icon: <BarChartOutlined />,
-      description: 'Branch-wise performance metrics and comparisons',
+      label: 'Branch Performance',
+      children: <BranchPerformanceComponent 
+        data={branchPerformanceData} 
+        dateRange={dateRange}
+        loading={loading}
+      />,
     },
     {
       key: 'transactions',
-      title: 'Transaction Log',
-      icon: <FileTextOutlined />,
-      description: 'Detailed transaction history and audit trail',
+      label: 'Transaction Log',
+      children: <TransactionLogComponent 
+        data={transactionData} 
+        dateRange={dateRange}
+        loading={loading}
+      />,
     },
   ];
 
-  const handleGenerateReport = () => {
-    console.log('Generating report:', {
-      type: selectedReport,
-      dateRange,
-      branch: selectedBranch,
-    });
-  };
-
-  const renderReportComponent = () => {
-    switch (selectedReport) {
-      case 'financial':
-        return (
-          <div style={{ padding: 20, textAlign: 'center' }}>
-            <h3>Financial Report</h3>
-            <p>Date Range: {dateRange ? `${dateRange[0]?.format('YYYY-MM-DD')} to ${dateRange[1]?.format('YYYY-MM-DD')}` : 'All dates'}</p>
-            <p>Branch: {selectedBranch}</p>
-            <p>Financial report content coming soon...</p>
-          </div>
-        );
-      case 'performance':
-        return (
-          <div style={{ padding: 20, textAlign: 'center' }}>
-            <h3>Branch Performance Report</h3>
-            <p>Date Range: {dateRange ? `${dateRange[0]?.format('YYYY-MM-DD')} to ${dateRange[1]?.format('YYYY-MM-DD')}` : 'All dates'}</p>
-            <p>Branch: {selectedBranch}</p>
-            <p>Performance report content coming soon...</p>
-          </div>
-        );
-      case 'transactions':
-        return (
-          <div style={{ padding: 20, textAlign: 'center' }}>
-            <h3>Transaction Log Report</h3>
-            <p>Date Range: {dateRange ? `${dateRange[0]?.format('YYYY-MM-DD')} to ${dateRange[1]?.format('YYYY-MM-DD')}` : 'All dates'}</p>
-            <p>Branch: {selectedBranch}</p>
-            <p>Transaction log content coming soon...</p>
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
-
   return (
-    <div>
-      <Title level={2}>Reports & Analytics</Title>
-      
-      {/* Report Type Selection */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        {reportOptions.map((option) => (
-          <Col xs={24} sm={8} key={option.key}>
-            <Card
-              hoverable
-              className={selectedReport === option.key ? 'selected-card' : ''}
-              onClick={() => setSelectedReport(option.key as ReportType)}
-              style={{
-                border: selectedReport === option.key ? '2px solid #1890ff' : '1px solid #d9d9d9',
-                cursor: 'pointer',
-              }}
-            >
-              <Card.Meta
-                avatar={option.icon}
-                title={option.title}
-                description={option.description}
+    <div style={{ padding: '24px' }}>
+      <div style={{ marginBottom: 24 }}>
+        <Title level={2}>Reports & Analytics</Title>
+        
+        {/* Filters */}
+        <Card size="small" style={{ marginBottom: 16 }}>
+          <Space wrap>
+            <div>
+              <span style={{ marginRight: 8 }}>Date Range:</span>
+              <RangePicker
+                value={dateRange}
+                onChange={(dates) => {
+                  if (dates && dates[0] && dates[1]) {
+                    setDateRange([dates[0], dates[1]]);
+                  }
+                }}
+                format="YYYY-MM-DD"
               />
-            </Card>
-          </Col>
-        ))}
-      </Row>
+            </div>
+            <div>
+              <span style={{ marginRight: 8 }}>Branch:</span>
+              <Select value={branchFilter} onChange={setBranchFilter} style={{ width: 200 }}>
+                <Option value="all">All Branches</Option>
+                <Option value="br-001">Lagos Branch</Option>
+                <Option value="br-002">Abuja Branch</Option>
+                <Option value="br-003">Kano Branch</Option>
+              </Select>
+            </div>
+          </Space>
+        </Card>
+      </div>
 
-      {/* Report Filters */}
-      <Card style={{ marginBottom: 24 }}>
-        <Space wrap>
-          <RangePicker
-            value={dateRange}
-            onChange={(dates) => setDateRange(dates as [Dayjs, Dayjs] | null)}
-            placeholder={['Start Date', 'End Date']}
-          />
-          <Select
-            value={selectedBranch}
-            onChange={setSelectedBranch}
-            style={{ width: 150 }}
-            placeholder="Select Branch"
-          >
-            <Option value="all">All Branches</Option>
-            <Option value="main">Main Branch</Option>
-            <Option value="north">North Branch</Option>
-            <Option value="south">South Branch</Option>
-          </Select>
-          <Button type="primary" onClick={handleGenerateReport}>
-            Generate Report
-          </Button>
-        </Space>
-      </Card>
-
-      {/* Report Content */}
-      <Card>
-        {renderReportComponent()}
-      </Card>
+      <Tabs
+        activeKey={activeTab}
+        onChange={setActiveTab}
+        items={tabItems}
+        type="card"
+      />
     </div>
   );
 };
+
+export default ReportsPage;

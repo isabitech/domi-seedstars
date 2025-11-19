@@ -9,10 +9,13 @@ import { CashbookPage } from '../pages/cashbook/CashbookPage';
 import { CombinedCashbookPage } from '../pages/cashbook/CombinedCashbookPage';
 import { PredictionsPage } from '../pages/predictions/PredictionsPage';
 import { BranchManagementPage } from '../pages/branches/BranchManagementPage';
-import { ReportsPage } from '../pages/reports/ReportsPage';
+import { BranchDailyReportPage } from '../pages/reports/BranchDailyReportPage';
 import { BankStatementPage } from '../pages/bank-statements/BankStatementPage';
 import { OnlineCIHPage } from '../pages/online-cih/OnlineCIHPage';
 import { Homepage } from '../components/homepage';
+import { HOOperationsPage } from '../pages/ho-operations/HOOperationsPage';
+import ReportsPage from '../pages/reports/ReportsPage';
+import SettingsPage from '../pages/settings/SettingsPage';
 
 export const router = createBrowserRouter([
   {
@@ -111,20 +114,30 @@ export const router = createBrowserRouter([
       },
       {
         path: 'reports',
-        element: (
-          <RoleGuard allowedRoles={['HO']}>
-            <ReportsPage />
-          </RoleGuard>
-        ),
+        children: [
+          {
+            index: true,
+            element: (
+              <RoleGuard allowedRoles={['HO']}>
+                <ReportsPage />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'daily',
+            element: (
+              <RoleGuard allowedRoles={['HO']}>
+                <BranchDailyReportPage />
+              </RoleGuard>
+            ),
+          },
+        ],
       },
       {
         path: 'ho-operations',
         element: (
           <RoleGuard allowedRoles={['HO']}>
-            <div style={{ padding: '20px' }}>
-              <h2>HO Operations</h2>
-              <p>Head Office operations interface coming soon.</p>
-            </div>
+            <HOOperationsPage />
           </RoleGuard>
         ),
       },
@@ -132,10 +145,7 @@ export const router = createBrowserRouter([
         path: 'settings',
         element: (
           <RoleGuard allowedRoles={['HO']}>
-            <div style={{ padding: '20px' }}>
-              <h2>System Settings</h2>
-              <p>System configuration interface coming soon.</p>
-            </div>
+            <SettingsPage />
           </RoleGuard>
         ),
       },

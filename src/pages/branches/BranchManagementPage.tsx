@@ -10,6 +10,8 @@ interface BranchFormData {
   name: string;
   code: string;
   location: string;
+  email: string;
+  password: string;
   isActive: boolean;
 }
 
@@ -20,6 +22,8 @@ export const BranchManagementPage: React.FC = () => {
       name: 'Main Branch',
       code: 'MAIN',
       location: '123 Main Street, City Center',
+      email: 'main@domibank.com',
+      password: 'main123',
       isActive: true,
       createdAt: '2023-01-01',
       users: [],
@@ -29,6 +33,8 @@ export const BranchManagementPage: React.FC = () => {
       name: 'North Branch',
       code: 'NORTH',
       location: '456 North Avenue, Northside',
+      email: 'north@domibank.com',
+      password: 'north123',
       isActive: true,
       createdAt: '2023-06-15',
       users: [],
@@ -51,6 +57,8 @@ export const BranchManagementPage: React.FC = () => {
       name: branch.name,
       code: branch.code,
       location: branch.location,
+      email: branch.email,
+      password: branch.password,
       isActive: branch.isActive,
     });
     setIsModalVisible(true);
@@ -119,6 +127,11 @@ export const BranchManagementPage: React.FC = () => {
       title: 'Location',
       dataIndex: 'location',
       key: 'location',
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
     },
     {
       title: 'Status',
@@ -265,6 +278,28 @@ export const BranchManagementPage: React.FC = () => {
             rules={[{ required: true, message: 'Please enter location' }]}
           >
             <Input placeholder="Enter branch location" />
+          </Form.Item>
+
+          <Form.Item
+            label="Branch Email"
+            name="email"
+            rules={[
+              { required: true, message: 'Please enter branch email' },
+              { type: 'email', message: 'Please enter a valid email address' }
+            ]}
+          >
+            <Input placeholder="Enter branch email" />
+          </Form.Item>
+
+          <Form.Item
+            label="Branch Password"
+            name="password"
+            rules={[
+              { required: true, message: 'Please enter branch password' },
+              { min: 6, message: 'Password must be at least 6 characters' }
+            ]}
+          >
+            <Input.Password placeholder="Enter branch password" />
           </Form.Item>
 
           <Form.Item>

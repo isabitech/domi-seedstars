@@ -1,0 +1,14 @@
+.grand-total-row {
+  background-color: #f0f8ff !important;
+  border-top: 2px solid #1890ff !important;
+  font-weight: bold;
+}
+
+.grand-total-row:hover {
+  background-color: #e6f7ff !important;
+}
+
+.grand-total-row td {
+  border-top: 2px solid #1890ff !important;
+  background-color: #f0f8ff !important;
+}
