@@ -29,6 +29,8 @@ export const BranchManagement: React.FC = () => {
       name: 'Lagos Branch',
       code: 'LG001',
       location: 'Victoria Island, Lagos',
+      email: 'lagos@dominion-seedstars.com',
+      password: 'lagos123',
       isActive: true,
       createdAt: '2024-01-01',
       users: []
@@ -38,6 +40,8 @@ export const BranchManagement: React.FC = () => {
       name: 'Abuja Branch',
       code: 'AB002',
       location: 'Central Business District, Abuja',
+      email: 'abuja@dominion-seedstars.com',
+      password: 'abuja123',
       isActive: true,
       createdAt: '2024-01-15',
       users: []
@@ -230,6 +234,25 @@ export const BranchManagement: React.FC = () => {
               rules={[{ required: true, message: 'Please enter location' }]}
             >
               <Input placeholder="Enter branch location" />
+            </Form.Item>
+
+            <Form.Item
+              label="Email"
+              name="email"
+              rules={[
+                { required: true, message: 'Please enter branch email' },
+                { type: 'email', message: 'Please enter valid email' }
+              ]}
+            >
+              <Input placeholder="Enter branch email" />
+            </Form.Item>
+
+            <Form.Item
+              label="Password"
+              name="password"
+              rules={[{ required: true, message: 'Please enter branch password' }]}
+            >
+              <Input.Password placeholder="Enter branch password" />
             </Form.Item>
 
             {editingBranch && (

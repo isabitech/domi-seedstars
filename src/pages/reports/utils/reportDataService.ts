@@ -118,7 +118,7 @@ export const generateMockFinancialData = (startDate: Dayjs, endDate: Dayjs, bran
   return data;
 };
 
-export const generateBranchPerformanceData = (startDate: Dayjs, endDate: Dayjs, branchFilter: string): BranchPerformanceData[] => {
+export const generateBranchPerformanceData = (_startDate: Dayjs, _endDate: Dayjs, branchFilter: string): BranchPerformanceData[] => {
   const allBranches = [
     { id: 'br-001', name: 'Lagos Branch', code: 'LG001' },
     { id: 'br-002', name: 'Abuja Branch', code: 'AB002' },

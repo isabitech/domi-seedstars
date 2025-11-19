@@ -270,6 +270,8 @@ export interface BranchForm {
   name: string;
   code: string;
   location: string;
+  email: string;
+  password: string;
 }
 
 export interface UserForm {
