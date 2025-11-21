@@ -9,6 +9,8 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { calculations } from '../../utils/calculations';
+import { DisbursementRollDisplay } from '../../components/DisbursementRollDisplay';
+import { CurrentBranchRegisterDisplay } from '../../components/CurrentBranchRegisterDisplay';
 import type { Cashbook1, Cashbook2 } from '../../types';
 
 const { Title, Text } = Typography;
@@ -185,40 +187,22 @@ export const BranchDashboard: React.FC = () => {
             </Card>
           </Col>
 
-          {/* Disbursement Roll */}
-          <Col xs={24} sm={12} lg={8}>
-            <Card className="stats-card">
-              <Statistic
-                title="Disbursement Roll"
-                value={disbursementRoll}
-                precision={2}
-                prefix="₦"
-                valueStyle={{ color: '#fa8c16', fontSize: '18px' }}
-                suffix={
-                  <div style={{ fontSize: '12px', color: '#666' }}>
-                    Prev + Daily
-                  </div>
-                }
-              />
-            </Card>
+          {/* Use new read-only components for branch registers */}
+          <Col xs={24} lg={12}>
+            <DisbursementRollDisplay 
+              cashbook2Data={cashbook2 || undefined}
+              previousDisbursement={previousDisbursement}
+              loading={!hasData}
+            />
           </Col>
 
-          {/* Current Branch Register (Savings) */}
-          <Col xs={24} sm={12} lg={8}>
-            <Card className="stats-card">
-              <Statistic
-                title="Current Branch Register (Savings)"
-                value={currentBranchRegister}
-                precision={2}
-                prefix="₦"
-                valueStyle={{ color: '#52c41a', fontSize: '18px' }}
-                suffix={
-                  <div style={{ fontSize: '12px', color: '#666' }}>
-                    Net Savings
-                  </div>
-                }
-              />
-            </Card>
+          <Col xs={24} lg={12}>
+            <CurrentBranchRegisterDisplay 
+              cashbook1Data={cashbook1 || undefined}
+              cashbook2Data={cashbook2 || undefined}
+              previousTotalSavings={previousTotalSavings}
+              loading={!hasData}
+            />
           </Col>
         </Row>
 

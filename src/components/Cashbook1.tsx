@@ -48,6 +48,28 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
   const { user } = useAuthStore();
   const currentDate = date || new Date().toISOString().split('T')[0];
 
+  const handleValuesChange = useCallback(() => {
+    try {
+      const values = form.getFieldsValue();
+      // Convert string values to numbers
+      const numericValues = {
+        pcih: Number(values.pcih) || 0,
+        savings: Number(values.savings) || 0,
+        loanCollection: Number(values.loanCollection) || 0,
+        charges: Number(values.charges) || 0,
+        frmHO: Number(values.frmHO) || 0,
+        frmBR: Number(values.frmBR) || 0
+      };
+      
+      const total = calculations.calculateCashbook1Total(numericValues);
+      const cbTotal1 = calculations.calculateCashbook1CBTotal(numericValues);
+      
+      setCalculatedValues({ total, cbTotal1 });
+    } catch {
+      console.error('Error calculating values');
+    }
+  }, [form]);
+
   // Load existing data on component mount
   useEffect(() => {
     const loadExistingData = async () => {
@@ -78,7 +100,7 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
     };
 
     loadExistingData();
-  }, [user?.branchId, currentDate, form]);
+  }, [user?.branchId, currentDate, form, handleValuesChange]);
 
   // Calculate values when form values change
   useEffect(() => {
@@ -88,28 +110,6 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
       setCalculatedValues({ total, cbTotal1 });
     }
   }, [initialData]);
-
-  const handleValuesChange = useCallback(() => {
-    try {
-      const values = form.getFieldsValue();
-      // Convert string values to numbers
-      const numericValues = {
-        pcih: Number(values.pcih) || 0,
-        savings: Number(values.savings) || 0,
-        loanCollection: Number(values.loanCollection) || 0,
-        charges: Number(values.charges) || 0,
-        frmHO: Number(values.frmHO) || 0,
-        frmBR: Number(values.frmBR) || 0
-      };
-      
-      const total = calculations.calculateCashbook1Total(numericValues);
-      const cbTotal1 = calculations.calculateCashbook1CBTotal(numericValues);
-      
-      setCalculatedValues({ total, cbTotal1 });
-    } catch {
-      console.error('Error calculating values');
-    }
-  }, [form]);
 
   const handleSubmit = async (values: Record<string, number>) => {
     if (!user?.branchId) {
@@ -247,9 +247,17 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
                       label={
                         <Space>
                           Previous Cash in Hand (PCIH)
-                          <Tooltip title="The amount of cash carried over from the previous day">
-                            <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                          <Tooltip title={user?.role === 'BR' 
+                            ? "This value is automatically set from yesterday's Online CIH and cannot be edited" 
+                            : "The amount of cash carried over from the previous day"
+                          }>
+                            <InfoCircleOutlined style={{ 
+                              color: user?.role === 'BR' ? '#fa8c16' : '#1890ff' 
+                            }} />
                           </Tooltip>
+                          {user?.role === 'BR' && (
+                            <Tag color="orange">Auto-filled</Tag>
+                          )}
                         </Space>
                       }
                       name="pcih"
@@ -260,10 +268,15 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
                     >
                       <Input
                         type="number"
-                        placeholder="0.00"
+                        placeholder={user?.role === 'BR' ? 'Auto-filled from yesterday\'s Online CIH' : '0.00'}
                         prefix="₦"
                         size="large"
                         step="0.01"
+                        disabled={user?.role === 'BR'} // Disable for branches
+                        style={{ 
+                          backgroundColor: user?.role === 'BR' ? '#fff2e8' : 'white',
+                          borderColor: user?.role === 'BR' ? '#ffb366' : '#d9d9d9'
+                        }}
                       />
                     </Form.Item>
                   </Col>
@@ -426,8 +439,14 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
 
                 {user?.role !== 'HO' && (
                   <Alert
-                    message="Note"
-                    description="FRM HO and FRM BR fields can only be edited by Head Office users"
+                    message="Branch User Guidelines"
+                    description={
+                      <div>
+                        <p>• <strong>PCIH (Previous Cash in Hand):</strong> Automatically filled from yesterday's Online CIH - cannot be edited</p>
+                        <p>• <strong>FRM HO and FRM BR:</strong> Can only be edited by Head Office users</p>
+                        <p>• <strong>Disbursement Roll, Loan & Savings Registers:</strong> View-only, calculated automatically</p>
+                      </div>
+                    }
                     type="info"
                     showIcon
                     style={{ marginBottom: 16 }}

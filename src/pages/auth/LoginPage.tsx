@@ -48,15 +48,11 @@ export const LoginPage: React.FC = () => {
         // Navigate to appropriate dashboard based on role
         const state = location.state as LocationState;
         const from = state?.from?.pathname;
-        if (from) {
+        if (from && from !== '/') {
           navigate(from, { replace: true });
         } else {
-          // Default navigation based on role
-          if (response.data.role === 'HO') {
-            navigate('/app/dashboard', { replace: true });
-          } else {
-            navigate('/app/dashboard/branch', { replace: true });
-          }
+          // Always redirect to /app/dashboard - routing will handle role-based redirection
+          navigate('/app/dashboard', { replace: true });
         }
       } else {
         setError(response.error || 'Login failed');

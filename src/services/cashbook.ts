@@ -75,6 +75,32 @@ export const cashbookService = {
     }
   },
 
+  // Get previous day's Online CIH for automatic PCIH calculation
+  async getPreviousDayOnlineCIH(branchId: string, currentDate: string): Promise<number> {
+    try {
+      // Calculate previous day
+      const currentDateObj = new Date(currentDate);
+      currentDateObj.setDate(currentDateObj.getDate() - 1);
+      const previousDate = currentDateObj.toISOString().split('T')[0];
+      
+      // Get previous day's cashbook data
+      const previousCb1 = await this.getCashbook1(branchId, previousDate);
+      const previousCb2 = await this.getCashbook2(branchId, previousDate);
+      
+      if (previousCb1.success && previousCb2.success && previousCb1.data && previousCb2.data) {
+        // Calculate Online CIH from previous day (CB1 - CB2)
+        const onlineCIH = previousCb1.data.cbTotal1 - previousCb2.data.cbTotal2;
+        return onlineCIH;
+      }
+      
+      // If no previous data, return 0
+      return 0;
+    } catch (error) {
+      console.error('Error getting previous day Online CIH:', error);
+      return 0; // Default to 0 if error
+    }
+  },
+
   // Get Cashbook 1 data for a specific date
   async getCashbook1(branchId: string, date: string): Promise<ApiResponse<Cashbook1>> {
     await delay(500);
@@ -89,9 +115,26 @@ export const cashbookService = {
           data: entry
         };
       } else {
+        // No existing data - create template with auto-populated PCIH
+        const previousDayPCIH = await this.getPreviousDayOnlineCIH(branchId, date);
+        
+        const templateData: Partial<Cashbook1> = {
+          date,
+          branchId,
+          pcih: previousDayPCIH, // Auto-populated from previous day's Online CIH
+          savings: 0,
+          loanCollection: 0,
+          charges: 0,
+          total: 0,
+          frmHO: 0,
+          frmBR: 0,
+          cbTotal1: previousDayPCIH
+        };
+        
         return {
-          success: false,
-          message: 'No data found for the specified date'
+          success: true,
+          data: templateData as Cashbook1,
+          message: `Template created with PCIH auto-filled from previous day (₦${previousDayPCIH.toLocaleString()})`
         };
       }
     } catch {

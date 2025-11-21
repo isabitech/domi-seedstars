@@ -44,7 +44,7 @@ export const router = createBrowserRouter([
           {
             index: true,
             element: (
-              <RoleGuard allowedRoles={['HO']}>
+              <RoleGuard allowedRoles={['HO']} fallback={<Navigate to="/app/dashboard/branch" replace />}>
                 <HeadOfficeDashboard />
               </RoleGuard>
             ),
@@ -52,7 +52,7 @@ export const router = createBrowserRouter([
           {
             path: 'branch',
             element: (
-              <RoleGuard allowedRoles={['BR']}>
+              <RoleGuard allowedRoles={['BR']} fallback={<Navigate to="/app/dashboard" replace />}>
                 <BranchDashboard />
               </RoleGuard>
             ),
