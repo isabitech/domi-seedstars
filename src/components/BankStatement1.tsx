@@ -101,7 +101,8 @@ export const BankStatement1Component: React.FC<BankStatement1Props> = ({
         currentDate,
         opening
       );
-      setStatement(calculatedStatement);
+      console.log("Calculated Statement:", calculatedStatement);
+      // setStatement(calculatedStatement);
     } catch (err) {
       setError("Failed to calculate bank statement");
       console.error("Error calculating statement:", err);

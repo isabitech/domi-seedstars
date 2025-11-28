@@ -102,13 +102,9 @@ export const CombinedCashbookPage: React.FC = () => {
         onlineCIH,
       });
 
-      if (operations?.cashbook1 && operations?.cashbook2) {
-        setCurrentStep(2); // Both completed
-      } else if (operations?.cashbook1) {
-        setCurrentStep(1); // CB1 completed, CB2 pending
-      } else {
-        setCurrentStep(0); // Start with CB1
-      }
+      // Always start at step 0 when component mounts, regardless of existing data
+      // User should manually navigate through the steps
+      setCurrentStep(0);
     }
   }, [getDailyEntry.data]);
   useEffect(() => {

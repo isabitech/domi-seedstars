@@ -46,6 +46,8 @@ export const AppLayout: React.FC = () => {
     if (path.includes('/predictions')) return 'predictions';
     if (path.includes('/online-cih')) return 'online-cih';
     if (path.includes('/bank-statements')) return 'bank-statements';
+    if (path.includes('/branch-savings-register')) return 'savings-register';
+    if (path.includes('/branch-loan-register')) return 'loan-register';
     if (path.includes('/branches')) return 'branches';
     if (path.includes('/daily-report')) return 'daily-report';
     if (path.includes('/daily-operations')) return 'daily-operations';
@@ -154,6 +156,23 @@ export const AppLayout: React.FC = () => {
           label: 'Bank Statements',
           onClick: () => navigate('/app/bank-statements'),
         },
+        {
+          key: 'registers',
+          icon: <FileTextOutlined />,
+          label: 'Registers',
+          children: [
+            {
+              key: 'savings-register',
+              label: 'Savings Register',
+              onClick: () => navigate('/app/branch-savings-register'),
+            },
+            {
+              key: 'loan-register',
+              label: 'Loan Register',
+              onClick: () => navigate('/app/branch-loan-register'),
+            },
+          ],
+        },
       ];
     }
   };
@@ -171,6 +190,8 @@ export const AppLayout: React.FC = () => {
       '/app/predictions': 'Predictions',
       '/app/online-cih': 'Online CIH',
       '/app/bank-statements': 'Bank Statements',
+      '/app/branch-savings-register': 'Savings Register',
+      '/app/branch-loan-register': 'Loan Register',
       '/app/reports': 'Reports & Analytics',
       '/app/reports/daily': 'Branch Daily Report',
       '/app/settings': 'System Settings',

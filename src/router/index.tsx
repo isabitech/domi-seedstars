@@ -18,6 +18,8 @@ import ReportsPage from '../pages/reports/ReportsPage';
 import SettingsPage from '../pages/settings/SettingsPage';
 import DailyReport from '../components/Branch/DailyReport';
 import DailyOperations from '../components/Branch/DailyOperations';
+import { SavingsRegisterPage } from '../pages/registers/SavingsRegisterPage';
+import { LoanRegisterPage } from '../pages/registers/LoanRegisterPage';
 
 export const router = createBrowserRouter([
   {
@@ -89,6 +91,14 @@ export const router = createBrowserRouter([
       {
         path: 'bank-statements',
         element: <BankStatementPage />,
+      },
+      {
+        path: 'branch-savings-register',
+        element: <SavingsRegisterPage />,
+      },
+      {
+        path: 'branch-loan-register',
+        element: <LoanRegisterPage />,
       },
       {
         path: 'branches',
