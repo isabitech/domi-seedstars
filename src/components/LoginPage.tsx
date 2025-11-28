@@ -116,13 +116,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             </Form.Item>
           </Form>
           
-          <div>
+          {/* <div>
             <Text type="secondary" style={{ fontSize: '12px' }}>
               For demo purposes:<br/>
               HO: admin / admin123<br/>
               BR: branch1 / branch123
             </Text>
-          </div>
+          </div> */}
         </Space>
       </Card>
     </div>

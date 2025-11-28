@@ -1,25 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '../../instance/axiosInstance';
-import type { CashbookEntry } from './useCreateEntry';
+import type { GetCashbookEntryResponse } from '../../hooks/Branch/Cashbook/get-daily-ops-types';
 
-export interface GetCashbookEntryResponse {
-  success: boolean;
-  data: {
-    entry: CashbookEntry;
-  };
-  message: string;
-}
 
-const getCashbookEntry = async (id: string): Promise<GetCashbookEntryResponse> => {
-  const { data } = await axiosInstance.get(`/cashbook/${id}`);
+
+const getCashbookEntry = async (branchId: string, date: string): Promise<GetCashbookEntryResponse> => {
+  const { data } = await axiosInstance.get(`/operations/daily?date=${date}&branchId=${branchId}`);
   return data;
 };
 
-export const useGetEntry = (id: string) => {
+export const useGetEntry = (branchId: string, date: string) => {
   return useQuery({
-    queryKey: ['cashbook', 'entry', id],
-    queryFn: () => getCashbookEntry(id),
-    enabled: !!id,
+    queryKey: ['cashbook', 'entry', branchId, date],
+    queryFn: () => getCashbookEntry(branchId, date),
+    enabled: !!branchId && !!date,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 };

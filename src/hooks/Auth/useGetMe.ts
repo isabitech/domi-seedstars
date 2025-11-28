@@ -1,24 +1,28 @@
 import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '../../instance/axiosInstance';
 
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  role: 'HO' | 'BR';
-  branchId?: string;
-  status: 'active' | 'inactive';
-  createdAt: string;
-  updatedAt: string;
-}
 
 export interface GetMeResponse {
-  success: boolean;
-  data: {
-    user: User;
-  };
-  message: string;
+  success: boolean
+  data: User
+  message: string
+  timestamp: string
 }
+
+export interface User {
+  id: string
+  username: string
+  email: string
+  role: string
+  branchId: string
+  branchName: string
+  permissions: string[]
+  lastLogin: string
+  isFirstLogin: boolean
+}
+
+
+
 
 const getCurrentUser = async (): Promise<GetMeResponse> => {
   const { data } = await axiosInstance.get('/auth/me');

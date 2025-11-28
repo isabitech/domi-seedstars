@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import axiosInstance from '../../instance/axiosInstance';
+import axiosInstance from '../../../instance/axiosInstance';
 
 export interface PredictionParams {
 	branchId?: string;
@@ -10,7 +10,9 @@ export interface Prediction {
 	id: string;
 	branchId: string;
 	date: string;
-	forecast: number;
+	predictionNo: number;
+	predictionAmount: number;
+	submittedBy: string;
 	createdAt: string;
 	updatedAt: string;
 }

@@ -1,49 +1,36 @@
 import React, { useState } from 'react';
-import { Card, Row, Col, Button, Modal, message, Space, Table, Tag, Typography, Form, Input } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, BankOutlined } from '@ant-design/icons';
-import type { Branch } from '../../types';
+import { Card, Row, Col, Button, Modal, message, Space, Table, Tag, Typography, Form, Input, Spin, Tabs } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, BankOutlined, UserAddOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { useListBranches } from '../../hooks/Branches/useListBranches';
+import { useCreateBranch } from '../../hooks/Branches/useCreateBranch';
+import { useUpdateBranch } from '../../hooks/Branches/useUpdateBranch';
+import { useDeleteBranch } from '../../hooks/Branches/useDeleteBranch';
+import { AdminUserRegistration } from '../../components/AdminUserRegistration';
+import type { Branch } from '../../hooks/Branches/useListBranches';
 
 const { Title } = Typography;
 
 interface BranchFormData {
   name: string;
   code: string;
-  location: string;
+  address: string;
+  phone: string;
   email: string;
-  password: string;
-  isActive: boolean;
 }
 
 export const BranchManagementPage: React.FC = () => {
-  const [branches, setBranches] = useState<Branch[]>([
-    {
-      id: '1',
-      name: 'Main Branch',
-      code: 'MAIN',
-      location: '123 Main Street, City Center',
-      email: 'main@domibank.com',
-      password: 'main123',
-      isActive: true,
-      createdAt: '2023-01-01',
-      users: [],
-    },
-    {
-      id: '2',
-      name: 'North Branch',
-      code: 'NORTH',
-      location: '456 North Avenue, Northside',
-      email: 'north@domibank.com',
-      password: 'north123',
-      isActive: true,
-      createdAt: '2023-06-15',
-      users: [],
-    },
-  ]);
-
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
   const [form] = Form.useForm<BranchFormData>();
+
+  // Hooks for branch operations
+  const { data: branchesData, isLoading: isLoadingBranches } = useListBranches();
+  const createBranchMutation = useCreateBranch();
+  const updateBranchMutation = useUpdateBranch();
+  const deleteBranchMutation = useDeleteBranch();
+
+  const branches = branchesData?.data?.branches || [];
 
   const handleAddBranch = () => {
     setEditingBranch(null);
@@ -56,10 +43,9 @@ export const BranchManagementPage: React.FC = () => {
     form.setFieldsValue({
       name: branch.name,
       code: branch.code,
-      location: branch.location,
+      address: branch.address,
+      phone: branch.phone,
       email: branch.email,
-      password: branch.password,
-      isActive: branch.isActive,
     });
     setIsModalVisible(true);
   };
@@ -70,8 +56,15 @@ export const BranchManagementPage: React.FC = () => {
       content: 'Are you sure you want to delete this branch? This action cannot be undone.',
       okType: 'danger',
       onOk() {
-        setBranches(prev => prev.filter(branch => branch.id !== branchId));
-        message.success('Branch deleted successfully');
+        deleteBranchMutation.mutate(branchId, {
+          onSuccess: () => {
+            message.success('Branch deleted successfully');
+          },
+          onError: (error) => {
+            const errorMessage = error instanceof Error ? error.message : 'Failed to delete branch';
+            message.error(errorMessage);
+          }
+        });
       },
     });
   };
@@ -80,29 +73,22 @@ export const BranchManagementPage: React.FC = () => {
     try {
       if (editingBranch) {
         // Update existing branch
-        setBranches(prev => 
-          prev.map(branch => 
-            branch.id === editingBranch.id 
-              ? { ...branch, ...values }
-              : branch
-          )
-        );
+        await updateBranchMutation.mutateAsync({
+          id: editingBranch.id,
+          ...values
+        });
         message.success('Branch updated successfully');
       } else {
         // Add new branch
-        const newBranch: Branch = {
-          id: Date.now().toString(),
-          createdAt: new Date().toISOString(),
-          users: [],
-          ...values,
-        };
-        setBranches(prev => [...prev, newBranch]);
+        await createBranchMutation.mutateAsync(values);
         message.success('Branch created successfully');
       }
       setIsModalVisible(false);
       setEditingBranch(null);
-    } catch {
-      message.error('Failed to save branch');
+      form.resetFields();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save branch';
+      message.error(errorMessage);
     }
   };
 
@@ -124,9 +110,14 @@ export const BranchManagementPage: React.FC = () => {
       key: 'code',
     },
     {
-      title: 'Location',
-      dataIndex: 'location',
-      key: 'location',
+      title: 'Address',
+      dataIndex: 'address',
+      key: 'address',
+    },
+    {
+      title: 'Phone',
+      dataIndex: 'phone',
+      key: 'phone',
     },
     {
       title: 'Email',
@@ -135,11 +126,11 @@ export const BranchManagementPage: React.FC = () => {
     },
     {
       title: 'Status',
-      dataIndex: 'isActive',
-      key: 'isActive',
-      render: (isActive: boolean) => (
-        <Tag color={isActive ? 'green' : 'red'}>
-          {isActive ? 'Active' : 'Inactive'}
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: string) => (
+        <Tag color={status === 'active' ? 'green' : 'red'}>
+          {status === 'active' ? 'Active' : 'Inactive'}
         </Tag>
       ),
     },
@@ -183,60 +174,68 @@ export const BranchManagementPage: React.FC = () => {
             <Space style={{ width: '100%', justifyContent: 'space-between' }}>
               <div>
                 <BankOutlined style={{ fontSize: 24, marginRight: 8 }} />
-                <Title level={2} style={{ margin: 0, display: 'inline' }}>Branch Management</Title>
+                <Title level={2} style={{ margin: 0, display: 'inline' }}>System Management</Title>
               </div>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={handleAddBranch}
-                size="large"
-              >
-                Add New Branch
-              </Button>
             </Space>
           </Card>
         </Col>
 
-        {/* Branch Statistics */}
-        <Col xs={24} sm={8}>
-          <Card>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 24, fontWeight: 'bold', color: '#1890ff' }}>
-                {branches.length}
-              </div>
-              <div>Total Branches</div>
-            </div>
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 24, fontWeight: 'bold', color: '#52c41a' }}>
-                {branches.filter(b => b.isActive).length}
-              </div>
-              <div>Active Branches</div>
-            </div>
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 24, fontWeight: 'bold', color: '#faad14' }}>
-                {branches.filter(b => !b.isActive).length}
-              </div>
-              <div>Inactive Branches</div>
-            </div>
-          </Card>
-        </Col>
-
-        {/* Branch List */}
+        {/* Main Content with Tabs */}
         <Col span={24}>
-          <Card title="All Branches">
-            <Table
-              dataSource={branches}
-              columns={columns}
-              rowKey="id"
-              pagination={{ pageSize: 10 }}
+          <Card>
+            <Tabs
+              defaultActiveKey="branches"
+              items={[
+                {
+                  key: 'branches',
+                  label: (
+                    <span>
+                      <BankOutlined />
+                      Branch Management
+                    </span>
+                  ),
+                  children: (
+                    <div>
+                      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
+                        <Button
+                          type="primary"
+                          icon={<PlusOutlined />}
+                          onClick={handleAddBranch}
+                        >
+                          Add New Branch
+                        </Button>
+                      </div>
+                      
+                      {isLoadingBranches ? (
+                        <div style={{ textAlign: 'center', padding: '50px' }}>
+                          <Spin size="large" />
+                        </div>
+                      ) : (
+                        <Table
+                          columns={columns}
+                          dataSource={branches}
+                          rowKey="id"
+                          pagination={{
+                            pageSize: 10,
+                            showSizeChanger: true,
+                            showTotal: (total) => `Total ${total} branches`,
+                          }}
+                        />
+                      )}
+                    </div>
+                  ),
+                },
+                {
+                  key: 'users',
+                  label: (
+                    <span>
+                      <UserAddOutlined />
+                      User Registration
+                    </span>
+                  ),
+                  children: <AdminUserRegistration showAsCard={false} />,
+                },
+              ]}
             />
           </Card>
         </Col>
@@ -273,11 +272,19 @@ export const BranchManagementPage: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            label="Location"
-            name="location"
-            rules={[{ required: true, message: 'Please enter location' }]}
+            label="Address"
+            name="address"
+            rules={[{ required: true, message: 'Please enter address' }]}
           >
-            <Input placeholder="Enter branch location" />
+            <Input placeholder="Enter branch address" />
+          </Form.Item>
+
+          <Form.Item
+            label="Phone"
+            name="phone"
+            rules={[{ required: true, message: 'Please enter phone number' }]}
+          >
+            <Input placeholder="Enter branch phone number" />
           </Form.Item>
 
           <Form.Item
@@ -291,20 +298,13 @@ export const BranchManagementPage: React.FC = () => {
             <Input placeholder="Enter branch email" />
           </Form.Item>
 
-          <Form.Item
-            label="Branch Password"
-            name="password"
-            rules={[
-              { required: true, message: 'Please enter branch password' },
-              { min: 6, message: 'Password must be at least 6 characters' }
-            ]}
-          >
-            <Input.Password placeholder="Enter branch password" />
-          </Form.Item>
-
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit">
+              <Button 
+                type="primary" 
+                htmlType="submit" 
+                loading={createBranchMutation.isPending || updateBranchMutation.isPending}
+              >
                 {editingBranch ? 'Update Branch' : 'Create Branch'}
               </Button>
               <Button onClick={handleCancel}>

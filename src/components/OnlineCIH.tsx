@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { 
   Card, 
   Statistic, 
@@ -7,80 +7,45 @@ import {
   Alert,
   Spin,
   Button,
-  Tag
+  Tag,
+  DatePicker
 } from 'antd';
 import { DollarOutlined, ReloadOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
-import { useAuthStore } from '../store';
-import { cashbookService } from '../services/cashbook';
+import dayjs from 'dayjs';
+import { useGetMe } from '../hooks/Auth/useGetMe';
+import { useGetOnlineCIHTSO } from '../hooks/Metrics/useGetOnlineCIH-TSO';
 import { calculations } from '../utils/calculations';
 
 const { Text } = Typography;
 
 interface OnlineCIHProps {
   date?: string;
-  refreshTrigger?: number; // To trigger refresh from parent
 }
 
-export const OnlineCIHComponent: React.FC<OnlineCIHProps> = ({
-  date,
-  refreshTrigger = 0
-}) => {
-  const [loading, setLoading] = useState(false);
-  const [onlineCIH, setOnlineCIH] = useState<number>(0);
-  const [cbTotal1, setCbTotal1] = useState<number>(0);
-  const [cbTotal2, setCbTotal2] = useState<number>(0);
-  const [lastUpdated, setLastUpdated] = useState<string>('');
-  const [error, setError] = useState<string>('');
+export const OnlineCIHComponent: React.FC<OnlineCIHProps> = ({ date }) => {
+  const [selectedDate, setSelectedDate] = useState<string>(
+    date || dayjs().format('YYYY-MM-DD')
+  );
   
-  const { user } = useAuthStore();
-  const currentDate = date || new Date().toISOString().split('T')[0];
+  const { data: currentUser } = useGetMe();
+  const { 
+    data: metricsData, 
+    isLoading: loading, 
+    error,
+    refetch: refetchMetrics 
+  } = useGetOnlineCIHTSO({ date: selectedDate });
 
-  const fetchOnlineCIH = useCallback(async () => {
-    if (!user?.branchId) return;
-
-    setLoading(true);
-    setError('');
-
-    try {
-      // Fetch both cashbook totals
-      const [cb1Response, cb2Response] = await Promise.all([
-        cashbookService.getCashbook1(user.branchId, currentDate),
-        cashbookService.getCashbook2(user.branchId, currentDate)
-      ]);
-
-      let cb1Total = 0;
-      let cb2Total = 0;
-
-      if (cb1Response.success && cb1Response.data) {
-        cb1Total = cb1Response.data.cbTotal1;
-        setCbTotal1(cb1Total);
-      }
-
-      if (cb2Response.success && cb2Response.data) {
-        cb2Total = cb2Response.data.cbTotal2;
-        setCbTotal2(cb2Total);
-      }
-
-      // Calculate Online CIH
-      const cih = calculations.calculateOnlineCIH(cb1Total, cb2Total);
-      setOnlineCIH(cih);
-      setLastUpdated(new Date().toLocaleTimeString());
-
-      if (cb1Total === 0 && cb2Total === 0) {
-        setError('No cashbook data found for today');
-      }
-
-    } catch {
-      setError('Failed to fetch cashbook data');
-    } finally {
-      setLoading(false);
-    }
-  }, [user?.branchId, currentDate]);
-
-  // Initial load and refresh trigger
-  useEffect(() => {
-    fetchOnlineCIH();
-  }, [fetchOnlineCIH, refreshTrigger]);
+  const user = currentUser?.data;
+  
+  // Find current branch data from metrics
+  const branchMetric = metricsData?.data?.raw?.find(
+    metric => user?.branchId && metric.branch.id === user.branchId
+  );
+  
+  const onlineCIH = branchMetric?.onlineCIH || 0;
+  const lastUpdated = metricsData?.data?.generatedAt ? 
+    dayjs(metricsData.data.generatedAt).format('HH:mm:ss') : 
+    dayjs().format('HH:mm:ss');
 
   const getStatusColor = () => {
     if (onlineCIH > 0) return '#52c41a'; // Green for positive
@@ -112,15 +77,27 @@ export const OnlineCIHComponent: React.FC<OnlineCIHProps> = ({
         </Space>
       }
       extra={
-        <Button 
-          icon={<ReloadOutlined />}
-          onClick={fetchOnlineCIH}
-          loading={loading}
-          size="small"
-          type="text"
-        >
-          Refresh
-        </Button>
+        <Space>
+          <DatePicker
+            value={dayjs(selectedDate)}
+            onChange={(date) => {
+              if (date) {
+                setSelectedDate(date.format('YYYY-MM-DD'));
+              }
+            }}
+            format="YYYY-MM-DD"
+            size="small"
+          />
+          <Button 
+            icon={<ReloadOutlined />}
+            onClick={() => refetchMetrics()}
+            loading={loading}
+            size="small"
+            type="text"
+          >
+            Refresh
+          </Button>
+        </Space>
       }
       size="small"
       style={{ 
@@ -141,10 +118,17 @@ export const OnlineCIHComponent: React.FC<OnlineCIHProps> = ({
       ) : error ? (
         <Alert
           message="Unable to Calculate"
-          description={error}
+          description={error.message || 'Failed to fetch data'}
           type="warning"
           showIcon
           style={{ marginBottom: 16 }}
+        />
+      ) : !branchMetric ? (
+        <Alert
+          message="No Data Found"
+          description="No cashbook data found for the selected date"
+          type="info"
+          showIcon
         />
       ) : (
         <Space direction="vertical" size="middle" style={{ width: '100%' }}>
@@ -177,19 +161,19 @@ export const OnlineCIHComponent: React.FC<OnlineCIHProps> = ({
             border: '1px solid #d9d9d9'
           }}>
             <Text strong style={{ display: 'block', marginBottom: 8 }}>
-              Calculation Breakdown:
+              Branch Information:
             </Text>
             <Space direction="vertical" size="small" style={{ width: '100%' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Text>CB TOTAL 1:</Text>
+                <Text>Branch:</Text>
                 <Text style={{ color: '#1890ff' }}>
-                  {calculations.formatCurrency(cbTotal1)}
+                  {branchMetric.branch.name}
                 </Text>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Text>CB TOTAL 2:</Text>
+                <Text>Code:</Text>
                 <Text style={{ color: '#722ed1' }}>
-                  {calculations.formatCurrency(cbTotal2)}
+                  {branchMetric.branch.code}
                 </Text>
               </div>
               <div style={{ 
@@ -206,22 +190,6 @@ export const OnlineCIHComponent: React.FC<OnlineCIHProps> = ({
               </div>
             </Space>
           </div>
-
-          {(cbTotal1 === 0 || cbTotal2 === 0) && (
-            <Alert
-              message="Incomplete Data"
-              description={
-                cbTotal1 === 0 && cbTotal2 === 0 
-                  ? "Both Cashbook 1 and Cashbook 2 data are missing for today"
-                  : cbTotal1 === 0 
-                    ? "Cashbook 1 data is missing for today"
-                    : "Cashbook 2 data is missing for today"
-              }
-              type="info"
-              showIcon
-              style={{ fontSize: '12px' }}
-            />
-          )}
         </Space>
       )}
     </Card>

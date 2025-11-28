@@ -1,12 +1,11 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuthStore } from '../store';
-import type { UserRole } from '../types';
 import { Alert, Result } from 'antd';
+import { useGetMe } from '../hooks/Auth/useGetMe';
 
 interface RoleGuardProps {
   children: React.ReactNode;
-  allowedRoles: UserRole[];
+  allowedRoles: ('HO' | 'BR' | 'admin')[];
   fallback?: React.ReactNode;
 }
 
@@ -15,13 +14,17 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
   allowedRoles, 
   fallback 
 }) => {
-  const { user, isAuthenticated } = useAuthStore();
+  const { data: currentUser, isLoading, isError } = useGetMe();
 
-  if (!isAuthenticated || !user) {
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isError || !currentUser) {
     return <Navigate to="/login" replace />;
   }
 
-  if (!allowedRoles.includes(user.role)) {
+  if (!allowedRoles.includes(currentUser.data.user.role)) {
     if (fallback) {
       return <>{fallback}</>;
     }

@@ -1,9 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import axiosInstance from '../../instance/axiosInstance';
+import axiosInstance from '../../../instance/axiosInstance';
 
 export interface CreatePredictionRequest {
 	branchId: string;
-	forecast: number;
+	date: string;
+	predictionNo: number;
+	predictionAmount: number;
 }
 
 export interface CreatePredictionResponse {
@@ -13,7 +15,9 @@ export interface CreatePredictionResponse {
 			id: string;
 			branchId: string;
 			date: string;
-			forecast: number;
+			predictionNo: number;
+			predictionAmount: number;
+			submittedBy: string;
 			createdAt: string;
 			updatedAt: string;
 		};
@@ -22,7 +26,7 @@ export interface CreatePredictionResponse {
 }
 
 const createPrediction = async (predictionData: CreatePredictionRequest): Promise<CreatePredictionResponse> => {
-	const { data } = await axiosInstance.post('/prediction', predictionData);
+	const { data } = await axiosInstance.post('/operations/daily', predictionData);
 	return data;
 };
 

@@ -48,7 +48,7 @@ export interface BranchDashboardData {
   }>;
 }
 
-export interface GetBranchDashboardResponse {
+interface GetBranchDashboardResponse {
   success: boolean;
   data: {
     dashboard: BranchDashboardData;

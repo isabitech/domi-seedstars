@@ -11,7 +11,9 @@ import {
   Typography,
   Statistic,
   Alert,
-  Tag
+  Tag,
+  Spin,
+  message
 } from 'antd';
 import { 
   FileTextOutlined,
@@ -23,92 +25,24 @@ import {
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 import { calculations } from '../utils/calculations';
-import type { DailyReport } from '../types';
+import { 
+  useGetDailyReport 
+} from '../hooks/Reports/useGetDailyReport';
+import { 
+  useGetMonthlyReport
+} from '../hooks/Reports/useGetMonthlyReport';
+import {
+  useGetConsolidatedReport
+} from '../hooks/Reports/useGetConsolidatedReport';
+import {
+  useListBranches
+} from '../hooks/Branches/useListBranches';
+// Note: Export hooks not yet implemented
+// import { useExportDailyReportCSV } from '../hooks/Reports/useExportDailyReportCSV';
+// import { useExportDailyReportPDF } from '../hooks/Reports/useExportDailyReportPDF';
+import type { Branch, DailyReport } from '../types';
 
 dayjs.extend(isBetween);
-
-const { Title, Text } = Typography;
-const { RangePicker } = DatePicker;
-
-// Mock report data
-const mockReports: DailyReport[] = [
-  {
-    date: '2024-11-12',
-    branchId: 'br-001',
-    branchName: 'Lagos Branch',
-    cashbook1: {
-      id: '1',
-      date: '2024-11-12',
-      branchId: 'br-001',
-      pcih: 150000,
-      savings: 850000,
-      loanCollection: 400000,
-      charges: 25000,
-      total: 1275000,
-      frmHO: 200000,
-      frmBR: 50000,
-      cbTotal1: 1525000,
-      submittedBy: 'branch1',
-      submittedAt: '2024-11-12T10:30:00Z'
-    },
-    cashbook2: {
-      id: '1',
-      date: '2024-11-12',
-      branchId: 'br-001',
-      disNo: 15,
-      disAmt: 750000,
-      disWithInt: 780000,
-      savWith: 120000,
-      domiBank: 100000,
-      posT: 50000,
-      cbTotal2: 1020000,
-      submittedBy: 'branch1',
-      submittedAt: '2024-11-12T14:30:00Z'
-    },
-    calculations: {
-      onlineCIH: 505000,
-      transferToSenate: 455000
-    }
-  },
-  {
-    date: '2024-11-11',
-    branchId: 'br-002',
-    branchName: 'Abuja Branch',
-    cashbook1: {
-      id: '2',
-      date: '2024-11-11',
-      branchId: 'br-002',
-      pcih: 120000,
-      savings: 650000,
-      loanCollection: 330000,
-      charges: 20000,
-      total: 1000000,
-      frmHO: 150000,
-      frmBR: 30000,
-      cbTotal1: 1300000,
-      submittedBy: 'branch2',
-      submittedAt: '2024-11-11T09:45:00Z'
-    },
-    cashbook2: {
-      id: '2',
-      date: '2024-11-11',
-      branchId: 'br-002',
-      disNo: 12,
-      disAmt: 580000,
-      disWithInt: 600000,
-      savWith: 80000,
-      domiBank: 75000,
-      posT: 35000,
-      cbTotal2: 770000,
-      submittedBy: 'branch2',
-      submittedAt: '2024-11-11T13:15:00Z'
-    },
-    calculations: {
-      onlineCIH: 530000,
-      transferToSenate: 405000
-    }
-  }
-];
 
 export const ReportsComponent: React.FC = () => {
   const [reportType, setReportType] = useState<string>('daily');
@@ -117,19 +51,78 @@ export const ReportsComponent: React.FC = () => {
     dayjs().subtract(7, 'days'),
     dayjs()
   ]);
-  const [loading, setLoading] = useState(false);
+
+  // Get branches for filter
+  const { data: branchesData } = useListBranches();
+  
+  // Get reports based on type
+  const { 
+    data: dailyReports, 
+    isLoading: dailyLoading 
+  } = useGetDailyReport(reportType === 'daily' ? {
+    branchId: selectedBranch === 'all' ? undefined : selectedBranch,
+    date: dateRange[0].format('YYYY-MM-DD')
+  } : {});
+
+  const { 
+    data: monthlyReport, 
+    isLoading: monthlyLoading 
+  } = useGetMonthlyReport(reportType === 'monthly' ? {
+    branchId: selectedBranch === 'all' ? undefined : selectedBranch,
+    month: dateRange[0].format('YYYY-MM')
+  } : {});
+
+  const { 
+    data: consolidatedReport, 
+    isLoading: consolidatedLoading 
+  } = useGetConsolidatedReport(reportType === 'consolidated' ? {
+    startDate: dateRange[0].format('YYYY-MM-DD'),
+    endDate: dateRange[1].format('YYYY-MM-DD')
+  } : {});
+
+  // Export functionality - not yet implemented
+  // const exportCSVMutation = useExportDailyReportCSV();
+  // const exportPDFMutation = useExportDailyReportPDF();
 
   const handleExport = async (format: 'excel' | 'pdf') => {
-    setLoading(true);
     try {
-      // Simulate export process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      // In real app, this would trigger file download
-      console.log(`Exporting ${reportType} report as ${format}`);
-    } finally {
-      setLoading(false);
+      const params = {
+        branchId: selectedBranch === 'all' ? undefined : selectedBranch,
+        startDate: dateRange[0].format('YYYY-MM-DD'),
+        endDate: dateRange[1].format('YYYY-MM-DD')
+      };
+
+      if (format === 'excel') {
+        await exportCSVMutation.mutateAsync(params);
+        message.success('Excel export started. File will download shortly.');
+      } else {
+        await exportPDFMutation.mutateAsync(params);
+        message.success('PDF export started. File will download shortly.');
+      }
+    } catch {
+      message.error(`Failed to export ${format} report`);
     }
   };
+
+  const isLoading = dailyLoading || monthlyLoading || consolidatedLoading;
+  // const exportLoading = exportCSVMutation.isPending || exportPDFMutation.isPending;
+
+  // Get current report data based on type
+  const getCurrentReportData = () => {
+    switch (reportType) {
+      case 'daily':
+        return dailyReports?.data?.report?.branchSummaries || [];
+      case 'monthly':
+        return monthlyReport?.data?.report?.branchSummaries || [];
+      case 'consolidated':
+        return consolidatedReport?.data?.report?.branchSummaries || [];
+      default:
+        return [];
+    }
+  };
+
+  const reportData = getCurrentReportData();
+  const branches = branchesData?.data?.branches || [];
 
   const reportColumns = [
     {
@@ -143,7 +136,7 @@ export const ReportsComponent: React.FC = () => {
       key: 'branch',
       render: (_: unknown, record: DailyReport) => (
         <div>
-          <strong>{record.branchName}</strong>
+          <strong>{record.branchName || 'N/A'}</strong>
           <br />
           <Text type="secondary">{record.branchId}</Text>
         </div>
@@ -153,57 +146,80 @@ export const ReportsComponent: React.FC = () => {
       title: 'Collections',
       key: 'collections',
       render: (_: unknown, record: DailyReport) => {
-        const total = record.cashbook1.savings + record.cashbook1.loanCollection;
+        const savings = record.cashbook1?.savings || 0;
+        const loanCollection = record.cashbook1?.loanCollection || 0;
+        const total = savings + loanCollection;
         return calculations.formatCurrency(total);
       }
     },
     {
       title: 'Disbursements',
       key: 'disbursements',
-      render: (_: unknown, record: DailyReport) => 
-        calculations.formatCurrency(record.cashbook2.disAmt)
+      render: (_: unknown, record: DailyReport) => {
+        const disAmt = record.cashbook2?.disAmt || 0;
+        return calculations.formatCurrency(disAmt);
+      }
     },
     {
       title: 'Online CIH',
       key: 'onlineCIH',
-      render: (_: unknown, record: DailyReport) => (
-        <Tag color={record.calculations.onlineCIH >= 0 ? 'green' : 'red'}>
-          {calculations.formatCurrency(record.calculations.onlineCIH)}
-        </Tag>
-      )
+      render: (_: unknown, record: DailyReport) => {
+        const onlineCIH = record.calculations?.onlineCIH || 0;
+        return (
+          <Tag color={onlineCIH >= 0 ? 'green' : 'red'}>
+            {calculations.formatCurrency(onlineCIH)}
+          </Tag>
+        );
+      }
     },
     {
       title: 'Transfer to Senate',
       key: 'transferToSenate',
-      render: (_: unknown, record: DailyReport) => 
-        calculations.formatCurrency(record.calculations.transferToSenate)
+      render: (_: unknown, record: DailyReport) => {
+        const tso = record.calculations?.transferToSenate || 0;
+        return calculations.formatCurrency(tso);
+      }
     },
     {
       title: 'Status',
       key: 'status',
-      render: () => <Tag color="green">Complete</Tag>
+      render: (_: unknown, record: DailyReport & { status?: string }) => {
+        const status = record.status || 'complete';
+        const color = status === 'complete' ? 'green' : status === 'pending' ? 'orange' : 'red';
+        return <Tag color={color}>{status.charAt(0).toUpperCase() + status.slice(1)}</Tag>;
+      }
     }
   ];
 
-  const filteredReports = mockReports.filter(report => {
-    if (selectedBranch !== 'all' && report.branchId !== selectedBranch) {
-      return false;
-    }
-    const reportDate = dayjs(report.date);
-    return reportDate.isBetween(dateRange[0], dateRange[1], 'day', '[]');
-  });
+  interface TotalStats {
+    totalCollections: number;
+    totalDisbursements: number;
+    totalOnlineCIH: number;
+    totalTransferToSenate: number;
+  }
 
-  const totalStats = filteredReports.reduce((acc, report) => ({
-    totalCollections: acc.totalCollections + report.cashbook1.savings + report.cashbook1.loanCollection,
-    totalDisbursements: acc.totalDisbursements + report.cashbook2.disAmt,
-    totalOnlineCIH: acc.totalOnlineCIH + report.calculations.onlineCIH,
-    totalTransferToSenate: acc.totalTransferToSenate + report.calculations.transferToSenate
-  }), {
+  const totalStats = reportData.reduce((acc: TotalStats, report: DailyReport) => {
+    const savings = report.cashbook1?.savings || 0;
+    const loanCollection = report.cashbook1?.loanCollection || 0;
+    const disbursements = report.cashbook2?.disAmt || 0;
+    const onlineCIH = report.calculations?.onlineCIH || 0;
+    const tso = report.calculations?.transferToSenate || 0;
+
+    return {
+      totalCollections: acc.totalCollections + savings + loanCollection,
+      totalDisbursements: acc.totalDisbursements + disbursements,
+      totalOnlineCIH: acc.totalOnlineCIH + onlineCIH,
+      totalTransferToSenate: acc.totalTransferToSenate + tso
+    };
+  }, {
     totalCollections: 0,
     totalDisbursements: 0,
     totalOnlineCIH: 0,
     totalTransferToSenate: 0
-  });
+  } as TotalStats);
+
+  const { Title, Text } = Typography;
+  const { RangePicker } = DatePicker;
 
   return (
     <div className="page-container">
@@ -228,14 +244,14 @@ export const ReportsComponent: React.FC = () => {
             <Button 
               type="primary" 
               icon={<DownloadOutlined />}
-              loading={loading}
+              loading={exportLoading}
               onClick={() => handleExport('excel')}
             >
               Export Excel
             </Button>
             <Button 
               icon={<ExportOutlined />}
-              loading={loading}
+              loading={exportLoading}
               onClick={() => handleExport('pdf')}
             >
               Export PDF
@@ -267,11 +283,14 @@ export const ReportsComponent: React.FC = () => {
                   value={selectedBranch}
                   onChange={setSelectedBranch}
                   style={{ width: 200 }}
+                  loading={!branches.length}
                 >
                   <Select.Option value="all">All Branches</Select.Option>
-                  <Select.Option value="br-001">Lagos Branch</Select.Option>
-                  <Select.Option value="br-002">Abuja Branch</Select.Option>
-                  <Select.Option value="br-003">Kano Branch</Select.Option>
+                  {branches.map((branch) => (
+                    <Select.Option key={branch._id} value={branch._id}>
+                      {branch.name}
+                    </Select.Option>
+                  ))}
                 </Select>
               </Space>
             </Col>
@@ -346,17 +365,25 @@ export const ReportsComponent: React.FC = () => {
           title={`${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Reports`}
           extra={
             <Text type="secondary">
-              {filteredReports.length} record(s) found
+              {reportData.length} record(s) found
             </Text>
           }
+          loading={isLoading}
         >
-          <Table
-            columns={reportColumns}
-            dataSource={filteredReports}
-            rowKey={(record) => `${record.branchId}-${record.date}`}
-            pagination={{ pageSize: 10 }}
-            scroll={{ x: 800 }}
-          />
+          {isLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <Spin size="large" />
+              <p style={{ marginTop: 16 }}>Loading reports...</p>
+            </div>
+          ) : (
+            <Table
+              columns={reportColumns}
+              dataSource={reportData}
+              rowKey={(record: DailyReport) => `${record.branchId}-${record.date}`}
+              pagination={{ pageSize: 10 }}
+              scroll={{ x: 800 }}
+            />
+          )}
         </Card>
 
         {/* Export Information */}

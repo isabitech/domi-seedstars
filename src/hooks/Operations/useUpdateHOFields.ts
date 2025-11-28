@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '../../instance/axiosInstance';
 
 export interface UpdateHOFieldsRequest {
+  branchId: string;
   field1?: number;
   field2?: number;
   field3?: number;
@@ -11,6 +12,7 @@ export interface UpdateHOFieldsRequest {
   previousDisbursement?: number;
   previousLoanTotal?: number;
   previousSavingsTotal?: number;
+  
 }
 
 export interface UpdateHOFieldsResponse {

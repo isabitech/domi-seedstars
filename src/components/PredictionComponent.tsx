@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Card, 
   Form,
@@ -13,8 +13,10 @@ import {
 } from 'antd';
 import { PlusOutlined, SaveOutlined, ReloadOutlined, FundProjectionScreenOutlined } from '@ant-design/icons';
 import { useAuthStore } from '../store';
-import { predictionService } from '../services/prediction';
 import { calculations } from '../utils/calculations';
+import { useGetPrediction } from '../hooks/Branch/Prediction/useGetPrediction';
+import { useCreatePrediction } from '../hooks/Branch/Prediction/useCreatePrediction';
+import { useUpdatePrediction } from '../hooks/Branch/Prediction/useUpdatePrediction';
 import type { Prediction } from '../types';
 
 const { Title, Text } = Typography;
@@ -31,43 +33,33 @@ export const PredictionComponent: React.FC<PredictionFormProps> = ({
   readonly = false
 }) => {
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
-  const [dataLoading, setDataLoading] = useState(false);
-  const [hasExistingPrediction, setHasExistingPrediction] = useState(false);
-  const [predictionData, setPredictionData] = useState<Prediction | null>(null);
+  const [existingPredictionId, setExistingPredictionId] = useState<string | null>(null);
   
   const { user } = useAuthStore();
   const tomorrowDate = date || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-  const loadExistingPrediction = useCallback(async () => {
-    if (!user?.branchId) return;
-    
-    setDataLoading(true);
-    try {
-      const response = await predictionService.getPrediction(user.branchId, tomorrowDate);
-      if (response.success && response.data) {
-        const existingData = response.data;
-        form.setFieldsValue({
-          predictionNo: existingData.predictionNo,
-          predictionAmount: existingData.predictionAmount
-        });
-        setPredictionData(existingData);
-        setHasExistingPrediction(true);
-      } else {
-        setHasExistingPrediction(false);
-        setPredictionData(null);
-      }
-    } catch {
-      console.error('Error loading existing prediction');
-    } finally {
-      setDataLoading(false);
-    }
-  }, [user?.branchId, tomorrowDate, form]);
+  // Get existing prediction
+  const { 
+    data: existingPrediction, 
+    isLoading: dataLoading, 
+    refetch: refetchPrediction 
+  } = useGetPrediction(user?.branchId || '', tomorrowDate);
 
-  // Load existing data on component mount
+  // Mutation hooks
+  const createPredictionMutation = useCreatePrediction();
+  const updatePredictionMutation = useUpdatePrediction();
+
+  // Load existing data when available
   useEffect(() => {
-    loadExistingPrediction();
-  }, [loadExistingPrediction]);
+    if (existingPrediction?.data?.prediction) {
+      const data = existingPrediction.data.prediction;
+      form.setFieldsValue({
+        predictionNo: data.predictionNo,
+        predictionAmount: data.predictionAmount
+      });
+      setExistingPredictionId(data.id);
+    }
+  }, [existingPrediction, form]);
 
   const handleSubmit = async (values: { predictionNo: number; predictionAmount: number }) => {
     if (!user?.branchId) {
@@ -81,43 +73,51 @@ export const PredictionComponent: React.FC<PredictionFormProps> = ({
       return;
     }
 
-    setLoading(true);
     try {
       const submitData = {
         predictionNo: Number(values.predictionNo),
         predictionAmount: Number(values.predictionAmount),
         date: tomorrowDate,
-        branchId: user.branchId,
-        submittedBy: user.id
+        branchId: user.branchId
       };
       
-      const response = await predictionService.submitPrediction(submitData);
-      
-      if (response.success && response.data) {
-        message.success(response.message || 'Prediction submitted successfully!');
-        setPredictionData(response.data);
-        setHasExistingPrediction(true);
-        
-        if (onSubmit) {
-          onSubmit(response.data);
-        }
+      let result;
+      if (existingPredictionId) {
+        // Update existing prediction
+        result = await updatePredictionMutation.mutateAsync({
+          predictionId: existingPredictionId,
+          ...submitData
+        });
       } else {
-        message.error(response.error || 'Failed to submit prediction');
+        // Create new prediction
+        result = await createPredictionMutation.mutateAsync(submitData);
+      }
+      
+      if (result) {
+        message.success(existingPredictionId ? 'Prediction updated successfully!' : 'Prediction submitted successfully!');
+        
+        if (onSubmit && result.data?.prediction) {
+          onSubmit(result.data.prediction);
+        }
+        
+        // Refresh data
+        refetchPrediction();
       }
     } catch {
       message.error('An unexpected error occurred while submitting prediction');
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleRefresh = async () => {
-    await loadExistingPrediction();
+  const handleRefresh = () => {
+    refetchPrediction();
     message.info('Prediction data refreshed');
   };
 
   // Branch users can input, HO can only view
   const canEdit = user?.role === 'BR' && !readonly;
+  const hasExistingPrediction = !!existingPrediction?.data?.prediction;
+  const predictionData = existingPrediction?.data?.prediction;
+  const loading = createPredictionMutation.isPending || updatePredictionMutation.isPending;
 
   return (
     <Card 

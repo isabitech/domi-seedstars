@@ -10,22 +10,32 @@ import {
   UserOutlined,
   HomeOutlined,
   RiseOutlined,
-  DollarOutlined
+  DollarOutlined,
+  CalendarOutlined
 } from '@ant-design/icons';
-import { useAuthStore } from '../../store';
+import { useGetMe } from '../../hooks/Auth/useGetMe';
+import { useLogout } from '../../hooks/Auth/useLogout';
 import type { MenuProps } from 'antd';
 
 const { Header, Sider, Content } = Layout;
 const { Title, Text } = Typography;
 
 export const AppLayout: React.FC = () => {
-  const { user, logout } = useAuthStore();
+  const { data: currentUser } = useGetMe();
+  const logoutMutation = useLogout();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const user = currentUser?.data
+
+  const handleLogout = async () => {
+    try {
+      await logoutMutation.mutateAsync();
+      navigate('/login');
+    } catch {
+      // Even if logout fails on server, clear local data and redirect
+      navigate('/login');
+    }
   };
 
   // Get current path for menu selection
@@ -37,6 +47,8 @@ export const AppLayout: React.FC = () => {
     if (path.includes('/online-cih')) return 'online-cih';
     if (path.includes('/bank-statements')) return 'bank-statements';
     if (path.includes('/branches')) return 'branches';
+    if (path.includes('/daily-report')) return 'daily-report';
+    if (path.includes('/daily-operations')) return 'daily-operations';
     if (path.includes('/reports/daily')) return 'daily-report';
     if (path.includes('/reports')) return 'reports';
     if (path.includes('/ho-operations')) return 'ho-operations';
@@ -54,8 +66,10 @@ export const AppLayout: React.FC = () => {
         onClick: () => {
           if (user?.role === 'HO') {
             navigate('/app/dashboard');
-          } else {
+          } else if (user?.role === 'BR') {
             navigate('/app/dashboard/branch');
+          } else{
+            navigate('/app/dashboard');
           }
         },
       },
@@ -111,6 +125,18 @@ export const AppLayout: React.FC = () => {
           onClick: () => navigate('/app/cashbook'),
         },
         {
+          key: 'daily-operations',
+          icon: <CalendarOutlined />,
+          label: 'Daily Operations',
+          onClick: () => navigate('/app/daily-operations'),
+        },
+        {
+          key: 'daily-report',
+          icon: <FileTextOutlined />,
+          label: 'Daily Report',
+          onClick: () => navigate('/app/daily-report'),
+        },
+        {
           key: 'predictions',
           icon: <RiseOutlined />,
           label: 'Predictions',
@@ -140,6 +166,8 @@ export const AppLayout: React.FC = () => {
       '/app/branches': 'Branch Management',
       '/app/ho-operations': 'HO Operations',
       '/app/cashbook': 'Daily Cashbook',
+      '/app/daily-operations': 'Daily Operations',
+      '/app/daily-report': ' Daily Branch Report',
       '/app/predictions': 'Predictions',
       '/app/online-cih': 'Online CIH',
       '/app/bank-statements': 'Bank Statements',
@@ -207,7 +235,7 @@ export const AppLayout: React.FC = () => {
             </Space>
             <span className=' text-black'>
                 <p>{user?.role === 'HO' ? 'Head Office' : 'Branch User'}</p>
-                <p>{user?.branchId && ` • ${user.branchId}`}</p>
+                {/* <p>{user?.branchId && ` • ${user.branchId}`}</p> */}
             </span>
             <Button 
               type="text" 
