@@ -9,13 +9,14 @@ import {
   Alert,
   Spin,
   Tag,
-  message
+  App
 } from 'antd';
 import { PlusOutlined, SaveOutlined, ReloadOutlined, FundProjectionScreenOutlined } from '@ant-design/icons';
 import { calculations } from '../utils/calculations';
 import { useCreatePrediction } from '../hooks/Branch/Prediction/useCreatePrediction';
 import { useUpdatePrediction } from '../hooks/Branch/Prediction/useUpdatePrediction';
 import { useGetMe } from '../hooks/Auth/useGetMe';
+import { useNotification } from '../hooks/useNotification';
 import type { Prediction } from '../hooks/Branch/Cashbook/useCreateEntry';
 import { useGetPrediction } from '../hooks/Branch/Prediction/useGetPrediction';
 import { useGetPredictions } from '../hooks/Branch/Prediction/useGetPredictions';
@@ -35,6 +36,7 @@ export const PredictionComponent: React.FC<PredictionFormProps> = ({
 }) => {
   const [form] = Form.useForm();
   const [existingPredictionId, setExistingPredictionId] = useState<string | null>(null);
+  const { success, error, info } = useNotification();
   
   const { data: currentUser } = useGetMe();
   const user = currentUser?.data;
@@ -65,13 +67,13 @@ export const PredictionComponent: React.FC<PredictionFormProps> = ({
 
   const handleSubmit = async (values: { predictionNo: number; predictionAmount: number }) => {
     if (!user?.branchId) {
-      message.error('User branch information is missing');
+      error('User branch information is missing');
       return;
     }
 
     // Only branches can submit predictions
     if (user.role !== 'BR') {
-      message.error('Only branch users can submit predictions');
+      error('Only branch users can submit predictions');
       return;
     }
 
@@ -96,7 +98,7 @@ export const PredictionComponent: React.FC<PredictionFormProps> = ({
       }
       
       if (result) {
-        message.success(existingPredictionId ? 'Prediction updated successfully!' : 'Prediction submitted successfully!');
+        success(existingPredictionId ? 'Prediction updated successfully!' : 'Prediction submitted successfully!');
         
         if (onSubmit && result.data?.prediction) {
           onSubmit(result.data.prediction);
@@ -106,13 +108,13 @@ export const PredictionComponent: React.FC<PredictionFormProps> = ({
         refetchPrediction();
       }
     } catch {
-      message.error('An unexpected error occurred while submitting prediction');
+      error('An unexpected error occurred while submitting prediction');
     }
   };
 
   const handleRefresh = () => {
     refetchPrediction();
-    message.info('Prediction data refreshed');
+    info('Prediction data refreshed');
   };
 
   // Branch users can input, HO can only view

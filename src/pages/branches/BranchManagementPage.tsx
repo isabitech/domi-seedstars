@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Row, Col, Button, Modal, message, Space, Table, Tag, Typography, Form, Input, Spin, Tabs, Select, Dropdown } from 'antd';
+import { Card, Row, Col, Button, Modal, App, Space, Table, Tag, Typography, Form, Input, Spin, Tabs, Select, Dropdown } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, BankOutlined, UserAddOutlined, MoreOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useListBranches } from '../../hooks/Branches/useListBranches';
@@ -45,6 +45,7 @@ export const BranchManagementPage: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
   const [form] = Form.useForm<BranchFormData>();
+  const { message } = App.useApp();
   
   // User management state
   const [isUserModalVisible, setIsUserModalVisible] = useState(false);
