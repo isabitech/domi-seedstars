@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '../../../instance/axiosInstance';
-import type { Prediction } from '../../Prediction/useGetPredictions';
+import type { Prediction } from './useGetPredictions';
 
 export interface UpdatePredictionRequest {
 	predictionId: string;

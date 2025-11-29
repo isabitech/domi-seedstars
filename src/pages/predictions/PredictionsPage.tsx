@@ -28,11 +28,11 @@ import {
   useCreatePrediction,
 } from "../../hooks/Branch/Prediction/useCreatePrediction";
 
-import type { Prediction } from "../../types";
 import { TOMMOROW_DATE } from "../../lib/utils";
 import { useUpdatePrediction } from "../../hooks/Branch/Prediction/useUpdatePrediction";
 import { useGetMe } from "../../hooks/Auth/useGetMe";
 import { useGetEntry } from "../../hooks/Branch/Cashbook/useGetEntry";
+import type { Prediction } from "../../hooks/Branch/Prediction/useGetPredictions";
 
 const { Title, Text } = Typography;
 

@@ -26,7 +26,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { useGetOnlineCIHTSO } from '../../hooks/Metrics/useGetOnlineCIH-TSO';
 import { calculations } from '../../utils/calculations';
-import { useGetHODashboard, type BranchPerformance as APiBranchPerformance } from '../../hooks/Head Office/HO-Dashboard/useGetHODashboard';
+import { useGetHODashboard, } from '../../hooks/Head Office/HO-Dashboard/useGetHODashboard';
 
 dayjs.extend(relativeTime);
 
@@ -93,7 +93,7 @@ export const HeadOfficeDashboard: React.FC = () => {
     {
       title: 'Branch',
       key: 'branch',
-      render: (_: unknown, record: APiBranchPerformance) => (
+      render: (_: unknown, record: any) => (
         <Space>
           <BankOutlined />
           <div>
@@ -107,7 +107,7 @@ export const HeadOfficeDashboard: React.FC = () => {
     {
       title: 'Status',
       key: 'status',
-      render: (_: unknown, record: APiBranchPerformance) => {
+      render: (_: unknown, record: any) => {
         // Determine status based on lastOperation or other criteria
         const status = record.lastOperation ? 'submitted' : 'pending';
         return (
@@ -120,19 +120,19 @@ export const HeadOfficeDashboard: React.FC = () => {
     {
       title: 'Online CIH (Avg)',
       key: 'onlineCIH',
-      render: (_: unknown, record: APiBranchPerformance) => 
+      render: (_: unknown, record: any) => 
         calculations.formatCurrency(record.avgOnlineCIH || 0)
     },
     {
       title: 'TSO',
       key: 'tso',
-      render: (_: unknown, record: APiBranchPerformance) => 
+      render: (_: unknown, record: any) => 
         calculations.formatCurrency(record.totalTSO || 0)
     },
     {
       title: 'Performance',
       key: 'performance',
-      render: (_: unknown, record: APiBranchPerformance) => {
+      render: (_: unknown, record: any) => {
         // Calculate efficiency based on operation days vs expected days
         const efficiency = parseFloat((Math.min(100, (record.operationDays / 30) * 100).toFixed(2)));
         return (
@@ -147,7 +147,7 @@ export const HeadOfficeDashboard: React.FC = () => {
     {
       title: 'Last Operation',
       key: 'lastOperation',
-      render: (_: unknown, record: APiBranchPerformance) => (
+      render: (_: unknown, record: any) => (
         <Text type="secondary">
           {record.lastOperation ? dayjs(record.lastOperation).format('DD MMM, HH:mm') : 'No operations'}
         </Text>

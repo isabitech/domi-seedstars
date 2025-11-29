@@ -5,7 +5,6 @@ import { ProtectedRoute } from '../guards/ProtectedRoute';
 import { AppLayout } from '../components/layout/AppLayout';
 import { HeadOfficeDashboard } from '../pages/dashboard/HeadOfficeDashboard';
 import { BranchDashboard } from '../pages/dashboard/BranchDashboard';
-import { CashbookPage } from '../pages/cashbook/CashbookPage';
 import { CombinedCashbookPage } from '../pages/cashbook/CombinedCashbookPage';
 import { PredictionsPage } from '../pages/predictions/PredictionsPage';
 import { BranchManagementPage } from '../pages/branches/BranchManagementPage';
@@ -67,10 +66,7 @@ export const router = createBrowserRouter([
             index: true,
             element: <CombinedCashbookPage />,
           },
-          {
-            path: 'legacy',
-            element: <CashbookPage />,
-          },
+
         ],
       },
       {

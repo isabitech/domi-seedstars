@@ -6,23 +6,28 @@ export interface PredictionParams {
 	date?: string;
 }
 
-export interface Prediction {
-	id: string;
-	branchId: string;
-	date: string;
-	predictionNo: number;
-	predictionAmount: number;
-	submittedBy: string;
-	createdAt: string;
-	updatedAt: string;
+export interface GetPredictionsResponse {
+  success: boolean
+  data: PredictionData
+  message: string
+  timestamp: string
 }
 
-export interface GetPredictionsResponse {
-	success: boolean;
-	data: {
-		predictions: Prediction[];
-	};
-	message: string;
+export interface PredictionData {
+  prediction: Prediction
+}
+
+export interface Prediction {
+  _id: string
+  predictionNo: number
+  predictionAmount: number
+  date: string
+  branch: string
+  user: string
+  predictionDate: string
+  createdAt: string
+  updatedAt: string
+  __v: number
 }
 
 const getPredictions = async (params: PredictionParams): Promise<GetPredictionsResponse> => {

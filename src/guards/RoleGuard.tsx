@@ -24,7 +24,7 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
     return <Navigate to="/login" replace />;
   }
 
-  if (!allowedRoles.includes(currentUser.data.user.role)) {
+  if (!allowedRoles.includes(currentUser.data.role)) {
     if (fallback) {
       return <>{fallback}</>;
     }

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '../../../instance/axiosInstance';
-import type { Prediction } from '../../Prediction/useGetPredictions';
+import type { Prediction } from './useGetPredictions';
 
 export interface GetPredictionResponse {
 	success: boolean;
@@ -9,6 +9,8 @@ export interface GetPredictionResponse {
 	};
 	message: string;
 }
+
+
 
 const getPrediction = async (branchId: string, date: string): Promise<GetPredictionResponse> => {
 	const { data } = await axiosInstance.get(`/prediction/${branchId}/${date}`);

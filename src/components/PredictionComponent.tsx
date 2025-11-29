@@ -12,12 +12,13 @@ import {
   message
 } from 'antd';
 import { PlusOutlined, SaveOutlined, ReloadOutlined, FundProjectionScreenOutlined } from '@ant-design/icons';
-import { useAuthStore } from '../store';
 import { calculations } from '../utils/calculations';
-import { useGetPrediction } from '../hooks/Branch/Prediction/useGetPrediction';
 import { useCreatePrediction } from '../hooks/Branch/Prediction/useCreatePrediction';
 import { useUpdatePrediction } from '../hooks/Branch/Prediction/useUpdatePrediction';
-import type { Prediction } from '../types';
+import { useGetMe } from '../hooks/Auth/useGetMe';
+import type { Prediction } from '../hooks/Branch/Cashbook/useCreateEntry';
+import { useGetPrediction } from '../hooks/Branch/Prediction/useGetPrediction';
+import { useGetPredictions } from '../hooks/Branch/Prediction/useGetPredictions';
 
 const { Title, Text } = Typography;
 
@@ -35,7 +36,8 @@ export const PredictionComponent: React.FC<PredictionFormProps> = ({
   const [form] = Form.useForm();
   const [existingPredictionId, setExistingPredictionId] = useState<string | null>(null);
   
-  const { user } = useAuthStore();
+  const { data: currentUser } = useGetMe();
+  const user = currentUser?.data;
   const tomorrowDate = date || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
   // Get existing prediction
@@ -43,7 +45,7 @@ export const PredictionComponent: React.FC<PredictionFormProps> = ({
     data: existingPrediction, 
     isLoading: dataLoading, 
     refetch: refetchPrediction 
-  } = useGetPrediction(user?.branchId || '', tomorrowDate);
+  } = useGetPredictions({date: tomorrowDate, branchId: user?.branchId || ''});
 
   // Mutation hooks
   const createPredictionMutation = useCreatePrediction();
@@ -57,7 +59,7 @@ export const PredictionComponent: React.FC<PredictionFormProps> = ({
         predictionNo: data.predictionNo,
         predictionAmount: data.predictionAmount
       });
-      setExistingPredictionId(data.id);
+      setExistingPredictionId(data._id);
     }
   }, [existingPrediction, form]);
 
