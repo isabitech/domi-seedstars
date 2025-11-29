@@ -27,7 +27,6 @@ import {  calculateBankStatement1,
 } from "../services/bankStatement";
 import { useGetMe } from "../hooks/Auth/useGetMe";
 import { useGetBS1, type BankStatement1 } from "../hooks/BankStatements/useGetBs1";
-// import { useGetBS1, type BankStatement1 } from "../hooks/BankStatements/useGetBS1";
 
 const { Title, Text } = Typography;
 
