@@ -33,7 +33,6 @@ export const CashbookSidebar: React.FC<CashbookSidebarProps> = ({
         {/* Prediction Component */}
         <PredictionComponent 
           onSubmit={handlePredictionSubmit}
-
         />
       </Space>
     </div>
