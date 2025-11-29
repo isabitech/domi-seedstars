@@ -9,9 +9,9 @@ import {
   Input, 
   Switch,
   Typography,
-  Tag,
-  message
+  Tag
 } from 'antd';
+import { toast } from 'sonner';
 import { 
   PlusOutlined, 
   EditOutlined, 
@@ -107,7 +107,7 @@ export const BranchManagement: React.FC = () => {
       content: 'Are you sure you want to delete this branch?',
       onOk: () => {
         setBranches(branches.filter(b => b.id !== id));
-        message.success('Branch deleted successfully');
+        toast.success('Branch deleted successfully');
       }
     });
   };
@@ -120,7 +120,7 @@ export const BranchManagement: React.FC = () => {
           ? { ...b, ...values }
           : b
       ));
-      message.success('Branch updated successfully');
+      toast.success('Branch updated successfully');
     } else {
       // Add new branch
       const newBranch: Branch = {
@@ -131,7 +131,7 @@ export const BranchManagement: React.FC = () => {
         users: []
       };
       setBranches([...branches, newBranch]);
-      message.success('Branch added successfully');
+      toast.success('Branch added successfully');
     }
     
     setIsModalVisible(false);
@@ -142,7 +142,7 @@ export const BranchManagement: React.FC = () => {
     setBranches(branches.map(b =>
       b.id === id ? { ...b, isActive: checked } : b
     ));
-    message.success(`Branch ${checked ? 'activated' : 'deactivated'}`);
+    toast.success(`Branch ${checked ? 'activated' : 'deactivated'}`);
   };
 
   return (

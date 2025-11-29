@@ -5,9 +5,9 @@ import {
   Modal,
   Space,
   Typography,
-  message,
   Divider
 } from 'antd';
+import { toast } from 'sonner';
 import {
   UserAddOutlined,
   TeamOutlined
@@ -28,7 +28,7 @@ export const UserRegistrationModal: React.FC<UserRegistrationModalProps> = ({
   const [isModalVisible, setIsModalVisible] = useState(visible);
 
   const handleSuccess = () => {
-    message.success('New user registered successfully!');
+    toast.success('New user registered successfully!');
     setIsModalVisible(false);
     if (onClose) {
       onClose();

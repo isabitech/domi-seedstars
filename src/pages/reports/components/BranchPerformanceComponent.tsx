@@ -1,5 +1,6 @@
 import React from 'react';
-import { Card, Row, Col, Statistic, Progress, Space, Typography, Tag, Table, Button, message } from 'antd';
+import { Card, Row, Col, Statistic, Progress, Space, Typography, Tag, Table, Button } from 'antd';
+import { toast } from 'sonner';
 import { TrophyOutlined, DownloadOutlined } from '@ant-design/icons';
 import { calculations } from '../../../utils/calculations';
 import type { ColumnsType } from 'antd/es/table';
@@ -224,7 +225,7 @@ export const BranchPerformanceComponent: React.FC<BranchPerformanceProps> = ({ d
           <Button 
             type="primary" 
             icon={<DownloadOutlined />}
-            onClick={() => message.success('Performance report exported successfully')}
+            onClick={() => toast.success('Performance report exported successfully')}
           >
             Export Excel
           </Button>

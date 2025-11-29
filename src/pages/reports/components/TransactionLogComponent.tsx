@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Card, Table, Button, message, Select, Space, Typography, Tag, Input } from 'antd';
+import { Card, Table, Button, Select, Space, Typography, Tag, Input } from 'antd';
+import { toast } from 'sonner';
 import { DownloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { calculations } from '../../../utils/calculations';
 import dayjs from 'dayjs';
@@ -208,7 +209,7 @@ export const TransactionLogComponent: React.FC<TransactionLogProps> = ({ data, d
             <Button 
               type="primary" 
               icon={<DownloadOutlined />}
-              onClick={() => message.success('Transaction log exported successfully')}
+              onClick={() => toast.success('Transaction log exported successfully')}
             >
               Export Excel
             </Button>

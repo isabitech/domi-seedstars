@@ -9,10 +9,10 @@ import {
   Typography,
   Statistic,
   Alert,
-  message,
   Spin,
   notification,
 } from "antd";
+import { toast } from 'sonner';
 import { CheckCircleOutlined, DollarOutlined } from "@ant-design/icons";
 import { Cashbook1Component } from "../../components/Cashbook1";
 import { Cashbook2Component } from "../../components/Cashbook2";
@@ -163,7 +163,7 @@ export const CombinedCashbookPage: React.FC = () => {
     }));
 
     setCurrentStep(1); // Move to Cashbook 2
-    message.success("Cashbook 1 completed! Please proceed to Cashbook 2.");
+    toast.success("Cashbook 1 completed! Please proceed to Cashbook 2.");
   };
 
   const handleCashbook2Submit = (data: CB2Type) => {
@@ -210,12 +210,12 @@ export const CombinedCashbookPage: React.FC = () => {
     }));
 
     setCurrentStep(2); // Move to summary
-    message.success("Cashbook 2 completed! Ready to submit complete entry.");
+    toast.success("Cashbook 2 completed! Ready to submit complete entry.");
   };
 
   const handleFinalSubmit = async () => {
     if (!storeCB1 || !storeCB2 || !user?.branchId) {
-      message.error(
+      toast.error(
         "Please complete both Cashbook 1 and Cashbook 2 before submitting."
       );
       return;

@@ -12,9 +12,9 @@ import {
   Progress,
   Alert,
   Button,
-  Spin,
-  message
+  Spin
 } from 'antd';
+import { toast } from 'sonner';
 import { 
   DashboardOutlined,
   BankOutlined,
@@ -58,9 +58,9 @@ export const HeadOfficeDashboard: React.FC = () => {
   const handleRefresh = async () => {
     try {
       await Promise.all([refetchDashboard(), refetchMetrics()]);
-      message.success('Data refreshed successfully');
+      toast.success('Data refreshed successfully');
     } catch {
-      message.error('Failed to refresh data');
+      toast.error('Failed to refresh data');
     }
   };
 
