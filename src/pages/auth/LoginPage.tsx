@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { Form, Input, Button, Card, Typography, Alert, Space, message } from 'antd';
+import { Form, Input, Button, Card, Typography, Alert, Space } from 'antd';
+import { toast } from 'sonner';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useLogin } from '../../hooks/Auth/useLogin';
@@ -34,7 +35,7 @@ export const LoginPage: React.FC = () => {
     try {
       const loginResponse = await loginMutation.mutateAsync(values);
       
-      message.success('Login successful!');
+      toast.success('Login successful!');
       
       // Get user role from response or current user data
       const user = loginResponse?.data?.user || currentUser?.data;
@@ -64,7 +65,7 @@ export const LoginPage: React.FC = () => {
         errorMessage = responseError.response?.data?.message || 'Login failed';
       }
       
-      message.error(errorMessage);
+      toast.error(errorMessage);
     }
   };
 

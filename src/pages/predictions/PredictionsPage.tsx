@@ -13,8 +13,8 @@ import {
   Statistic,
   Divider,
   Table,
-  message,
 } from "antd";
+import { toast } from 'sonner';
 import {
   RiseOutlined,
   SaveOutlined,
@@ -73,7 +73,7 @@ export const PredictionsPage: React.FC = () => {
     date: dayjs.Dayjs;
   }) => {
     if (!user?.branchId) {
-      message.error("User branch information is missing");
+      toast.error("User branch information is missing");
       return;
     }
 
@@ -86,11 +86,11 @@ export const PredictionsPage: React.FC = () => {
     
     createPredictionEntry.mutate(predictionData,{
       onSuccess: () => {
-        message.success("Prediction created successfully");
+        toast.success("Prediction created successfully");
         getPrediction.refetch();
       },
       onError: () => {
-        message.error("Failed to create prediction");
+        toast.error("Failed to create prediction");
       }
     })
   };

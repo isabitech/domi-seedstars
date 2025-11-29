@@ -10,11 +10,11 @@ import {
   Typography,
   Table,
   DatePicker,
-  message,
   Alert,
   Statistic,
   Modal
 } from 'antd';
+import { toast } from 'sonner';
 import {
   SettingOutlined,
   SaveOutlined,
@@ -111,7 +111,7 @@ export const HOOperationsPage: React.FC = () => {
         form.setFieldsValue(formValues);
       } catch (error) {
         console.error('Error loading branch data:', error);
-        message.error('Failed to load branch data');
+        toast.error('Failed to load branch data');
       } finally {
         setLoading(false);
       }
@@ -170,10 +170,10 @@ export const HOOperationsPage: React.FC = () => {
       }));
       
       setEditingCell(null);
-      message.success('Value updated successfully');
+      toast.success('Value updated successfully');
     } catch (error) {
       console.error('Error updating HO fields:', error);
-      message.error('Failed to update value. Please try again.');
+      toast.error('Failed to update value. Please try again.');
       setEditingCell(null);
     }
   };
@@ -236,12 +236,12 @@ export const HOOperationsPage: React.FC = () => {
             : branch
         ));
         
-        message.success(`${selectedBranch.branchName} data updated successfully`);
+        toast.success(`${selectedBranch.branchName} data updated successfully`);
         setModalVisible(false);
         setSelectedBranch(null);
       } catch (error) {
         console.error('Error updating branch data:', error);
-        message.error('Failed to update branch data. Please try again.');
+        toast.error('Failed to update branch data. Please try again.');
       }
     }
   };

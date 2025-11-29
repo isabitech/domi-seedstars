@@ -7,9 +7,9 @@ import {
   Space,
   Typography,
   Row,
-  Col,
-  message
+  Col
 } from 'antd';
+import { toast } from 'sonner';
 import {
   UserOutlined,
   MailOutlined,
@@ -55,7 +55,7 @@ export const RegisterComponent: React.FC<RegisterComponentProps> = ({
 
       await registerMutation.mutateAsync(registerData);
       
-      message.success('Account created successfully! Please login to continue.');
+      toast.success('Account created successfully! Please login to continue.');
       
       // Call onSuccess callback if provided
       if (onSuccess) {
@@ -68,7 +68,7 @@ export const RegisterComponent: React.FC<RegisterComponentProps> = ({
       const errorMessage = error instanceof Error 
         ? error.message 
         : 'Registration failed. Please try again.';
-      message.error(errorMessage);
+      toast.error(errorMessage);
     }
   };
 

@@ -12,9 +12,9 @@ import {
   Statistic,
   Alert,
   Tag,
-  Spin,
-  message
+  Spin
 } from 'antd';
+import { toast } from 'sonner';
 import { 
   FileTextOutlined,
   DownloadOutlined,
@@ -90,13 +90,13 @@ export const ReportsComponent: React.FC = () => {
           a.click();
           document.body.removeChild(a);
           window.URL.revokeObjectURL(url);
-          message.success('Excel export downloaded successfully.');
+          toast.success('Excel export downloaded successfully.');
         } else {
           throw new Error('Export failed');
         }
       } 
     } catch {
-      message.error(`Failed to export ${format} report`);
+      toast.error(`Failed to export ${format} report`);
     } finally {
       setExportLoading(false);
     }

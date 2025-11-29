@@ -15,7 +15,6 @@ import {
   Row,
   Col,
   Divider,
-  message,
   Tag,
   TimePicker,
   Checkbox,
@@ -25,6 +24,7 @@ import {
   Statistic,
   Progress
 } from 'antd';
+import { toast } from 'sonner';
 import {
   SettingOutlined,
   UserOutlined,
@@ -137,9 +137,9 @@ const SettingsPage: React.FC = () => {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      message.success(`${section} settings saved successfully`);
+      toast.success(`${section} settings saved successfully`);
     } catch {
-      message.error('Failed to save settings');
+      toast.error('Failed to save settings');
     } finally {
       setLoading(false);
     }
@@ -148,13 +148,13 @@ const SettingsPage: React.FC = () => {
   const handleUserAction = (action: string, user?: UserData) => {
     setSelectedUser(user || null);
     setUserModalVisible(true);
-    message.info(`${action} user functionality`);
+    toast.info(`${action} user functionality`);
   };
 
   const handleBranchAction = (action: string, branch?: BranchData) => {
     setSelectedBranch(branch || null);
     setBranchModalVisible(true);
-    message.info(`${action} branch functionality`);
+    toast.info(`${action} branch functionality`);
   };
 
   // System Configuration Tab

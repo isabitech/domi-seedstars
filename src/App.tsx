@@ -1,5 +1,6 @@
 import { ConfigProvider, App as AntdApp } from 'antd';
 import { RouterProvider } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import { router } from './router';
 import './App.css';
 
@@ -14,6 +15,12 @@ function App() {
     >
       <AntdApp>
         <RouterProvider router={router} />
+        <Toaster 
+          position="top-right"
+          richColors
+          expand
+          closeButton
+        />
       </AntdApp>
     </ConfigProvider>
   );

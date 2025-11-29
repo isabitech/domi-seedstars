@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Row, Col, Button, Modal, App, Space, Table, Tag, Typography, Form, Input, Spin, Tabs, Select, Dropdown } from 'antd';
+import { toast } from 'sonner';
 import { PlusOutlined, EditOutlined, DeleteOutlined, BankOutlined, UserAddOutlined, MoreOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useListBranches } from '../../hooks/Branches/useListBranches';
@@ -45,7 +46,6 @@ export const BranchManagementPage: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
   const [form] = Form.useForm<BranchFormData>();
-  const { message } = App.useApp();
   
   // User management state
   const [isUserModalVisible, setIsUserModalVisible] = useState(false);
@@ -101,11 +101,11 @@ export const BranchManagementPage: React.FC = () => {
       onOk() {
         deleteBranchMutation.mutate(branchId, {
           onSuccess: () => {
-            message.success('Branch deleted successfully');
+            toast.success('Branch deleted successfully');
           },
           onError: (error) => {
             const errorMessage = error instanceof Error ? error.message : 'Failed to delete branch';
-            message.error(errorMessage);
+            toast.error(errorMessage);
           }
         });
       },
@@ -120,11 +120,11 @@ export const BranchManagementPage: React.FC = () => {
           id: editingBranch._id,
           ...values
         });
-        message.success('Branch updated successfully');
+        toast.success('Branch updated successfully');
       } else {
         // Add new branch
         await createBranchMutation.mutateAsync(values);
-        message.success('Branch created successfully');
+        toast.success('Branch created successfully');
       }
       setIsModalVisible(false);
       setEditingBranch(null);
@@ -134,7 +134,7 @@ export const BranchManagementPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['branches'] });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to save branch';
-      message.error(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
@@ -172,11 +172,11 @@ export const BranchManagementPage: React.FC = () => {
       onOk() {
         deleteUserMutation.mutate(userId, {
           onSuccess: () => {
-            message.success('User deleted successfully');
+            toast.success('User deleted successfully');
           },
           onError: (error) => {
             const errorMessage = error instanceof Error ? error.message : 'Failed to delete user';
-            message.error(errorMessage);
+            toast.error(errorMessage);
           }
         });
       },
@@ -198,11 +198,11 @@ export const BranchManagementPage: React.FC = () => {
           ...updateData
         });
         
-        message.success('User updated successfully');
+        toast.success('User updated successfully');
       } else {
         // Create new user
         await createUserMutation.mutateAsync(values);
-        message.success('User created successfully');
+        toast.success('User created successfully');
       }
       setIsUserModalVisible(false);
       setEditingUser(null);
@@ -212,7 +212,7 @@ export const BranchManagementPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to save user';
-      message.error(errorMessage);
+      toast.error(errorMessage);
     }
   };
 

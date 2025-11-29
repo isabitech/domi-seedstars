@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Space, Typography, Breadcrumb, Tabs, message } from "antd";
+import { Space, Typography, Breadcrumb, Tabs } from "antd";
+import { toast } from 'sonner';
 import { HomeOutlined, BankOutlined } from "@ant-design/icons";
 import { BankStatement1Component } from "../../components/BankStatement1";
 import { BankStatement2Component } from "../../components/BankStatement2";
@@ -18,13 +19,13 @@ export const BankStatementPage: React.FC = () => {
         payload: { openingBal },
       });
 
-      message.success("Bank Statement 1 created successfully!");
+      toast.success("Bank Statement 1 created successfully!");
 
       // Optionally switch to the second tab
       setActiveTab("bs2");
     } catch (error) {
       console.error("Failed to create Bank Statement 1:", error);
-      message.error("Failed to create Bank Statement 1. Please try again.");
+      toast.error("Failed to create Bank Statement 1. Please try again.");
     }
   };
 
@@ -39,10 +40,10 @@ export const BankStatementPage: React.FC = () => {
         payload: data,
       });
 
-      message.success("Bank Statement 2 created successfully!");
+      toast.success("Bank Statement 2 created successfully!");
     } catch (error) {
       console.error("Failed to create Bank Statement 2:", error);
-      message.error("Failed to create Bank Statement 2. Please try again.");
+      toast.error("Failed to create Bank Statement 2. Please try again.");
     }
   };
 

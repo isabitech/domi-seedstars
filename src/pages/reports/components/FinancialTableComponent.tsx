@@ -1,5 +1,6 @@
 import React from 'react';
-import { Table, Button, Card, Typography, Tag, message } from 'antd';
+import { Table, Button, Card, Typography, Tag } from 'antd';
+import { toast } from 'sonner';
 import { DownloadOutlined } from '@ant-design/icons';
 import { calculations } from '../../../utils/calculations';
 import dayjs from 'dayjs';
@@ -115,7 +116,7 @@ export const FinancialTableComponent: React.FC<FinancialTableProps> = ({ data, d
           type="primary" 
           icon={<DownloadOutlined />}
           onClick={() => {
-            message.success('Financial report exported successfully');
+            toast.success('Financial report exported successfully');
           }}
         >
           Export Excel
