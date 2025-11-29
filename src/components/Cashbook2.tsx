@@ -10,17 +10,18 @@ import {
   Statistic, 
   Typography,
   Divider,
-  message,
-  Spin,
+  // message,
+  // Spin,
   Tag,
   Tooltip,
   Alert 
 } from 'antd';
-import { SaveOutlined, CalculatorOutlined, ReloadOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { useAuthStore } from '../store';
+import { SaveOutlined, CalculatorOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { calculations } from '../utils/calculations';
-import { cashbookService } from '../services/cashbook';
-import type { Cashbook2 } from '../types';
+import { useCreateEntry } from '../hooks/Branch/Cashbook/useCreateEntry';
+import { useUpdateEntry } from '../hooks/Branch/Cashbook/useUpdateEntry';
+import type { User } from '../hooks/Auth/useGetMe';
+import type { Cashbook2 } from '../hooks/Branch/Cashbook/get-daily-ops-types';
 
 const { Title, Text } = Typography;
 
@@ -30,6 +31,8 @@ interface Cashbook2FormProps {
   readonly?: boolean;
   date?: string;
   cashbook1CBTotal?: number; // For calculating Online CIH
+  user: User;
+  existingEntry?: Cashbook2;
 }
 
 export const Cashbook2Component: React.FC<Cashbook2FormProps> = ({
@@ -37,16 +40,22 @@ export const Cashbook2Component: React.FC<Cashbook2FormProps> = ({
   initialData,
   readonly = false,
   date,
-  cashbook1CBTotal = 0
+  cashbook1CBTotal = 0,
+  user,
+  existingEntry
 }) => {
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
-  const [dataLoading, setDataLoading] = useState(false);
-  const [hasExistingData, setHasExistingData] = useState(false);
-  const [cbTotal2, setCbTotal2] = useState(0);
-  const [onlineCIH, setOnlineCIH] = useState(0);
-  const { user } = useAuthStore();
+  const [existingEntryId, setExistingEntryId] = useState<string | null>(null);
+  const [calculatedValues, setCalculatedValues] = useState({
+    cbTotal2: 0,
+    onlineCIH: 0
+  });
+  
   const currentDate = date || new Date().toISOString().split('T')[0];
+  
+  // Mutation hooks
+  const createEntryMutation = useCreateEntry();
+  const updateEntryMutation = useUpdateEntry();
 
   const handleValuesChange = useCallback(() => {
     try {
@@ -60,123 +69,63 @@ export const Cashbook2Component: React.FC<Cashbook2FormProps> = ({
       };
       
       // CB TOTAL 2 = DIS AMT + SAV WITH + DOMI BANK + POS/T
-      const total = calculations.calculateCashbook2CBTotal(numericValues);
-      setCbTotal2(total);
+      const cbTotal2 = calculations.calculateCashbook2CBTotal(numericValues);
       
       // Calculate Online CIH (CB TOTAL 1 - CB TOTAL 2)
-      const cih = calculations.calculateOnlineCIH(cashbook1CBTotal, total);
-      setOnlineCIH(cih);
+      const onlineCIH = calculations.calculateOnlineCIH(cashbook1CBTotal, cbTotal2);
+      
+      setCalculatedValues({ cbTotal2, onlineCIH });
     } catch {
       console.error('Error calculating Cashbook 2 values');
     }
   }, [form, cashbook1CBTotal]);
 
-  // Load existing data on component mount
+  // Load existing data when available
   useEffect(() => {
-    const loadExistingData = async () => {
-      if (user?.branchId && currentDate) {
-        setDataLoading(true);
-        try {
-          const response = await cashbookService.getCashbook2(user.branchId, currentDate);
-          if (response.success && response.data) {
-            const existingData = response.data;
-            form.setFieldsValue({
-              disNo: existingData.disNo,
-              disAmt: existingData.disAmt,
-              disWithInt: existingData.disWithInt,
-              savWith: existingData.savWith,
-              domiBank: existingData.domiBank,
-              posT: existingData.posT
-            });
-            setHasExistingData(true);
-            handleValuesChange();
-          }
-        } catch {
-          console.error('Error loading existing Cashbook 2 data');
-        } finally {
-          setDataLoading(false);
-        }
-      }
-    };
-
-    loadExistingData();
-  }, [user?.branchId, currentDate, form, handleValuesChange]);
+    if (existingEntry) {
+      form.setFieldsValue({
+        disNo: existingEntry.disNo,
+        disAmt: existingEntry.disAmt,
+        disWithInt: existingEntry.disWithInt,
+        savWith: existingEntry.savWith,
+        domiBank: existingEntry.domiBank,
+        posT: existingEntry.posT
+      });
+      setExistingEntryId(existingEntry._id);
+      handleValuesChange();
+    }
+  }, [existingEntry, form, handleValuesChange]);
 
   // Calculate CB TOTAL 2 and Online CIH when form values change
   useEffect(() => {
     if (initialData) {
-      const total = calculations.calculateCashbook2CBTotal(initialData);
-      setCbTotal2(total);
-      const cih = calculations.calculateOnlineCIH(cashbook1CBTotal, total);
-      setOnlineCIH(cih);
+      const cbTotal2 = calculations.calculateCashbook2CBTotal(initialData);
+      const onlineCIH = calculations.calculateOnlineCIH(cashbook1CBTotal, cbTotal2);
+      setCalculatedValues({ cbTotal2, onlineCIH });
     }
   }, [initialData, cashbook1CBTotal]);
 
-  const handleSubmit = async (values: Record<string, number>) => {
-    if (!user?.branchId) {
-      message.error('User branch information is missing');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const submitData = {
-        ...values,
-        cbTotal2,
-        date: currentDate,
-        branchId: user.branchId,
-        submittedBy: user.id,
-        submittedAt: new Date().toISOString()
-      };
+  const handleSubmit = () => {
+    const values = form.getFieldsValue();
+    const cashbook2Data: Cashbook2 = {
+      disNo: Number(values.disNo) || 0,
+      disAmt: Number(values.disAmt) || 0,
+      disWithInt: Number(values.disWithInt) || 0,
+      savWith: Number(values.savWith) || 0,
+      domiBank: Number(values.domiBank) || 0,
+      posT: Number(values.posT) || 0,
+      _id: existingEntryId || '',
+      date: currentDate,
+      branch: user?.branchId || '',
+      cbTotal2: calculatedValues.cbTotal2,
+      user: user?.branchId || '',
       
-      const response = await cashbookService.submitCashbook2(submitData);
-      
-      if (response.success && response.data) {
-        message.success(response.message || 'Cashbook 2 data submitted successfully!');
-        setHasExistingData(true);
-        
-        if (onSubmit) {
-          onSubmit(response.data);
-        }
-      } else {
-        message.error(response.error || 'Failed to submit Cashbook 2 data');
-      }
-    } catch {
-      message.error('An unexpected error occurred while submitting data');
-    } finally {
-      setLoading(false);
-    }
+    };
+    onSubmit?.(cashbook2Data);
   };
 
-  const handleRefresh = async () => {
-    if (!user?.branchId) return;
-    
-    setDataLoading(true);
-    try {
-      const response = await cashbookService.getCashbook2(user.branchId, currentDate);
-      if (response.success && response.data) {
-        const existingData = response.data;
-        form.setFieldsValue({
-          disNo: existingData.disNo,
-          disAmt: existingData.disAmt,
-          disWithInt: existingData.disWithInt,
-          savWith: existingData.savWith,
-          domiBank: existingData.domiBank,
-          posT: existingData.posT
-        });
-        setHasExistingData(true);
-        handleValuesChange();
-        message.success('Cashbook 2 data refreshed successfully');
-      } else {
-        message.info('No existing Cashbook 2 data found for today');
-        setHasExistingData(false);
-      }
-    } catch {
-      message.error('Failed to refresh Cashbook 2 data');
-    } finally {
-      setDataLoading(false);
-    }
-  };
+  const hasExistingData = !!existingEntry;
+  const loading = createEntryMutation.isPending || updateEntryMutation.isPending;
 
   return (
     <div className="page-container">
@@ -194,14 +143,14 @@ export const Cashbook2Component: React.FC<Cashbook2FormProps> = ({
                 Record daily disbursements, withdrawals and cash operations for {new Date(currentDate).toLocaleDateString()}
               </Text>
             </div>
-            <Button 
+            {/* <Button 
               icon={<ReloadOutlined />} 
               onClick={handleRefresh}
               loading={dataLoading}
               size="large"
             >
               Refresh
-            </Button>
+            </Button> */}
           </div>
         </div>
 
@@ -225,13 +174,13 @@ export const Cashbook2Component: React.FC<Cashbook2FormProps> = ({
                   <Tag color="success">Updated: Today</Tag>
                 ) : null
               }
-            >
-              {dataLoading ? (
+              >
+              {/* {dataLoading ? (
                 <div style={{ textAlign: 'center', padding: '40px' }}>
                   <Spin size="large" />
                   <p style={{ marginTop: 16 }}>Loading existing data...</p>
                 </div>
-              ) : (
+              ) : ( */}
               <Form
                 form={form}
                 layout="vertical"
@@ -254,7 +203,7 @@ export const Cashbook2Component: React.FC<Cashbook2FormProps> = ({
                       name="disNo"
                       rules={[
                         { required: true, message: 'Disbursement number is required' },
-                        { type: 'number', min: 0, message: 'Must be a positive number' }
+                        // { type: 'number', min: 0, message: 'Must be a positive number' }
                       ]}
                     >
                       <Input
@@ -280,7 +229,7 @@ export const Cashbook2Component: React.FC<Cashbook2FormProps> = ({
                       name="disAmt"
                       rules={[
                         { required: true, message: 'Disbursement amount is required' },
-                        { type: 'number', min: 0, message: 'Must be a positive number' }
+                        // { type: 'number', min: 0, message: 'Must be a positive number' }
                       ]}
                     >
                       <Input
@@ -307,7 +256,7 @@ export const Cashbook2Component: React.FC<Cashbook2FormProps> = ({
                       }
                       name="disWithInt"
                       rules={[
-                        { type: 'number', min: 0, message: 'Must be a positive number' }
+                        // { type: 'number', min: 0, message: 'Must be a positive number' }
                       ]}
                     >
                       <Input
@@ -333,7 +282,7 @@ export const Cashbook2Component: React.FC<Cashbook2FormProps> = ({
                       name="savWith"
                       rules={[
                         { required: true, message: 'Savings withdrawal amount is required' },
-                        { type: 'number', min: 0, message: 'Must be a positive number' }
+                        // { type: 'number', min: 0, message: 'Must be a positive number' }
                       ]}
                     >
                       <Input
@@ -363,7 +312,7 @@ export const Cashbook2Component: React.FC<Cashbook2FormProps> = ({
                       name="domiBank"
                       rules={[
                         { required: true, message: 'DOMI BANK amount is required' },
-                        { type: 'number', min: 0, message: 'Must be a positive number' }
+                        // { type: 'number', min: 0, message: 'Must be a positive number' }
                       ]}
                     >
                       <Input
@@ -389,7 +338,7 @@ export const Cashbook2Component: React.FC<Cashbook2FormProps> = ({
                       name="posT"
                       rules={[
                         { required: true, message: 'POS/Transfer amount is required' },
-                        { type: 'number', min: 0, message: 'Must be a positive number' }
+                        // { type: 'number', min: 0, message: 'Must be a positive number' }
                       ]}
                     >
                       <Input
@@ -418,7 +367,7 @@ export const Cashbook2Component: React.FC<Cashbook2FormProps> = ({
                   </Form.Item>
                 )}
               </Form>
-              )}
+              {/* )} */}
             </Card>
           </Col>
 
@@ -441,7 +390,7 @@ export const Cashbook2Component: React.FC<Cashbook2FormProps> = ({
                       <small>(DIS AMT + SAV WITH + DOMI BANK + POS/T)</small>
                     </span>
                   }
-                  value={cbTotal2}
+                  value={calculatedValues.cbTotal2}
                   precision={2}
                   prefix="₦"
                   valueStyle={{ color: '#52c41a', fontSize: '20px', fontWeight: 'bold' }}
@@ -459,11 +408,11 @@ export const Cashbook2Component: React.FC<Cashbook2FormProps> = ({
                           <small>(CB TOTAL 1 - CB TOTAL 2)</small>
                         </span>
                       }
-                      value={onlineCIH}
+                      value={calculatedValues.onlineCIH}
                       precision={2}
                       prefix="₦"
                       valueStyle={{ 
-                        color: onlineCIH >= 0 ? '#52c41a' : '#ff4d4f', 
+                        color: calculatedValues.onlineCIH >= 0 ? '#52c41a' : '#ff4d4f', 
                         fontSize: '20px', 
                         fontWeight: 'bold' 
                       }}
@@ -472,11 +421,11 @@ export const Cashbook2Component: React.FC<Cashbook2FormProps> = ({
                     <Alert
                       message="Online Cash in Hand Status"
                       description={
-                        onlineCIH >= 0 
-                          ? `Positive balance of ${calculations.formatCurrency(onlineCIH)}`
-                          : `Deficit of ${calculations.formatCurrency(Math.abs(onlineCIH))}`
+                        calculatedValues.onlineCIH >= 0 
+                          ? `Positive balance of ${calculations.formatCurrency(calculatedValues.onlineCIH)}`
+                          : `Deficit of ${calculations.formatCurrency(Math.abs(calculatedValues.onlineCIH))}`
                       }
-                      type={onlineCIH >= 0 ? 'success' : 'warning'}
+                      type={calculatedValues.onlineCIH >= 0 ? 'success' : 'warning'}
                       showIcon
                       style={{ 
                         background: 'rgba(255,255,255,0.1)', 
@@ -499,7 +448,7 @@ export const Cashbook2Component: React.FC<Cashbook2FormProps> = ({
                   </Text>
                   <br />
                   <Text style={{ color: '#fff', fontSize: '28px', fontWeight: 'bold' }}>
-                    {calculations.formatCurrency(cbTotal2)}
+                    {calculations.formatCurrency(calculatedValues.cbTotal2)}
                   </Text>
                 </div>
               </Space>

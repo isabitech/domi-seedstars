@@ -34,7 +34,7 @@ export interface Branch {
 export interface Cashbook1 {
   id: string;
   date: string;
-  branchId: string;
+  branchId?: string;
   pcih: number; // Previous Cash in Hand
   savings: number;
   loanCollection: number;
@@ -43,8 +43,8 @@ export interface Cashbook1 {
   frmHO: number; // Fund from HO (HO only)
   frmBR: number; // Fund from BR (HO only)
   cbTotal1: number; // Auto-calculated
-  submittedBy: string;
-  submittedAt: string;
+  submittedBy?: string;
+  submittedAt?: string;
 }
 
 export interface Cashbook2 {

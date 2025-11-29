@@ -1,224 +1,214 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  Card, 
-  Row, 
-  Col, 
-  Typography, 
-  Space, 
-  Button, 
-  Form, 
-  InputNumber, 
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  Row,
+  Col,
+  Typography,
+  Space,
+  Button,
+  Form,
+  InputNumber,
   DatePicker,
   Alert,
   Statistic,
   Divider,
-  Table
-} from 'antd';
-import { 
-  RiseOutlined, 
-  SaveOutlined, 
+  Table,
+  message,
+} from "antd";
+import {
+  RiseOutlined,
+  SaveOutlined,
   CalculatorOutlined,
   CalendarOutlined,
   UserOutlined,
-  DollarOutlined
-} from '@ant-design/icons';
-import dayjs from 'dayjs';
-import { useAuthStore } from '../../store';
-import type { Prediction } from '../../types';
-import { predictionService } from '../../services/prediction';
+  DollarOutlined,
+} from "@ant-design/icons";
+import dayjs from "dayjs";
+import {
+  useCreatePrediction,
+} from "../../hooks/Branch/Prediction/useCreatePrediction";
+
+import { TOMMOROW_DATE } from "../../lib/utils";
+import { useUpdatePrediction } from "../../hooks/Branch/Prediction/useUpdatePrediction";
+import { useGetMe } from "../../hooks/Auth/useGetMe";
+import { useGetEntry } from "../../hooks/Branch/Cashbook/useGetEntry";
+import type { Prediction } from "../../hooks/Branch/Prediction/useGetPredictions";
 
 const { Title, Text } = Typography;
 
 export const PredictionsPage: React.FC = () => {
-  const { user } = useAuthStore();
+  const { data: currentUser } = useGetMe();
+  const user = currentUser?.data;
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
-  const [predictions, setPredictions] = useState<Prediction[]>([]);
-  const [currentPrediction, setCurrentPrediction] = useState<Prediction | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [existingPredictionId, setExistingPredictionId] = useState<
+    string | null
+  >(null);
 
-  const tomorrow = dayjs().add(1, 'day');
+  const tomorrow = dayjs().add(1, "day");
 
-  // Load existing predictions
-  const loadPredictions = useCallback(async () => {
-    if (!user?.branchId) return;
+  // Get all predictions for this branch
 
-    try {
-      setLoading(true);
-      const allPredictionsResponse = await predictionService.getAllPredictions(user.branchId);
-      if (allPredictionsResponse.success && allPredictionsResponse.data) {
-        setPredictions(allPredictionsResponse.data);
-      }
+  // Get tomorrow's prediction specifically
+  // Mutation hooks
+  const updatePredictionMutation = useUpdatePrediction();
 
-      // Check if there's a prediction for tomorrow
-      const tomorrowPredictionResponse = await predictionService.getPrediction(user.branchId, tomorrow.format('YYYY-MM-DD'));
-      if (tomorrowPredictionResponse.success && tomorrowPredictionResponse.data) {
-        const tomorrowPrediction = tomorrowPredictionResponse.data;
-        setCurrentPrediction(tomorrowPrediction);
-        form.setFieldsValue({
-          predictionNo: tomorrowPrediction.predictionNo,
-          predictionAmount: tomorrowPrediction.predictionAmount,
-          date: tomorrow
-        });
-      } else {
-        form.setFieldsValue({
-          predictionNo: 0,
-          predictionAmount: 0,
-          date: tomorrow
-        });
-      }
-    } catch (err) {
-      setError('Failed to load predictions');
-      console.error('Error loading predictions:', err);
-    } finally {
-      setLoading(false);
+  const createPredictionEntry = useCreatePrediction();
+
+  const getPrediction = useGetEntry(user?.branchId || "", TOMMOROW_DATE);
+
+  useEffect(()=>{
+    if(getPrediction?.data?.data?.operations?.prediction){
+      const prediction = getPrediction.data.data.operations.prediction;
+      form.setFieldsValue({
+        predictionNo: prediction.predictionNo,
+        predictionAmount: prediction.predictionAmount,
+      });
+      setExistingPredictionId(prediction._id);
     }
-  }, [user?.branchId, tomorrow, form]);
-
+  },[getPrediction.data])
   // Handle form submission
   const handleSubmit = async (values: {
     predictionNo: number;
     predictionAmount: number;
     date: dayjs.Dayjs;
   }) => {
-    if (!user?.branchId) return;
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      const predictionData = {
-        branchId: user.branchId,
-        date: values.date.format('YYYY-MM-DD'),
-        predictionNo: values.predictionNo,
-        predictionAmount: values.predictionAmount
-      };
-
-      const savedPredictionResponse = await predictionService.submitPrediction(predictionData);
-      if (savedPredictionResponse.success && savedPredictionResponse.data) {
-        setCurrentPrediction(savedPredictionResponse.data);
-        
-        // Reload predictions list
-        await loadPredictions();
-      } else {
-        setError(savedPredictionResponse.error || 'Failed to save prediction');
-      }
-      
-      // Success message could be added here
-    } catch (err) {
-      setError('Failed to save prediction');
-      console.error('Error saving prediction:', err);
-    } finally {
-      setLoading(false);
+    if (!user?.branchId) {
+      message.error("User branch information is missing");
+      return;
     }
+
+    const predictionData = {
+      branchId: user.branchId,
+      date: values.date.format("YYYY-MM-DD"),
+      predictionNo: values.predictionNo,
+      predictionAmount: values.predictionAmount,
+    };
+    
+    createPredictionEntry.mutate(predictionData,{
+      onSuccess: () => {
+        message.success("Prediction created successfully");
+        getPrediction.refetch();
+      },
+      onError: () => {
+        message.error("Failed to create prediction");
+      }
+    })
   };
 
-  // Load predictions on component mount
-  useEffect(() => {
-    loadPredictions();
-  }, [loadPredictions]);
+  const predictions = getPrediction.data?.data?.operations?.prediction
+    ? [{
+        ...getPrediction.data.data.operations.prediction,
+        id: getPrediction.data.data.operations.prediction._id || '',
+        branchId: user?.branchId || '',
+      }]
+    : [];
+  const currentPrediction = getPrediction.data?.data?.operations?.prediction;
+  const loading =
+    createPredictionEntry.isPending || updatePredictionMutation.isPending;
 
   // Calculate average per client
-  const avgPerClient = currentPrediction && currentPrediction.predictionNo > 0
-    ? currentPrediction.predictionAmount / currentPrediction.predictionNo
-    : 0;
+  const avgPerClient =
+    currentPrediction && currentPrediction.predictionNo > 0
+      ? currentPrediction.predictionAmount / currentPrediction.predictionNo
+      : 0;
 
   // Table columns for predictions history
   const columns = [
     {
-      title: 'Date',
-      dataIndex: 'date',
-      key: 'date',
-      render: (date: string) => dayjs(date).format('DD MMM YYYY')
+      title: "Date",
+      dataIndex: "date",
+      key: "date",
+      render: (date: string) => dayjs(date).format("DD MMM YYYY"),
     },
     {
-      title: 'Prediction No.',
-      dataIndex: 'predictionNo',
-      key: 'predictionNo',
-      align: 'center' as const,
-      render: (value: number) => <Text strong>{value} clients</Text>
+      title: "Prediction No.",
+      dataIndex: "predictionNo",
+      key: "predictionNo",
+      align: "center" as const,
+      render: (value: number) => <Text strong>{value} clients</Text>,
     },
     {
-      title: 'Prediction Amount',
-      dataIndex: 'predictionAmount',
-      key: 'predictionAmount',
-      align: 'right' as const,
-      render: (value: number) => <Text strong>₦{value.toLocaleString()}</Text>
+      title: "Prediction Amount",
+      dataIndex: "predictionAmount",
+      key: "predictionAmount",
+      align: "right" as const,
+      render: (value: number) => <Text strong>₦{value.toLocaleString()}</Text>,
     },
     {
-      title: 'Avg per Client',
-      key: 'avgPerClient',
-      align: 'right' as const,
+      title: "Avg per Client",
+      key: "avgPerClient",
+      align: "right" as const,
       render: (_: unknown, record: Prediction) => {
-        const avg = record.predictionNo > 0 ? record.predictionAmount / record.predictionNo : 0;
+        const avg =
+          record.predictionNo > 0
+            ? record.predictionAmount / record.predictionNo
+            : 0;
         return <Text>₦{avg.toLocaleString()}</Text>;
-      }
+      },
     },
     {
-      title: 'Status',
-      key: 'status',
+      title: "Status",
+      key: "status",
       render: (_: unknown, record: Prediction) => {
-        const isToday = dayjs(record.date).isSame(dayjs(), 'day');
-        const isTomorrow = dayjs(record.date).isSame(tomorrow, 'day');
-        const isPast = dayjs(record.date).isBefore(dayjs(), 'day');
-        
-        if (isTomorrow) return <span style={{ color: '#1890ff' }}>Tomorrow</span>;
-        if (isToday) return <span style={{ color: '#52c41a' }}>Today</span>;
-        if (isPast) return <span style={{ color: '#999' }}>Past</span>;
-        return <span style={{ color: '#722ed1' }}>Future</span>;
-      }
-    }
+        const isToday = dayjs(record.date).isSame(dayjs(), "day");
+        const isTomorrow = dayjs(record.date).isSame(tomorrow, "day");
+        const isPast = dayjs(record.date).isBefore(dayjs(), "day");
+
+        if (isTomorrow)
+          return <span style={{ color: "#1890ff" }}>Tomorrow</span>;
+        if (isToday) return <span style={{ color: "#52c41a" }}>Today</span>;
+        if (isPast) return <span style={{ color: "#999" }}>Past</span>;
+        return <span style={{ color: "#722ed1" }}>Future</span>;
+      },
+    },
   ];
 
   return (
-    <div className="page-container" style={{ padding: '24px' }}>
-      <Space direction="vertical" size="large" style={{ width: '100%' }}>
+    <div className="page-container" style={{ padding: "24px" }}>
+      <Space direction="vertical" size="large" style={{ width: "100%" }}>
         <div>
           <Title level={2}>
             <RiseOutlined /> Tomorrow's Disbursement Predictions
           </Title>
           <Text type="secondary">
-            Plan and predict tomorrow's loan disbursements for {tomorrow.format('dddd, DD MMMM YYYY')}
+            Plan and predict tomorrow's loan disbursements for{" "}
+            {tomorrow.format("dddd, DD MMMM YYYY")}
           </Text>
         </div>
 
-        {error && (
-          <Alert
-            message="Error"
-            description={error}
-            type="error"
-            showIcon
-            closable
-            onClose={() => setError(null)}
-          />
-        )}
+        {/* Remove the error alert and update the loading states */}
 
         <Row gutter={[24, 24]}>
           <Col xs={24} lg={12}>
-            <Card 
+            <Card
               title={
                 <Space>
                   <CalendarOutlined />
                   <span>Prediction Entry</span>
                 </Space>
               }
-              loading={loading}
+              loading={createPredictionEntry.isPending}
             >
               <Form
                 form={form}
                 layout="vertical"
                 onFinish={handleSubmit}
-                disabled={loading}
+                disabled={
+                  createPredictionEntry.isPending ||
+                  updatePredictionMutation.isPending
+                }
               >
                 <Form.Item
                   label="Prediction Date"
                   name="date"
-                  rules={[{ required: true, message: 'Date is required' }]}
+                  rules={[{ required: true, message: "Date is required" }]}
                 >
                   <DatePicker
-                    style={{ width: '100%' }}
+                    style={{ width: "100%" }}
                     format="YYYY-MM-DD"
-                    disabledDate={(current) => current && current <= dayjs().startOf('day')}
+                    disabledDate={(current) =>
+                      current && current <= dayjs().startOf("day")
+                    }
                     defaultValue={tomorrow}
                   />
                 </Form.Item>
@@ -227,13 +217,20 @@ export const PredictionsPage: React.FC = () => {
                   label="Prediction No. (Number of Clients)"
                   name="predictionNo"
                   rules={[
-                    { required: true, message: 'Number of clients is required' },
-                    { type: 'number', min: 0, message: 'Must be a positive number' }
+                    {
+                      required: true,
+                      message: "Number of clients is required",
+                    },
+                    {
+                      type: "number",
+                      min: 0,
+                      message: "Must be a positive number",
+                    },
                   ]}
                   help="Total number of clients you plan to disburse loans to tomorrow"
                 >
                   <InputNumber
-                    style={{ width: '100%' }}
+                    style={{ width: "100%" }}
                     min={0}
                     placeholder="Enter number of clients"
                     suffix={<UserOutlined />}
@@ -244,16 +241,25 @@ export const PredictionsPage: React.FC = () => {
                   label="Prediction Amount (Total Disbursement)"
                   name="predictionAmount"
                   rules={[
-                    { required: true, message: 'Prediction amount is required' },
-                    { type: 'number', min: 0, message: 'Must be a positive amount' }
+                    {
+                      required: true,
+                      message: "Prediction amount is required",
+                    },
+                    {
+                      type: "number",
+                      min: 0,
+                      message: "Must be a positive amount",
+                    },
                   ]}
                   help="Total amount you plan to disburse tomorrow"
                 >
                   <InputNumber
-                    style={{ width: '100%' }}
+                    style={{ width: "100%" }}
                     min={0}
                     placeholder="Enter total disbursement amount"
-                    formatter={value => `₦ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    formatter={(value) =>
+                      `₦ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    }
                     prefix={<DollarOutlined />}
                   />
                 </Form.Item>
@@ -274,7 +280,7 @@ export const PredictionsPage: React.FC = () => {
 
           <Col xs={24} lg={12}>
             {currentPrediction && (
-              <Card 
+              <Card
                 title={
                   <Space>
                     <CalculatorOutlined />
@@ -282,14 +288,18 @@ export const PredictionsPage: React.FC = () => {
                   </Space>
                 }
               >
-                <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                <Space
+                  direction="vertical"
+                  size="large"
+                  style={{ width: "100%" }}
+                >
                   <Row gutter={16}>
                     <Col span={12}>
                       <Statistic
                         title="Clients to Serve"
                         value={currentPrediction.predictionNo}
                         prefix={<UserOutlined />}
-                        valueStyle={{ color: '#1890ff' }}
+                        valueStyle={{ color: "#1890ff" }}
                       />
                     </Col>
                     <Col span={12}>
@@ -298,7 +308,7 @@ export const PredictionsPage: React.FC = () => {
                         value={currentPrediction.predictionAmount}
                         precision={0}
                         prefix="₦"
-                        valueStyle={{ color: '#52c41a' }}
+                        valueStyle={{ color: "#52c41a" }}
                       />
                     </Col>
                   </Row>
@@ -310,16 +320,25 @@ export const PredictionsPage: React.FC = () => {
                     value={avgPerClient}
                     precision={0}
                     prefix="₦"
-                    valueStyle={{ color: '#fa8c16', fontSize: '24px' }}
+                    valueStyle={{ color: "#fa8c16", fontSize: "24px" }}
                   />
 
                   <Alert
                     message="Prediction Insights"
                     description={
                       <Space direction="vertical" size="small">
-                        <Text>• This prediction helps plan cash flow and resource allocation</Text>
-                        <Text>• Average amount per client: ₦{avgPerClient.toLocaleString()}</Text>
-                        <Text>• Prediction date: {dayjs(currentPrediction.date).format('DD MMMM YYYY')}</Text>
+                        <Text>
+                          • This prediction helps plan cash flow and resource
+                          allocation
+                        </Text>
+                        <Text>
+                          • Average amount per client: ₦
+                          {avgPerClient.toLocaleString()}
+                        </Text>
+                        <Text>
+                          • Prediction date:{" "}
+                          {dayjs(currentPrediction.date).format("DD MMMM YYYY")}
+                        </Text>
                       </Space>
                     }
                     type="info"
@@ -339,7 +358,7 @@ export const PredictionsPage: React.FC = () => {
             pagination={{
               pageSize: 10,
               showSizeChanger: false,
-              showTotal: (total) => `Total ${total} predictions`
+              showTotal: (total) => `Total ${total} predictions`,
             }}
             loading={loading}
           />

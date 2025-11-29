@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Card, 
   Row, 
@@ -11,199 +11,265 @@ import {
   Typography,
   Statistic,
   Alert,
-  Tag
+  Tag,
+  Spin,
+  message
 } from 'antd';
 import { 
   FileTextOutlined,
   DownloadOutlined,
   PrinterOutlined,
   CalendarOutlined,
-  ExportOutlined
+  ExportOutlined,
+  ReloadOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 import { calculations } from '../utils/calculations';
-import type { DailyReport } from '../types';
+import {
+  useGetConsolidatedReport,
+  type ConsolidatedDaum,
+  type GrandTotals,
+  type CurrentRegister,
+  type ReportData
+} from '../hooks/Reports/useGetConsolidatedReport';
+import {
+  useListBranches
+} from '../hooks/Branches/useListBranches';
+import type { Branch } from '../types';
 
 dayjs.extend(isBetween);
 
-const { Title, Text } = Typography;
-const { RangePicker } = DatePicker;
-
-// Mock report data
-const mockReports: DailyReport[] = [
-  {
-    date: '2024-11-12',
-    branchId: 'br-001',
-    branchName: 'Lagos Branch',
-    cashbook1: {
-      id: '1',
-      date: '2024-11-12',
-      branchId: 'br-001',
-      pcih: 150000,
-      savings: 850000,
-      loanCollection: 400000,
-      charges: 25000,
-      total: 1275000,
-      frmHO: 200000,
-      frmBR: 50000,
-      cbTotal1: 1525000,
-      submittedBy: 'branch1',
-      submittedAt: '2024-11-12T10:30:00Z'
-    },
-    cashbook2: {
-      id: '1',
-      date: '2024-11-12',
-      branchId: 'br-001',
-      disNo: 15,
-      disAmt: 750000,
-      disWithInt: 780000,
-      savWith: 120000,
-      domiBank: 100000,
-      posT: 50000,
-      cbTotal2: 1020000,
-      submittedBy: 'branch1',
-      submittedAt: '2024-11-12T14:30:00Z'
-    },
-    calculations: {
-      onlineCIH: 505000,
-      transferToSenate: 455000
-    }
-  },
-  {
-    date: '2024-11-11',
-    branchId: 'br-002',
-    branchName: 'Abuja Branch',
-    cashbook1: {
-      id: '2',
-      date: '2024-11-11',
-      branchId: 'br-002',
-      pcih: 120000,
-      savings: 650000,
-      loanCollection: 330000,
-      charges: 20000,
-      total: 1000000,
-      frmHO: 150000,
-      frmBR: 30000,
-      cbTotal1: 1300000,
-      submittedBy: 'branch2',
-      submittedAt: '2024-11-11T09:45:00Z'
-    },
-    cashbook2: {
-      id: '2',
-      date: '2024-11-11',
-      branchId: 'br-002',
-      disNo: 12,
-      disAmt: 580000,
-      disWithInt: 600000,
-      savWith: 80000,
-      domiBank: 75000,
-      posT: 35000,
-      cbTotal2: 770000,
-      submittedBy: 'branch2',
-      submittedAt: '2024-11-11T13:15:00Z'
-    },
-    calculations: {
-      onlineCIH: 530000,
-      transferToSenate: 405000
-    }
-  }
-];
-
 export const ReportsComponent: React.FC = () => {
-  const [reportType, setReportType] = useState<string>('daily');
   const [selectedBranch, setSelectedBranch] = useState<string>('all');
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
-    dayjs().subtract(7, 'days'),
+    dayjs().subtract(30, 'days'),
     dayjs()
   ]);
-  const [loading, setLoading] = useState(false);
+
+  // Get branches for filter
+  const { data: branchesData } = useListBranches();
+  
+  // Get consolidated report
+  const { 
+    data: consolidatedReport, 
+    isLoading: consolidatedLoading,
+    refetch: refetchReport 
+  } = useGetConsolidatedReport({
+    startDate: dateRange[0].format('YYYY-MM-DD'),
+    endDate: dateRange[1].format('YYYY-MM-DD')
+  });
+
+  // Extract report data
+  const reportData: ReportData | undefined = consolidatedReport?.data?.reportData;
+  const consolidatedData: ConsolidatedDaum[] = reportData?.consolidatedData || [];
+  const grandTotals: GrandTotals | undefined = reportData?.grandTotals;
+  const currentRegisters: CurrentRegister[] = reportData?.currentRegisters || [];
+  const branches = branchesData?.data?.branches || [];
 
   const handleExport = async (format: 'excel' | 'pdf') => {
-    setLoading(true);
+    setExportLoading(true);
     try {
-      // Simulate export process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      // In real app, this would trigger file download
-      console.log(`Exporting ${reportType} report as ${format}`);
+      const params = {
+        startDate: dateRange[0].format('YYYY-MM-DD'),
+        endDate: dateRange[1].format('YYYY-MM-DD'),
+        format: format
+      };
+
+      if (format === 'excel') {
+        // Call the consolidated report endpoint with format=excel
+        const response = await fetch(`/api/reports/consolidated?${new URLSearchParams(params)}`);
+        
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `consolidated-report-${dateRange[0].format('YYYY-MM-DD')}-to-${dateRange[1].format('YYYY-MM-DD')}.xlsx`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          message.success('Excel export downloaded successfully.');
+        } else {
+          throw new Error('Export failed');
+        }
+      } 
+    } catch {
+      message.error(`Failed to export ${format} report`);
     } finally {
-      setLoading(false);
+      setExportLoading(false);
     }
   };
 
-  const reportColumns = [
-    {
-      title: 'Date',
-      dataIndex: 'date',
-      key: 'date',
-      render: (date: string) => dayjs(date).format('MMM DD, YYYY')
-    },
+  const isLoading = consolidatedLoading;
+  const [exportLoading, setExportLoading] = useState(false);
+
+  // Consolidated report columns with comprehensive data
+  const consolidatedColumns = [
     {
       title: 'Branch',
       key: 'branch',
-      render: (_: unknown, record: DailyReport) => (
+      fixed: 'left' as const,
+      width: 200,
+      render: (_: unknown, record: ConsolidatedDaum) => (
         <div>
           <strong>{record.branchName}</strong>
           <br />
-          <Text type="secondary">{record.branchId}</Text>
+          <Text type="secondary">{record.branchCode}</Text>
         </div>
       )
     },
     {
+      title: 'Operating Days',
+      dataIndex: 'operatingDays',
+      key: 'operatingDays',
+      width: 120,
+      render: (days: number) => (
+        <Tag color="blue">{days} days</Tag>
+      )
+    },
+    {
       title: 'Collections',
-      key: 'collections',
-      render: (_: unknown, record: DailyReport) => {
-        const total = record.cashbook1.savings + record.cashbook1.loanCollection;
-        return calculations.formatCurrency(total);
-      }
+      children: [
+        {
+          title: 'Savings',
+          dataIndex: 'totalSavings',
+          key: 'totalSavings',
+          render: (value: number) => calculations.formatCurrency(value)
+        },
+        {
+          title: 'Loan Collection',
+          dataIndex: 'totalLoanCollection',
+          key: 'totalLoanCollection',
+          render: (value: number) => calculations.formatCurrency(value)
+        },
+        {
+          title: 'Charges',
+          dataIndex: 'totalCharges',
+          key: 'totalCharges',
+          render: (value: number) => calculations.formatCurrency(value)
+        }
+      ]
     },
     {
       title: 'Disbursements',
-      key: 'disbursements',
-      render: (_: unknown, record: DailyReport) => 
-        calculations.formatCurrency(record.cashbook2.disAmt)
+      dataIndex: 'totalDisbursements',
+      key: 'totalDisbursements',
+      render: (value: number) => calculations.formatCurrency(value)
     },
     {
-      title: 'Online CIH',
-      key: 'onlineCIH',
-      render: (_: unknown, record: DailyReport) => (
-        <Tag color={record.calculations.onlineCIH >= 0 ? 'green' : 'red'}>
-          {calculations.formatCurrency(record.calculations.onlineCIH)}
+      title: 'Withdrawals',
+      dataIndex: 'totalWithdrawals',
+      key: 'totalWithdrawals',
+      render: (value: number) => calculations.formatCurrency(value)
+    },
+    {
+      title: 'TSO',
+      dataIndex: 'totalTSO',
+      key: 'totalTSO',
+      render: (value: number) => calculations.formatCurrency(value)
+    },
+    {
+      title: 'Avg Online CIH',
+      dataIndex: 'avgOnlineCIH',
+      key: 'avgOnlineCIH',
+      render: (value: number) => (
+        <Tag color={value >= 0 ? 'green' : 'red'}>
+          {calculations.formatCurrency(value)}
         </Tag>
       )
     },
     {
-      title: 'Transfer to Senate',
-      key: 'transferToSenate',
-      render: (_: unknown, record: DailyReport) => 
-        calculations.formatCurrency(record.calculations.transferToSenate)
-    },
-    {
-      title: 'Status',
-      key: 'status',
-      render: () => <Tag color="green">Complete</Tag>
+      title: 'Last Operation',
+      dataIndex: 'lastOperationDate',
+      key: 'lastOperationDate',
+      render: (date: string) => (
+        <Text type="secondary">
+          {dayjs(date).format('MMM DD, YYYY')}
+        </Text>
+      )
     }
   ];
 
-  const filteredReports = mockReports.filter(report => {
-    if (selectedBranch !== 'all' && report.branchId !== selectedBranch) {
-      return false;
+  // Current Registers columns
+  const registersColumns = [
+    {
+      title: 'Branch',
+      key: 'branch',
+      render: (_: unknown, record: CurrentRegister) => (
+        <div>
+          <strong>{record.name}</strong>
+          <br />
+          <Text type="secondary">{record.code}</Text>
+        </div>
+      )
+    },
+    {
+      title: 'Current Loan Balance',
+      dataIndex: 'currentLoanBalance',
+      key: 'currentLoanBalance',
+      render: (value: number) => (
+        <Text strong style={{ color: '#722ed1' }}>
+          {calculations.formatCurrency(value)}
+        </Text>
+      )
+    },
+    {
+      title: 'Current Savings Balance',
+      dataIndex: 'currentSavingsBalance',
+      key: 'currentSavingsBalance',
+      render: (value: number) => (
+        <Text strong style={{ color: '#3f8600' }}>
+          {calculations.formatCurrency(value)}
+        </Text>
+      )
     }
-    const reportDate = dayjs(report.date);
-    return reportDate.isBetween(dateRange[0], dateRange[1], 'day', '[]');
-  });
+  ];
 
-  const totalStats = filteredReports.reduce((acc, report) => ({
-    totalCollections: acc.totalCollections + report.cashbook1.savings + report.cashbook1.loanCollection,
-    totalDisbursements: acc.totalDisbursements + report.cashbook2.disAmt,
-    totalOnlineCIH: acc.totalOnlineCIH + report.calculations.onlineCIH,
-    totalTransferToSenate: acc.totalTransferToSenate + report.calculations.transferToSenate
-  }), {
-    totalCollections: 0,
-    totalDisbursements: 0,
-    totalOnlineCIH: 0,
-    totalTransferToSenate: 0
-  });
+  interface TotalStats {
+    totalCollections: number;
+    totalDisbursements: number;
+    totalOnlineCIH: number;
+    totalTransferToSenate: number;
+    totalCharges: number;
+    totalWithdrawals: number;
+    activeBranches: number;
+    totalOperations: number;
+  }
+
+  // Get totals from backend grandTotals
+  const getTotalStats = (): TotalStats => {
+    if (grandTotals) {
+      return {
+        totalCollections: grandTotals.totalSavings + grandTotals.totalLoanCollection,
+        totalDisbursements: grandTotals.totalDisbursements,
+        totalOnlineCIH: grandTotals.totalOnlineCIH,
+        totalTransferToSenate: grandTotals.totalTSO,
+        totalCharges: grandTotals.totalCharges,
+        totalWithdrawals: grandTotals.totalWithdrawals,
+        activeBranches: grandTotals.activeBranches.length,
+        totalOperations: grandTotals.totalOperations
+      };
+    }
+    
+    // Fallback to zero values
+    return {
+      totalCollections: 0,
+      totalDisbursements: 0,
+      totalOnlineCIH: 0,
+      totalTransferToSenate: 0,
+      totalCharges: 0,
+      totalWithdrawals: 0,
+      activeBranches: 0,
+      totalOperations: 0
+    };
+  };
+
+  const totalStats = getTotalStats();
+
+  const { Title, Text } = Typography;
+  const { RangePicker } = DatePicker;
 
   return (
     <div className="page-container">
@@ -212,10 +278,13 @@ export const ReportsComponent: React.FC = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <Title level={3}>
-              <FileTextOutlined /> Reports & Analytics
+              <FileTextOutlined /> Consolidated Financial Reports
             </Title>
             <Text type="secondary">
-              Generate and export comprehensive reports
+              Comprehensive financial overview across all branches for {reportData?.period ? 
+                `${dayjs(reportData.period.startDate).format('MMM DD')} - ${dayjs(reportData.period.endDate).format('MMM DD, YYYY')}` : 
+                'selected period'
+              }
             </Text>
           </div>
           <Space>
@@ -228,14 +297,14 @@ export const ReportsComponent: React.FC = () => {
             <Button 
               type="primary" 
               icon={<DownloadOutlined />}
-              loading={loading}
+              loading={exportLoading}
               onClick={() => handleExport('excel')}
             >
               Export Excel
             </Button>
             <Button 
               icon={<ExportOutlined />}
-              loading={loading}
+              loading={exportLoading}
               onClick={() => handleExport('pdf')}
             >
               Export PDF
@@ -248,35 +317,7 @@ export const ReportsComponent: React.FC = () => {
           <Row gutter={16} align="middle">
             <Col>
               <Space>
-                <Text strong>Report Type:</Text>
-                <Select
-                  value={reportType}
-                  onChange={setReportType}
-                  style={{ width: 150 }}
-                >
-                  <Select.Option value="daily">Daily Reports</Select.Option>
-                  <Select.Option value="monthly">Monthly Summary</Select.Option>
-                  <Select.Option value="consolidated">Consolidated</Select.Option>
-                </Select>
-              </Space>
-            </Col>
-            <Col>
-              <Space>
-                <Text strong>Branch:</Text>
-                <Select
-                  value={selectedBranch}
-                  onChange={setSelectedBranch}
-                  style={{ width: 200 }}
-                >
-                  <Select.Option value="all">All Branches</Select.Option>
-                  <Select.Option value="br-001">Lagos Branch</Select.Option>
-                  <Select.Option value="br-002">Abuja Branch</Select.Option>
-                  <Select.Option value="br-003">Kano Branch</Select.Option>
-                </Select>
-              </Space>
-            </Col>
-            <Col>
-              <Space>
+                <Text strong>Date Range:</Text>
                 <CalendarOutlined />
                 <RangePicker 
                   value={dateRange}
@@ -288,12 +329,21 @@ export const ReportsComponent: React.FC = () => {
                 />
               </Space>
             </Col>
+            <Col>
+              <Button 
+                icon={<ReloadOutlined />}
+                onClick={() => refetchReport()}
+                loading={consolidatedLoading}
+              >
+                Refresh Data
+              </Button>
+            </Col>
           </Row>
         </Card>
 
         {/* Summary Statistics */}
         <Row gutter={[16, 16]}>
-          <Col xs={24} sm={6}>
+          <Col xs={24} sm={12} lg={6}>
             <Card className="stats-card">
               <Statistic
                 title="Total Collections"
@@ -302,9 +352,12 @@ export const ReportsComponent: React.FC = () => {
                 prefix="₦"
                 valueStyle={{ color: '#3f8600' }}
               />
+              <Text type="secondary" style={{ fontSize: '12px' }}>
+                Savings + Loan Collections
+              </Text>
             </Card>
           </Col>
-          <Col xs={24} sm={6}>
+          <Col xs={24} sm={12} lg={6}>
             <Card className="stats-card">
               <Statistic
                 title="Total Disbursements"
@@ -313,12 +366,15 @@ export const ReportsComponent: React.FC = () => {
                 prefix="₦"
                 valueStyle={{ color: '#722ed1' }}
               />
+              <Text type="secondary" style={{ fontSize: '12px' }}>
+                Loan disbursements
+              </Text>
             </Card>
           </Col>
-          <Col xs={24} sm={6}>
+          <Col xs={24} sm={12} lg={6}>
             <Card className="stats-card">
               <Statistic
-                title="Total Online CIH"
+                title="Net Online CIH"
                 value={totalStats.totalOnlineCIH}
                 precision={2}
                 prefix="₦"
@@ -326,9 +382,12 @@ export const ReportsComponent: React.FC = () => {
                   color: totalStats.totalOnlineCIH >= 0 ? '#3f8600' : '#cf1322' 
                 }}
               />
+              <Text type="secondary" style={{ fontSize: '12px' }}>
+                Cash in hand across branches
+              </Text>
             </Card>
           </Col>
-          <Col xs={24} sm={6}>
+          <Col xs={24} sm={12} lg={6}>
             <Card className="stats-card">
               <Statistic
                 title="Total TSO"
@@ -337,27 +396,111 @@ export const ReportsComponent: React.FC = () => {
                 prefix="₦"
                 valueStyle={{ color: '#1890ff' }}
               />
+              <Text type="secondary" style={{ fontSize: '12px' }}>
+                Transfers to senate
+              </Text>
             </Card>
           </Col>
         </Row>
 
-        {/* Reports Table */}
+        {/* Additional Metrics */}
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} lg={6}>
+            <Card className="stats-card">
+              <Statistic
+                title="Total Charges"
+                value={totalStats.totalCharges}
+                precision={2}
+                prefix="₦"
+                valueStyle={{ color: '#fa8c16' }}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <Card className="stats-card">
+              <Statistic
+                title="Total Withdrawals"
+                value={totalStats.totalWithdrawals}
+                precision={2}
+                prefix="₦"
+                valueStyle={{ color: '#ff4d4f' }}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <Card className="stats-card">
+              <Statistic
+                title="Active Branches"
+                value={totalStats.activeBranches}
+                valueStyle={{ color: '#52c41a' }}
+              />
+              <Text type="secondary" style={{ fontSize: '12px' }}>
+                Operating branches
+              </Text>
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <Card className="stats-card">
+              <Statistic
+                title="Total Operations"
+                value={totalStats.totalOperations}
+                valueStyle={{ color: '#13c2c2' }}
+              />
+              <Text type="secondary" style={{ fontSize: '12px' }}>
+                Total transactions
+              </Text>
+            </Card>
+          </Col>
+        </Row>
+
+        {/* Branch Operations Table */}
         <Card 
-          title={`${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Reports`}
+          title="Branch Operations Summary"
           extra={
-            <Text type="secondary">
-              {filteredReports.length} record(s) found
-            </Text>
+            <Space>
+              <Text type="secondary">
+                {consolidatedData.length} branches • Generated {reportData?.generatedAt ? dayjs(reportData.generatedAt).fromNow() : ''}
+              </Text>
+            </Space>
           }
+          loading={isLoading}
         >
-          <Table
-            columns={reportColumns}
-            dataSource={filteredReports}
-            rowKey={(record) => `${record.branchId}-${record.date}`}
-            pagination={{ pageSize: 10 }}
-            scroll={{ x: 800 }}
-          />
+          {isLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <Spin size="large" />
+              <p style={{ marginTop: 16 }}>Loading consolidated report...</p>
+            </div>
+          ) : (
+            <Table
+              columns={consolidatedColumns}
+              dataSource={consolidatedData}
+              rowKey="_id"
+              pagination={{ pageSize: 10, showSizeChanger: true }}
+              scroll={{ x: 1200 }}
+              size="small"
+            />
+          )}
         </Card>
+
+        {/* Current Registers */}
+        {currentRegisters.length > 0 && (
+          <Card 
+            title="Current Branch Registers"
+            extra={
+              <Text type="secondary">
+                Current loan and savings balances
+              </Text>
+            }
+          >
+            <Table
+              columns={registersColumns}
+              dataSource={currentRegisters}
+              rowKey="_id"
+              pagination={false}
+              size="small"
+            />
+          </Card>
+        )}
 
         {/* Export Information */}
         <Alert

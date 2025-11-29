@@ -1,36 +1,15 @@
-import React from 'react';
-import { Space, Typography, Breadcrumb, Row, Col } from 'antd';
-import { HomeOutlined, DollarOutlined } from '@ant-design/icons';
+import { Space, Typography, Row, Col } from 'antd';
 import { OnlineCIHComponent } from '../../components/OnlineCIH';
 
 const { Title } = Typography;
 
 export const OnlineCIHPage: React.FC = () => {
+
+
   return (
     <div className="page-container" style={{ padding: '24px' }}>
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        <Breadcrumb 
-          items={[
-            {
-              href: '/app/dashboard',
-              title: (
-                <span>
-                  <HomeOutlined />
-                  <span>Dashboard</span>
-                </span>
-              ),
-            },
-            {
-              title: (
-                <span>
-                  <DollarOutlined />
-                  <span>Online Cash in Hand</span>
-                </span>
-              ),
-            },
-          ]}
-        />
-        
+
         <div>
           <Title level={2}>Online Cash in Hand</Title>
           <p style={{ color: '#666', marginBottom: 0 }}>

@@ -11,16 +11,19 @@ import {
   Alert,
   Typography,
   Divider,
-  message,
-  Spin,
+  // message,
+  // Spin,
   Tag,
   Tooltip 
 } from 'antd';
-import { SaveOutlined, CalculatorOutlined, ReloadOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { useAuthStore } from '../store';
+import { SaveOutlined, CalculatorOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { calculations } from '../utils/calculations';
-import { cashbookService } from '../services/cashbook';
-import type { Cashbook1 } from '../types';
+import { useCreateEntry } from '../hooks/Branch/Cashbook/useCreateEntry';
+import { useUpdateEntry } from '../hooks/Branch/Cashbook/useUpdateEntry';
+import type { User } from '../hooks/Auth/useGetMe';
+import type { Cashbook1 } from '../hooks/Branch/Cashbook/get-daily-ops-types';
+import { useGetOnlineCIHTSO } from '../hooks/Metrics/useGetOnlineCIH-TSO';
+import { YESTERDAY_DATE } from '../lib/utils';
 
 const { Title, Text } = Typography;
 
@@ -29,65 +32,46 @@ interface Cashbook1FormProps {
   initialData?: Partial<Cashbook1>;
   readonly?: boolean;
   date?: string;
+  user: User
+  existingEntry: Cashbook1;
 }
 
 export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
   onSubmit,
   initialData,
   readonly = false,
-  date
+  date,
+  user,
+  existingEntry
 }) => {
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
-  const [dataLoading, setDataLoading] = useState(false);
-  const [hasExistingData, setHasExistingData] = useState(false);
+  const [existingEntryId, setExistingEntryId] = useState<string | null>(null);
   const [calculatedValues, setCalculatedValues] = useState({
     total: 0,
     cbTotal1: 0
   });
-  const { user } = useAuthStore();
+  const [pcihValue, setPcihValue] = useState<number>(0);
+  
+  
   const currentDate = date || new Date().toISOString().split('T')[0];
+  
+  // Get existing entry for today
+  // const { 
+  //   data: existingEntry, 
+  //   isLoading: dataLoading, 
+  //   refetch: refetchEntry 
+  // } = useGetByBranchAndDate(user?.branchId || '', currentDate);
 
-  // Load existing data on component mount
-  useEffect(() => {
-    const loadExistingData = async () => {
-      if (user?.branchId && currentDate) {
-        setDataLoading(true);
-        try {
-          const response = await cashbookService.getCashbook1(user.branchId, currentDate);
-          if (response.success && response.data) {
-            const existingData = response.data;
-            form.setFieldsValue({
-              pcih: existingData.pcih,
-              savings: existingData.savings,
-              loanCollection: existingData.loanCollection,
-              charges: existingData.charges,
-              frmHO: existingData.frmHO,
-              frmBR: existingData.frmBR
-            });
-            setHasExistingData(true);
-            // Trigger calculation update
-            handleValuesChange();
-          }
-        } catch {
-          console.error('Error loading existing data');
-        } finally {
-          setDataLoading(false);
-        }
-      }
-    };
+  // Mutation hooks
 
-    loadExistingData();
-  }, [user?.branchId, currentDate, form]);
+  const getPCIH = useGetOnlineCIHTSO({ date: YESTERDAY_DATE });
 
-  // Calculate values when form values change
-  useEffect(() => {
-    if (initialData) {
-      const total = calculations.calculateCashbook1Total(initialData);
-      const cbTotal1 = calculations.calculateCashbook1CBTotal(initialData);
-      setCalculatedValues({ total, cbTotal1 });
-    }
-  }, [initialData]);
+
+
+  const createEntryMutation = useCreateEntry();
+  const updateEntryMutation = useUpdateEntry();
+
+
 
   const handleValuesChange = useCallback(() => {
     try {
@@ -111,73 +95,71 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
     }
   }, [form]);
 
-  const handleSubmit = async (values: Record<string, number>) => {
-    if (!user?.branchId) {
-      message.error('User branch information is missing');
-      return;
+  useEffect(() =>{
+    if ( getPCIH.data){
+      // console.log("pcih", getPCIH.data);
+      setPcihValue(getPCIH.data.data?.raw?.find(
+        metric => user?.branchId && metric.branch.id === user.branchId
+      )?.onlineCIH || 0);
+    };
+    if(pcihValue){
+      form.setFieldsValue({ pcih: pcihValue });
+      handleValuesChange();
     }
+  }, [getPCIH.data, pcihValue , form, user, handleValuesChange]);
 
-    setLoading(true);
-    try {
-      const submitData = {
-        ...values,
-        total: calculatedValues.total,
-        cbTotal1: calculatedValues.cbTotal1,
-        date: currentDate,
-        branchId: user.branchId,
-        submittedBy: user.id,
-        submittedAt: new Date().toISOString()
-      };
-      
-      const response = await cashbookService.submitCashbook1(submitData);
-      
-      if (response.success && response.data) {
-        message.success(response.message || 'Cashbook 1 data submitted successfully!');
-        setHasExistingData(true);
-        
-        // Call parent onSubmit if provided
-        if (onSubmit) {
-          onSubmit(response.data);
-        }
-      } else {
-        message.error(response.error || 'Failed to submit data');
-      }
-    } catch {
-      message.error('An unexpected error occurred while submitting data');
-    } finally {
-      setLoading(false);
+  // Load existing data when available
+  useEffect(() => {
+    if (existingEntry) {
+      form.setFieldsValue({
+        pcih: existingEntry.pcih,
+        savings: existingEntry.savings,
+        loanCollection: existingEntry.loanCollection,
+        charges: existingEntry.chargesCollection,
+        frmHO: existingEntry.frmHO,
+        frmBR: existingEntry.frmBR
+      });
+      setExistingEntryId(existingEntry._id);
+      handleValuesChange();
     }
-  };
+  }, [existingEntry, form, handleValuesChange]);
 
-  const handleRefresh = async () => {
-    if (!user?.branchId) return;
+  
+
+  // Calculate values when form values change
+  useEffect(() => {
+    if (initialData) {
+      const total = calculations.calculateCashbook1Total(initialData);
+      const cbTotal1 = calculations.calculateCashbook1CBTotal(initialData);
+      setCalculatedValues({ total, cbTotal1 });
+    }
+  }, [initialData]);
+
+  
+const handleSubmit = () => {
+  const values = form.getFieldsValue();
+  const cashbookData: Cashbook1 = {
+    _id: existingEntryId || '',
+    pcih: Number(values.pcih) || 0,
+    savings: Number(values.savings) || 0,
+    loanCollection: Number(values.loanCollection) || 0,
+    frmHO: Number(values.frmHO) || 0,
+    frmBR: Number(values.frmBR) || 0,
+    date: currentDate,
+    total: calculatedValues.total,
+    cbTotal1: calculatedValues.cbTotal1,
+    chargesCollection: Number(values.charges) || 0,
+    branch: user?.branchId || '',
+    user: user?.branchId || '',
     
-    setDataLoading(true);
-    try {
-      const response = await cashbookService.getCashbook1(user.branchId, currentDate);
-      if (response.success && response.data) {
-        const existingData = response.data;
-        form.setFieldsValue({
-          pcih: existingData.pcih,
-          savings: existingData.savings,
-          loanCollection: existingData.loanCollection,
-          charges: existingData.charges,
-          frmHO: existingData.frmHO,
-          frmBR: existingData.frmBR
-        });
-        setHasExistingData(true);
-        handleValuesChange();
-        message.success('Data refreshed successfully');
-      } else {
-        message.info('No existing data found for today');
-        setHasExistingData(false);
-      }
-    } catch {
-      message.error('Failed to refresh data');
-    } finally {
-      setDataLoading(false);
-    }
+
   };
+  onSubmit?.(cashbookData);
+}
+ 
+
+  const hasExistingData = !!existingEntry;
+  const loading = createEntryMutation.isPending || updateEntryMutation.isPending;
 
   return (
     <div className="page-container">
@@ -195,14 +177,14 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
                 Enter daily operations data for {new Date(currentDate).toLocaleDateString()}
               </Text>
             </div>
-            <Button 
+            {/* <Button 
               icon={<ReloadOutlined />} 
               onClick={handleRefresh}
               loading={dataLoading}
               size="large"
             >
               Refresh
-            </Button>
+            </Button> */}
           </div>
         </div>
 
@@ -227,12 +209,12 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
                 ) : null
               }
             >
-              {dataLoading ? (
+              {/* {dataLoading ? (
                 <div style={{ textAlign: 'center', padding: '40px' }}>
                   <Spin size="large" />
                   <p style={{ marginTop: 16 }}>Loading existing data...</p>
                 </div>
-              ) : (
+              ) : ( */}
               <Form
                 form={form}
                 layout="vertical"
@@ -247,23 +229,36 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
                       label={
                         <Space>
                           Previous Cash in Hand (PCIH)
-                          <Tooltip title="The amount of cash carried over from the previous day">
-                            <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                          <Tooltip title={user?.role === 'BR' 
+                            ? "This value is automatically set from yesterday's Online CIH and cannot be edited" 
+                            : "The amount of cash carried over from the previous day"
+                          }>
+                            <InfoCircleOutlined style={{ 
+                              color: user?.role === 'BR' ? '#fa8c16' : '#1890ff' 
+                            }} />
                           </Tooltip>
+                          {user?.role === 'BR' && (
+                            <Tag color="orange">Auto-filled</Tag>
+                          )}
                         </Space>
                       }
                       name="pcih"
                       rules={[
-                        { required: true, message: 'PCIH is required' },
-                        { type: 'number', min: 0, message: 'Must be a positive number' }
+                        { required: false, message: 'PCIH is required' },
+                        // { type: 'number', min: 0, message: 'Must be a positive number' }
                       ]}
                     >
                       <Input
                         type="number"
-                        placeholder="0.00"
+                        placeholder={user?.role === 'BR' ? 'Auto-filled from yesterday\'s Online CIH' : '0.00'}
                         prefix="₦"
                         size="large"
                         step="0.01"
+                        disabled={user?.role === 'BR'} // Disable for branches
+                        style={{ 
+                          backgroundColor: user?.role === 'BR' ? '#fff2e8' : 'white',
+                          borderColor: user?.role === 'BR' ? '#ffb366' : '#d9d9d9'
+                        }}
                       />
                     </Form.Item>
                   </Col>
@@ -281,7 +276,7 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
                       name="savings"
                       rules={[
                         { required: true, message: 'Savings amount is required' },
-                        { type: 'number', min: 0, message: 'Must be a positive number' }
+                        // { type: 'number', min: 0, message: 'Must be a positive number' }
                       ]}
                     >
                       <Input
@@ -309,7 +304,7 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
                       name="loanCollection"
                       rules={[
                         { required: true, message: 'Loan collection amount is required' },
-                        { type: 'number', min: 0, message: 'Must be a positive number' }
+                        // { type: 'number', min: 0, message: 'Must be a positive number' }
                       ]}
                     >
                       <Input
@@ -335,7 +330,7 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
                       name="charges"
                       rules={[
                         { required: true, message: 'Charges amount is required' },
-                        { type: 'number', min: 0, message: 'Must be a positive number' }
+                        // { type: 'number', min: 0, message: 'Must be a positive number' }
                       ]}
                     >
                       <Input
@@ -387,6 +382,7 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
                           backgroundColor: user?.role !== 'HO' ? '#fff2e8' : 'white',
                           borderColor: user?.role !== 'HO' ? '#ffb366' : '#d9d9d9'
                         }}
+                        value={'0'}
                       />
                     </Form.Item>
                   </Col>
@@ -419,6 +415,7 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
                           backgroundColor: user?.role !== 'HO' ? '#fff2e8' : 'white',
                           borderColor: user?.role !== 'HO' ? '#ffb366' : '#d9d9d9'
                         }}
+                        value={'0'}
                       />
                     </Form.Item>
                   </Col>
@@ -426,8 +423,14 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
 
                 {user?.role !== 'HO' && (
                   <Alert
-                    message="Note"
-                    description="FRM HO and FRM BR fields can only be edited by Head Office users"
+                    message="Branch User Guidelines"
+                    description={
+                      <div>
+                        <p>• <strong>PCIH (Previous Cash in Hand):</strong> Automatically filled from yesterday's Online CIH - cannot be edited</p>
+                        <p>• <strong>FRM HO and FRM BR:</strong> Can only be edited by Head Office users</p>
+                        <p>• <strong>Disbursement Roll, Loan & Savings Registers:</strong> View-only, calculated automatically</p>
+                      </div>
+                    }
                     type="info"
                     showIcon
                     style={{ marginBottom: 16 }}
@@ -443,13 +446,14 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
                       icon={<SaveOutlined />}
                       size="large"
                       style={{ minWidth: '200px' }}
+
                     >
                       {hasExistingData ? 'Update Cashbook 1' : 'Submit Cashbook 1'}
                     </Button>
                   </Form.Item>
                 )}
               </Form>
-              )}
+              {/* // )} */}
             </Card>
           </Col>
 

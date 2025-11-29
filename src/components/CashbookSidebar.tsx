@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Space } from 'antd';
 import { OnlineCIHComponent } from './OnlineCIH';
 import { PredictionComponent } from './PredictionComponent';
-import type { Prediction } from '../types';
+import type { Prediction } from '../hooks/Branch/Prediction/useGetPredictions';
 
 interface CashbookSidebarProps {
   refreshTrigger?: number;
@@ -10,7 +10,6 @@ interface CashbookSidebarProps {
 }
 
 export const CashbookSidebar: React.FC<CashbookSidebarProps> = ({
-  refreshTrigger = 0,
   onPredictionSubmit
 }) => {
   const [localRefresh, setLocalRefresh] = useState(0);
@@ -29,7 +28,6 @@ export const CashbookSidebar: React.FC<CashbookSidebarProps> = ({
       <Space direction="vertical" size="middle" style={{ width: '100%' }}>
         {/* Online Cash in Hand Component */}
         <OnlineCIHComponent 
-          refreshTrigger={refreshTrigger + localRefresh}
         />
         
         {/* Prediction Component */}

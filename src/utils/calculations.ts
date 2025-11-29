@@ -47,6 +47,15 @@ export const calculations = {
     return previousSavingsTotal + newSavings - savingsWithdrawal;
   },
 
+  // Current Loan calculation
+  calculateCurrentLoan(
+    previousTotalLoan: number,
+    disbursementWithInterest: number,
+    loanCollection: number
+  ): number {
+    return previousTotalLoan + disbursementWithInterest - loanCollection;
+  },
+
   // Bank Statement 1 calculation
   calculateBS1Total(bs1: Partial<BankStatement1>): number {
     const { opening = 0, recHO = 0, recBO = 0, domi = 0, pa = 0 } = bs1;

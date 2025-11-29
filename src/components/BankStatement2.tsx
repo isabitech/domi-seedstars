@@ -25,107 +25,70 @@ import {
   SwapOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { useAuthStore } from '../store';
-import type { BankStatement2Data, BankStatement2Input } from '../services/bankStatement';
+import type { BankStatement2Input } from '../services/bankStatement';
 import { 
-  getBankStatement2, 
   saveBankStatement2, 
   calculateBankStatement2 
 } from '../services/bankStatement';
+import { useGetMe } from '../hooks/Auth/useGetMe';
+import { useGetBS2, type BankStatement2 } from '../hooks/BankStatements/useGetBS2';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
 interface BankStatement2Props {
   selectedDate?: string;
+  onSubmit?: (data: { tbo: number; exAmt: number; exPurpose: string }) => void;
+  loading?: boolean;
 }
 
-// Sample branch options (in real app, this would come from API)
-const branchOptions = [
-  { value: 'BR001', label: 'Lagos Main Branch' },
-  { value: 'BR002', label: 'Abuja Branch' },
-  { value: 'BR003', label: 'Port Harcourt Branch' },
-  { value: 'BR004', label: 'Kano Branch' },
-  { value: 'BR005', label: 'Ibadan Branch' },
-];
 
-export const BankStatement2: React.FC<BankStatement2Props> = ({ selectedDate }) => {
-  const { user } = useAuthStore();
+export const BankStatement2Component: React.FC<BankStatement2Props> = ({ 
+  selectedDate, 
+  onSubmit, 
+  loading: externalLoading 
+}) => {
+  const { data: currentUser } = useGetMe();
+  const user = currentUser?.data;
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [calculating, setCalculating] = useState(false);
-  const [statement, setStatement] = useState<BankStatement2Data | null>(null);
-  const [currentDate, setCurrentDate] = useState(selectedDate || dayjs().format('YYYY-MM-DD'));
+  const [statement, setStatement] = useState<BankStatement2 | null>(null);
+  const [editMode, setEditMode] = useState(true); // Controls whether form is editable
+  const [currentDate, setCurrentDate] = useState(
+    selectedDate || dayjs().format('YYYY-MM-DD')
+  );
   const [error, setError] = useState<string | null>(null);
+  
+  // Merge internal and external loading states
+  const isLoading = loading || externalLoading;
 
-  // Load existing statement data
-  const loadStatement = useCallback(async () => {
-    if (!user?.branchId || !currentDate) return;
+  const getBankStatement2 = useGetBS2(currentDate, user?.branchId || "");
 
-    setLoading(true);
-    setError(null);
-
-    try {
-      const existingStatement = await getBankStatement2(user.branchId, currentDate);
-      
-      if (existingStatement) {
-        setStatement(existingStatement);
-        form.setFieldsValue({
-          tbo: existingStatement.tbo,
-          tboToBranch: existingStatement.tboToBranch,
-          exAmt: existingStatement.exAmt,
-          exPurpose: existingStatement.exPurpose,
-          date: dayjs(existingStatement.date)
-        });
-      } else {
-        // Calculate initial statement with default values
-        const calculatedStatement = await calculateBankStatement2(user.branchId, currentDate, 0, '', 0, '');
-        setStatement(calculatedStatement);
-        form.setFieldsValue({
-          tbo: 0,
-          tboToBranch: '',
-          exAmt: 0,
-          exPurpose: '',
-          date: dayjs(currentDate)
-        });
-      }
-    } catch (err) {
-      setError('Failed to load bank statement 2 data');
-      console.error('Error loading statement:', err);
-    } finally {
-      setLoading(false);
+  // Update statement state when data is fetched
+  useEffect(() => {
+    if (getBankStatement2.data?.data?.bankStatement2) {
+      const existingStatement = getBankStatement2.data.data.bankStatement2;
+      setStatement(existingStatement);
+      form.setFieldsValue({
+        tbo: existingStatement.tbo,
+        exAmt: existingStatement.exAmt,
+        exPurpose: existingStatement.exPurpose || '',
+        date: dayjs(existingStatement.date),
+      });
     }
-  }, [user?.branchId, currentDate, form]);
+  }, [getBankStatement2.data, form]);
 
   // Calculate statement when values change
   const handleRecalculate = useCallback(async () => {
     if (!user?.branchId) return;
-
-    const values = form.getFieldsValue();
-    setCalculating(true);
-
-    try {
-      const calculatedStatement = await calculateBankStatement2(
-        user.branchId, 
-        currentDate, 
-        values.tbo || 0,
-        values.tboToBranch || '',
-        values.exAmt || 0,
-        values.exPurpose || ''
-      );
-      setStatement(calculatedStatement);
-    } catch (err) {
-      setError('Failed to calculate bank statement 2');
-      console.error('Error calculating statement:', err);
-    } finally {
-      setCalculating(false);
-    }
-  }, [user?.branchId, currentDate, form]);
+    // Note: Calculation is handled by the backend API through the hook
+    console.log('Recalculation would be triggered here');
+  }, [user?.branchId]);
 
   // Handle form submission
   const handleSubmit = async (values: { 
     tbo: number; 
-    tboToBranch: string;
     exAmt: number;
     exPurpose: string;
     date: dayjs.Dayjs;
@@ -134,27 +97,31 @@ export const BankStatement2: React.FC<BankStatement2Props> = ({ selectedDate }) 
 
     setLoading(true);
     setError(null);
-
+    
+    // Call the parent onSubmit callback if provided
     try {
-      const input: BankStatement2Input = {
-        branchId: user.branchId,
-        date: currentDate,
-        tbo: values.tbo || 0,
-        tboToBranch: values.tboToBranch || '',
-        exAmt: values.exAmt || 0,
-        exPurpose: values.exPurpose || ''
-      };
-
-      const savedStatement = await saveBankStatement2(input);
-      setStatement(savedStatement);
-      
-      // Success feedback could be added here
+        if (onSubmit) {
+         onSubmit({
+          tbo: values.tbo,
+          exAmt: values.exAmt,
+          exPurpose: values.exPurpose,
+        });
+        // Refetch data to get updated statement
+        await getBankStatement2.refetch();
+        // Keep form editable after successful submission
+      }
     } catch (err) {
-      setError('Failed to save bank statement 2');
-      console.error('Error saving statement:', err);
+      setError('Failed to submit bank statement 2');
+      console.error('Error submitting statement:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle edit mode toggle
+  const handleEdit = () => {
+    setEditMode(true);
+    console.log("Edit button clicked - editMode set to:", true);
   };
 
   // Handle date change
@@ -165,16 +132,10 @@ export const BankStatement2: React.FC<BankStatement2Props> = ({ selectedDate }) 
     }
   };
 
-  // Effect to reload when date changes
-  useEffect(() => {
-    loadStatement();
-  }, [loadStatement]);
-
   // Effect to recalculate when form values change
   const handleValuesChange = useCallback((changedValues: { 
     tbo?: number; 
     exAmt?: number; 
-    tboToBranch?: string; 
     exPurpose?: string; 
   }) => {
     if ('tbo' in changedValues || 'exAmt' in changedValues) {
@@ -225,7 +186,7 @@ export const BankStatement2: React.FC<BankStatement2Props> = ({ selectedDate }) 
     },
     {
       key: 'tbo',
-      description: `Transfer to Branch Office (T.B.O)${statement.tboToBranch ? ` - ${statement.tboToBranch}` : ''}`,
+      description: 'Transfer to Branch Office (T.B.O)',
       amount: statement.tbo,
       source: 'Manual',
     },
@@ -245,11 +206,11 @@ export const BankStatement2: React.FC<BankStatement2Props> = ({ selectedDate }) 
           <span>Bank Statement 2 (BS2)</span>
         </Space>
       }
-      loading={loading}
+      loading={isLoading}
       extra={
         <Button 
           icon={<ReloadOutlined />} 
-          onClick={loadStatement}
+          onClick={() => getBankStatement2.refetch()}
           size="small"
         >
           Refresh
@@ -273,7 +234,6 @@ export const BankStatement2: React.FC<BankStatement2Props> = ({ selectedDate }) 
           layout="vertical"
           onFinish={handleSubmit}
           onValuesChange={handleValuesChange}
-          disabled={loading}
         >
           <Row gutter={16}>
             <Col span={12}>
@@ -310,23 +270,6 @@ export const BankStatement2: React.FC<BankStatement2Props> = ({ selectedDate }) 
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                label="Transfer to Branch"
-                name="tboToBranch"
-                help="Name of branch the transfer is going to"
-              >
-                <Select
-                  placeholder="Select destination branch"
-                  options={branchOptions}
-                  allowClear
-                  showSearch
-                  filterOption={(input, option) =>
-                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                  }
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
                 label="Expense Amount - EX AMT (₦)"
                 name="exAmt"
                 rules={[{ required: true, message: 'Expense amount is required' }]}
@@ -360,9 +303,9 @@ export const BankStatement2: React.FC<BankStatement2Props> = ({ selectedDate }) 
               type="primary"
               htmlType="submit"
               icon={<SaveOutlined />}
-              loading={loading}
+              loading={isLoading}
             >
-              Save Statement
+              {statement ? 'Update Statement' : 'Save Statement'}
             </Button>
             <Button
               icon={<CalculatorOutlined />}
@@ -398,10 +341,10 @@ export const BankStatement2: React.FC<BankStatement2Props> = ({ selectedDate }) 
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={1} align="right">
                       <Statistic
-                        value={statement.total}
+                        value={statement.bs2Total}
                         precision={0}
                         valueStyle={{ 
-                          color: statement.total >= 0 ? '#3f8600' : '#cf1322',
+                          color: statement.bs2Total >= 0 ? '#3f8600' : '#cf1322',
                           fontSize: '16px',
                           fontWeight: 'bold'
                         }}

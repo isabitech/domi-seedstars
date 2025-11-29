@@ -10,7 +10,9 @@ import {
   Col,
   Statistic,
   Tag,
-  Divider
+  Divider,
+  Alert,
+  Spin
 } from 'antd';
 import { 
   FileTextOutlined, 
@@ -20,157 +22,122 @@ import {
   DollarOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import type { BranchDailyReportData } from '../../types';
 import { calculations } from '../../utils/calculations';
+import { useListAllDailyOperations, type Operation } from '../../hooks/Operations/useListAllDailyOperations';
+import * as XLSX from 'xlsx';
 import dayjs from 'dayjs';
 import './BranchDailyReportPage.css';
 
 const { Title, Text } = Typography;
 
-// Mock data for demonstration - in real app this would come from API
-const generateMockReportData = (date: string): BranchDailyReportData[] => [
-  {
-    branchId: 'br-001',
-    branchName: 'Lagos Branch',
-    date,
+// Transform API Operation data to BranchDailyReportData format
+interface BranchDailyReportData {
+  branchId: string;
+  branchName: string;
+  date: string;
+  cashbook1: {
+    pcih: number;
+    savings: number;
+    loanCollection: number;
+    charges: number;
+    collectionTotal: number;
+    frmHO: number;
+    frmBR: number;
+    cbTotal1: number;
+  };
+  cashbook2: {
+    disNo: number;
+    disAmt: number;
+    disWithInt: number;
+    savWith: number;
+    domiBank: number;
+    posT: number;
+    cbTotal2: number;
+  };
+  onlineCIH: number;
+  bankStatement1: {
+    opening: number;
+    recHO: number;
+    recBO: number;
+    domi: number;
+    pa: number;
+    bs1Total: number;
+  };
+  bankStatement2: {
+    withd: number;
+    tbo: number;
+    tboToBranch: string;
+    exAmt: number;
+    exPurpose: string;
+    bs2Total: number;
+  };
+  tso: number;
+  cbrSavings: number;
+  cbrLoan: number;
+  disbursementRoll: number;
+}
+
+const transformOperationToReportData = (operation: Operation): BranchDailyReportData => {
+  return {
+    branchId: operation.branch._id,
+    branchName: operation.branch.name,
+    date: operation.date,
     cashbook1: {
-      pcih: 150000,
-      savings: 850000,
-      loanCollection: 400000,
-      charges: 25000,
-      collectionTotal: 1275000, // savings + loanCollection + charges
-      frmHO: 200000,
-      frmBR: 100000,
-      cbTotal1: 1725000 // PCIH + savings + loan + charges + frmHO + frmBR
+      pcih: operation.cashbook1.pcih,
+      savings: operation.cashbook1.savings,
+      loanCollection: operation.cashbook1.loanCollection,
+      charges: operation.cashbook1.chargesCollection,
+      collectionTotal: operation.cashbook1.total,
+      frmHO: operation.cashbook1.frmHO,
+      frmBR: operation.cashbook1.frmBR,
+      cbTotal1: operation.cashbook1.cbTotal1,
     },
     cashbook2: {
-      disNo: 45,
-      disAmt: 650000,
-      disWithInt: 715000,
-      savWith: 120000,
-      domiBank: 200000,
-      posT: 50000,
-      cbTotal2: 1020000 // disAmt + savWith + domiBank + posT
+      disNo: operation.cashbook2.disNo,
+      disAmt: operation.cashbook2.disAmt,
+      disWithInt: operation.cashbook2.disWithInt,
+      savWith: operation.cashbook2.savWith,
+      domiBank: operation.cashbook2.domiBank,
+      posT: operation.cashbook2.posT,
+      cbTotal2: operation.cashbook2.cbTotal2,
     },
-    onlineCIH: 705000, // cbTotal1 - cbTotal2
+    onlineCIH: operation.onlineCIH,
     bankStatement1: {
-      opening: 0,
-      recHO: 200000, // from frmHO
-      recBO: 100000, // from frmBR
-      domi: 200000, // from domiBank
-      pa: 50000, // from posT
-      bs1Total: 550000
+      opening: operation.bankStatement1.opening,
+      recHO: operation.bankStatement1.recHO,
+      recBO: operation.bankStatement1.recBO,
+      domi: operation.bankStatement1.domi,
+      pa: operation.bankStatement1.pa,
+      bs1Total: operation.bankStatement1.bs1Total,
     },
     bankStatement2: {
-      withd: 200000, // from frmHO
-      tbo: 150000,
-      tboToBranch: 'Abuja Branch',
-      exAmt: 75000,
-      exPurpose: 'Office supplies and maintenance',
-      bs2Total: 425000
+      withd: operation.bankStatement2.withd,
+      tbo: operation.bankStatement2.tbo,
+      tboToBranch: operation.branch.name, // Using branch name as placeholder
+      exAmt: operation.bankStatement2.exAmt,
+      exPurpose: operation.bankStatement2.exPurpose,
+      bs2Total: operation.bankStatement2.bs2Total,
     },
-    tso: 125000, // bs1Total - bs2Total
-    cbrSavings: 2180000, // Previous: 1450000 + savings: 850000 - savWith: 120000
-    cbrLoan: 3200000, // Previous: 2485000 + disWithInt: 715000 - loanCollection: 400000
-    disbursementRoll: 12650000 // Previous: 12000000 + disAmt: 650000
-  },
-  {
-    branchId: 'br-002',
-    branchName: 'Abuja Branch',
-    date,
-    cashbook1: {
-      pcih: 120000,
-      savings: 650000,
-      loanCollection: 330000,
-      charges: 18000,
-      collectionTotal: 998000,
-      frmHO: 180000,
-      frmBR: 80000,
-      cbTotal1: 1378000
-    },
-    cashbook2: {
-      disNo: 38,
-      disAmt: 450000,
-      disWithInt: 495000,
-      savWith: 95000,
-      domiBank: 180000,
-      posT: 35000,
-      cbTotal2: 760000
-    },
-    onlineCIH: 618000,
-    bankStatement1: {
-      opening: 0,
-      recHO: 180000,
-      recBO: 80000,
-      domi: 180000,
-      pa: 35000,
-      bs1Total: 475000
-    },
-    bankStatement2: {
-      withd: 180000,
-      tbo: 100000,
-      tboToBranch: 'Kano Branch',
-      exAmt: 45000,
-      exPurpose: 'Transportation and utilities',
-      bs2Total: 325000
-    },
-    tso: 150000,
-    cbrSavings: 1605000, // Previous: 1050000 + savings: 650000 - savWith: 95000
-    cbrLoan: 2160000, // Previous: 1995000 + disWithInt: 495000 - loanCollection: 330000
-    disbursementRoll: 8450000 // Previous: 8000000 + disAmt: 450000
-  },
-  {
-    branchId: 'br-003',
-    branchName: 'Kano Branch',
-    date,
-    cashbook1: {
-      pcih: 95000,
-      savings: 420000,
-      loanCollection: 280000,
-      charges: 15000,
-      collectionTotal: 715000,
-      frmHO: 120000,
-      frmBR: 60000,
-      cbTotal1: 990000
-    },
-    cashbook2: {
-      disNo: 28,
-      disAmt: 380000,
-      disWithInt: 418000,
-      savWith: 85000,
-      domiBank: 120000,
-      posT: 25000,
-      cbTotal2: 610000
-    },
-    onlineCIH: 380000,
-    bankStatement1: {
-      opening: 0,
-      recHO: 120000,
-      recBO: 60000,
-      domi: 120000,
-      pa: 25000,
-      bs1Total: 325000
-    },
-    bankStatement2: {
-      withd: 120000,
-      tbo: 80000,
-      tboToBranch: 'Lagos Branch',
-      exAmt: 35000,
-      exPurpose: 'Security and cleaning services',
-      bs2Total: 235000
-    },
-    tso: 90000,
-    cbrSavings: 1185000, // Previous: 850000 + savings: 420000 - savWith: 85000
-    cbrLoan: 1938000, // Previous: 1800000 + disWithInt: 418000 - loanCollection: 280000
-    disbursementRoll: 6380000 // Previous: 6000000 + disAmt: 380000
-  }
-];
+    tso: operation.tso,
+    cbrSavings: operation.savingsRegister.currentSavings,
+    cbrLoan: operation.loanRegister.currentLoanBalance,
+    disbursementRoll: operation.loanRegister.previousLoanTotal + operation.loanRegister.loanDisbursementWithInterest,
+  };
+};
 
 export const BranchDailyReportPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(dayjs());
-  const [reportData, setReportData] = useState<BranchDailyReportData[]>(
-    generateMockReportData(dayjs().format('YYYY-MM-DD'))
+  
+  // Use the API hook
+  const { data: operationsData, isLoading, error, refetch } = useListAllDailyOperations(
+    selectedDate.format('YYYY-MM-DD')
   );
+
+  // Transform API data to report format
+  const reportData = useMemo(() => {
+    if (!operationsData?.data?.operations) return [];
+    return operationsData.data.operations.map(transformOperationToReportData);
+  }, [operationsData]);
 
   // Calculate totals
   const totals = useMemo(() => {
@@ -200,14 +167,118 @@ export const BranchDailyReportPage: React.FC = () => {
   const handleDateChange = (date: dayjs.Dayjs | null) => {
     if (date) {
       setSelectedDate(date);
-      // In real app, this would trigger API call to fetch data for the selected date
-      setReportData(generateMockReportData(date.format('YYYY-MM-DD')));
     }
   };
 
   const handleExportReport = () => {
-    console.log('Exporting daily report for:', selectedDate.format('YYYY-MM-DD'));
-    // Implementation for Excel/PDF export would go here
+    if (!reportData.length) return;
+
+    // Prepare data for Excel export
+    const exportData = [...reportData, grandTotal].map((row, index) => {
+      const isGrandTotal = row.branchId === 'grand-total';
+      return {
+        'Branch': isGrandTotal ? '🏆 Grand Total' : row.branchName,
+        'Date': row.date,
+        // Cashbook 1 Data
+        'PCIH': row.cashbook1.pcih,
+        'Savings': row.cashbook1.savings,
+        'Loan Collection': row.cashbook1.loanCollection,
+        'Charges': row.cashbook1.charges,
+        'Collection Total': row.cashbook1.collectionTotal,
+        'FRM HO': row.cashbook1.frmHO,
+        'FRM BR': row.cashbook1.frmBR,
+        'CB Total 1': row.cashbook1.cbTotal1,
+        // Cashbook 2 Data
+        'DIS NO': row.cashbook2.disNo,
+        'DIS AMT': row.cashbook2.disAmt,
+        'DIS WIT INT': row.cashbook2.disWithInt,
+        'SAV WITH': row.cashbook2.savWith,
+        'DOMI BANK': row.cashbook2.domiBank,
+        'POS/T': row.cashbook2.posT,
+        'CB Total 2': row.cashbook2.cbTotal2,
+        // Online CIH
+        'Online CIH': row.onlineCIH,
+        // Bank Statement Data
+        'Opening': row.bankStatement1.opening,
+        'REC HO': row.bankStatement1.recHO,
+        'REC BO': row.bankStatement1.recBO,
+        'DOMI': row.bankStatement1.domi,
+        'PA': row.bankStatement1.pa,
+        'BS1 Total': row.bankStatement1.bs1Total,
+        'WITHD': row.bankStatement2.withd,
+        'TBO': row.bankStatement2.tbo,
+        'TBO To Branch': row.bankStatement2.tboToBranch,
+        'EX AMT': row.bankStatement2.exAmt,
+        'EX Purpose': row.bankStatement2.exPurpose,
+        'BS2 Total': row.bankStatement2.bs2Total,
+        'TSO': row.tso,
+        // Current Branch Register
+        'CBR (Savings)': row.cbrSavings,
+        'CBR (Loan)': row.cbrLoan,
+        'Disbursement Roll': row.disbursementRoll
+      };
+    });
+
+    // Create workbook and worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(exportData);
+
+    // Set column widths
+    const colWidths = [
+      { wch: 15 }, // Branch
+      { wch: 12 }, // Date
+      { wch: 12 }, // PCIH
+      { wch: 12 }, // Savings
+      { wch: 15 }, // Loan Collection
+      { wch: 12 }, // Charges
+      { wch: 15 }, // Collection Total
+      { wch: 12 }, // FRM HO
+      { wch: 12 }, // FRM BR
+      { wch: 12 }, // CB Total 1
+      { wch: 10 }, // DIS NO
+      { wch: 12 }, // DIS AMT
+      { wch: 12 }, // DIS WIT INT
+      { wch: 12 }, // SAV WITH
+      { wch: 12 }, // DOMI BANK
+      { wch: 10 }, // POS/T
+      { wch: 12 }, // CB Total 2
+      { wch: 12 }, // Online CIH
+      { wch: 12 }, // Opening
+      { wch: 12 }, // REC HO
+      { wch: 12 }, // REC BO
+      { wch: 12 }, // DOMI
+      { wch: 10 }, // PA
+      { wch: 12 }, // BS1 Total
+      { wch: 12 }, // WITHD
+      { wch: 10 }, // TBO
+      { wch: 15 }, // TBO To Branch
+      { wch: 12 }, // EX AMT
+      { wch: 20 }, // EX Purpose
+      { wch: 12 }, // BS2 Total
+      { wch: 12 }, // TSO
+      { wch: 15 }, // CBR (Savings)
+      { wch: 15 }, // CBR (Loan)
+      { wch: 18 }  // Disbursement Roll
+    ];
+
+    ws['!cols'] = colWidths;
+
+    // Style the grand total row
+    if (exportData.length > 1) {
+      const grandTotalRowIndex = exportData.length; // 1-based index for Excel
+      // You can add more styling here if needed
+    }
+
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(wb, ws, 'Branch Daily Report');
+
+    // Generate filename with date
+    const fileName = `Branch_Daily_Report_${selectedDate.format('YYYY-MM-DD')}.xlsx`;
+
+    // Save file
+    XLSX.writeFile(wb, fileName);
+
+    console.log('Report exported successfully:', fileName);
   };
 
   // Calculate Grand Total row
@@ -546,6 +617,7 @@ export const BranchDailyReportPage: React.FC = () => {
                 type="primary"
                 icon={<DownloadOutlined />}
                 onClick={handleExportReport}
+                disabled={isLoading || !reportData.length}
               >
                 Export Report
               </Button>
@@ -553,116 +625,157 @@ export const BranchDailyReportPage: React.FC = () => {
           </Col>
         </Row>
 
+        {/* Error Alert */}
+        {error && (
+          <Alert
+            message="Error Loading Data"
+            description={error.message || 'Failed to load daily operations data'}
+            type="error"
+            showIcon
+            action={
+              <Button size="small" onClick={() => refetch()}>
+                Retry
+              </Button>
+            }
+          />
+        )}
+
+        {/* Loading State */}
+        {isLoading && (
+          <Card>
+            <div style={{ textAlign: 'center', padding: '50px 0' }}>
+              <Spin size="large" />
+              <Text style={{ display: 'block', marginTop: 16 }}>
+                Loading daily operations data...
+              </Text>
+            </div>
+          </Card>
+        )}
+
         {/* Summary Cards */}
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} lg={6}>
-            <Card>
-              <Statistic
-                title="Total Online CIH"
-                value={totals.onlineCIH}
-                precision={2}
-                prefix="₦"
-                valueStyle={{ color: '#52c41a' }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card>
-              <Statistic
-                title="Total TSO"
-                value={totals.tso}
-                precision={2}
-                prefix="₦"
-                valueStyle={{ color: '#1890ff' }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card>
-              <Statistic
-                title="Total CBR (Savings)"
-                value={totals.cbrSavings}
-                precision={2}
-                prefix="₦"
-                valueStyle={{ color: '#722ed1' }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card>
-              <Statistic
-                title="Total CBR (Loan)"
-                value={totals.cbrLoan}
-                precision={2}
-                prefix="₦"
-                valueStyle={{ color: '#fa8c16' }}
-              />
-            </Card>
-          </Col>
-        </Row>
+        {!isLoading && !error && (
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12} lg={6}>
+              <Card>
+                <Statistic
+                  title="Total Online CIH"
+                  value={totals.onlineCIH}
+                  precision={2}
+                  prefix="₦"
+                  valueStyle={{ color: '#52c41a' }}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} lg={6}>
+              <Card>
+                <Statistic
+                  title="Total TSO"
+                  value={totals.tso}
+                  precision={2}
+                  prefix="₦"
+                  valueStyle={{ color: '#1890ff' }}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} lg={6}>
+              <Card>
+                <Statistic
+                  title="Total CBR (Savings)"
+                  value={totals.cbrSavings}
+                  precision={2}
+                  prefix="₦"
+                  valueStyle={{ color: '#722ed1' }}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} lg={6}>
+              <Card>
+                <Statistic
+                  title="Total CBR (Loan)"
+                  value={totals.cbrLoan}
+                  precision={2}
+                  prefix="₦"
+                  valueStyle={{ color: '#fa8c16' }}
+                />
+              </Card>
+            </Col>
+          </Row>
+        )}
 
         <Divider />
 
         {/* Main Data Table */}
-        <Card 
-          title={
-            <Space>
-              <DollarOutlined />
-              <Text strong>Daily Performance Data - {selectedDate.format('DD MMMM YYYY')}</Text>
-            </Space>
-          }
-          extra={
-            <Text type="secondary">
-              {reportData.length} Branches Reporting
-            </Text>
-          }
-        >
-          <Table
-            columns={columns}
-            dataSource={[...reportData, grandTotal]}
-            rowKey="branchId"
-            scroll={{ x: 2000 }}
-            pagination={false}
-            size="small"
-            bordered
-            rowClassName={(record) => {
-              if (record.branchId === 'grand-total') {
-                return 'grand-total-row';
-              }
-              return '';
-            }}
-          />
-        </Card>
+        {!isLoading && !error && (
+          <Card 
+            title={
+              <Space>
+                <DollarOutlined />
+                <Text strong>Daily Performance Data - {selectedDate.format('DD MMMM YYYY')}</Text>
+              </Space>
+            }
+            extra={
+              <Text type="secondary">
+                {reportData.length} Branches Reporting
+              </Text>
+            }
+          >
+            {reportData.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '50px 0' }}>
+                <Text type="secondary">
+                  No data available for {selectedDate.format('DD MMMM YYYY')}
+                </Text>
+              </div>
+            ) : (
+              <Table
+                columns={columns}
+                dataSource={[...reportData, grandTotal]}
+                rowKey="branchId"
+                scroll={{ x: 2000 }}
+                pagination={false}
+                size="small"
+                bordered
+                rowClassName={(record) => {
+                  if (record.branchId === 'grand-total') {
+                    return 'grand-total-row';
+                  }
+                  return '';
+                }}
+              />
+            )}
+          </Card>
+        )}
 
         {/* Summary Footer */}
-        <Card title="Daily Totals Summary" size="small">
-          <Row gutter={[16, 8]}>
-            <Col xs={12} sm={8} lg={4}>
-              <Text strong>CB Total 1: </Text>
-              <Tag color="green">{calculations.formatCurrency(totals.cbTotal1)}</Tag>
-            </Col>
-            <Col xs={12} sm={8} lg={4}>
-              <Text strong>CB Total 2: </Text>
-              <Tag color="orange">{calculations.formatCurrency(totals.cbTotal2)}</Tag>
-            </Col>
-            <Col xs={12} sm={8} lg={4}>
-              <Text strong>Online CIH: </Text>
-              <Tag color="purple">{calculations.formatCurrency(totals.onlineCIH)}</Tag>
-            </Col>
-            <Col xs={12} sm={8} lg={4}>
-              <Text strong>BS1 Total: </Text>
-              <Tag color="blue">{calculations.formatCurrency(totals.bs1Total)}</Tag>
-            </Col>
-            <Col xs={12} sm={8} lg={4}>
-              <Text strong>BS2 Total: </Text>
-              <Tag color="red">{calculations.formatCurrency(totals.bs2Total)}</Tag>
-            </Col>
-            <Col xs={12} sm={8} lg={4}>
-              <Text strong>TSO Total: </Text>
-              <Tag color="cyan">{calculations.formatCurrency(totals.tso)}</Tag>
-            </Col>
-          </Row>
-        </Card>
+        {!isLoading && !error && reportData.length > 0 && (
+          <Card title="Daily Totals Summary" size="small">
+            <Row gutter={[16, 8]}>
+              <Col xs={12} sm={8} lg={4}>
+                <Text strong>CB Total 1: </Text>
+                <Tag color="green">{calculations.formatCurrency(totals.cbTotal1)}</Tag>
+              </Col>
+              <Col xs={12} sm={8} lg={4}>
+                <Text strong>CB Total 2: </Text>
+                <Tag color="orange">{calculations.formatCurrency(totals.cbTotal2)}</Tag>
+              </Col>
+              <Col xs={12} sm={8} lg={4}>
+                <Text strong>Online CIH: </Text>
+                <Tag color="purple">{calculations.formatCurrency(totals.onlineCIH)}</Tag>
+              </Col>
+              <Col xs={12} sm={8} lg={4}>
+                <Text strong>BS1 Total: </Text>
+                <Tag color="blue">{calculations.formatCurrency(totals.bs1Total)}</Tag>
+              </Col>
+              <Col xs={12} sm={8} lg={4}>
+                <Text strong>BS2 Total: </Text>
+                <Tag color="red">{calculations.formatCurrency(totals.bs2Total)}</Tag>
+              </Col>
+              <Col xs={12} sm={8} lg={4}>
+                <Text strong>TSO Total: </Text>
+                <Tag color="cyan">{calculations.formatCurrency(totals.tso)}</Tag>
+              </Col>
+            </Row>
+          </Card>
+        )}
       </Space>
     </div>
   );

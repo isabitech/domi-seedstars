@@ -23,30 +23,7 @@ import type { Branch, BranchForm } from '../types';
 const { Title } = Typography;
 
 export const BranchManagement: React.FC = () => {
-  const [branches, setBranches] = useState<Branch[]>([
-    {
-      id: 'br-001',
-      name: 'Lagos Branch',
-      code: 'LG001',
-      location: 'Victoria Island, Lagos',
-      email: 'lagos@dominion-seedstars.com',
-      password: 'lagos123',
-      isActive: true,
-      createdAt: '2024-01-01',
-      users: []
-    },
-    {
-      id: 'br-002',
-      name: 'Abuja Branch',
-      code: 'AB002',
-      location: 'Central Business District, Abuja',
-      email: 'abuja@dominion-seedstars.com',
-      password: 'abuja123',
-      isActive: true,
-      createdAt: '2024-01-15',
-      users: []
-    }
-  ]);
+  const [branches, setBranches] = useState<Branch[]>([]);
   
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingBranch, setEditingBranch] = useState<Branch | null>(null);

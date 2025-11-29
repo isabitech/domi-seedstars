@@ -74,25 +74,13 @@ export const Homepage: React.FC = () => {
   ];
 
   return (
-    <Layout className="homepage-layout" style={{ minHeight: '100vh' }}>
+    <Layout className="min-h-screen">
       {/* Header */}
-      <Header 
-        style={{ 
-          background: '#fff', 
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          padding: '0 50px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <DollarOutlined style={{ fontSize: '32px', color: '#1890ff', marginRight: '12px' }} />
-          <div>
-            <Title level={3} style={{ margin: 0, color: '#1890ff' }}>
-              Dominion Seedstars
-            </Title>
-            <Text type="secondary" style={{ fontSize: '12px' }}>
+      <Header className="bg-white shadow-md px-12 flex justify-between items-center">
+        <div className="flex items-center">
+          <div className="text-[#1890ff] text-lg font-bold">        
+              Dominion Seedstars {" "}
+            <Text type="secondary" className="text-xs">
               Financial Management System
             </Text>
           </div>
@@ -109,23 +97,12 @@ export const Homepage: React.FC = () => {
       </Header>
 
       {/* Hero Section */}
-      <Content style={{ padding: '0' }}>
-        <div style={{ 
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white',
-          padding: '100px 50px',
-          textAlign: 'center'
-        }}>
-          <Title level={1} style={{ color: 'white', fontSize: '48px', marginBottom: '24px' }}>
+      <Content className="p-0">
+        <div className="bg-linear-to-br from-indigo-500 to-purple-700 text-white py-25 px-12 text-center">
+          <Title level={1} className="text-white text-5xl mb-6">
             Modern Financial Management
           </Title>
-          <Paragraph style={{ 
-            color: 'white', 
-            fontSize: '20px', 
-            marginBottom: '32px',
-            maxWidth: '800px',
-            margin: '0 auto 32px auto'
-          }}>
+          <Paragraph className="text-white text-xl mb-8 max-w-4xl mx-auto">
             Streamline your branch operations with our comprehensive financial management platform. 
             From daily cashbook entries to predictive analytics, manage all your financial operations in one place.
           </Paragraph>
@@ -133,7 +110,7 @@ export const Homepage: React.FC = () => {
           <Space size="large">
             <Button 
               size="large" 
-              style={{ height: '50px', fontSize: '16px', padding: '0 32px' }}
+              className="h-12 text-base px-8"
               onClick={handleLogin}
             >
               Get Started
@@ -141,13 +118,7 @@ export const Homepage: React.FC = () => {
             <Button 
               size="large" 
               type="text" 
-              style={{ 
-                height: '50px', 
-                fontSize: '16px', 
-                padding: '0 32px',
-                color: 'white',
-                borderColor: 'white'
-              }}
+              className="h-12 text-base px-8 text-white border-white"
             >
               Learn More
             </Button>
@@ -155,21 +126,22 @@ export const Homepage: React.FC = () => {
         </div>
 
         {/* Statistics Section */}
-        <div style={{ padding: '80px 50px', background: '#f5f5f5' }}>
-          <Title level={2} style={{ textAlign: 'center', marginBottom: '48px' }}>
+        <div className="py-20 px-12 bg-gray-100">
+          <Title level={2} className="text-center mb-12">
             Trusted by Financial Institutions
           </Title>
           
           <Row gutter={[32, 32]}>
             {stats.map((stat, index) => (
               <Col xs={24} sm={12} md={6} key={index}>
-                <Card style={{ textAlign: 'center', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                <Card className="text-center border-none shadow-lg">
                   <Statistic
                     title={stat.title}
                     value={stat.value}
                     prefix={stat.prefix}
                     suffix={stat.suffix}
-                    valueStyle={{ color: '#1890ff', fontSize: '28px' }}
+                    valueStyle={{ color: '#1890ff' }}
+                    className="text-2xl"
                   />
                 </Card>
               </Col>
@@ -178,8 +150,8 @@ export const Homepage: React.FC = () => {
         </div>
 
         {/* Features Section */}
-        <div style={{ padding: '80px 50px' }}>
-          <Title level={2} style={{ textAlign: 'center', marginBottom: '48px' }}>
+        <div className="py-20 px-12">
+          <Title level={2} className="text-center mb-12">
             Comprehensive Financial Solutions
           </Title>
           
@@ -188,17 +160,12 @@ export const Homepage: React.FC = () => {
               <Col xs={24} sm={12} lg={8} key={index}>
                 <Card 
                   hoverable
-                  style={{ 
-                    height: '100%',
-                    textAlign: 'center',
-                    border: 'none',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                  }}
+                  className="h-full text-center border-none shadow-lg"
                 >
-                  <div style={{ marginBottom: '16px' }}>
+                  <div className="mb-4">
                     {feature.icon}
                   </div>
-                  <Title level={4} style={{ marginBottom: '16px' }}>
+                  <Title level={4} className="mb-4">
                     {feature.title}
                   </Title>
                   <Paragraph type="secondary">
@@ -211,22 +178,11 @@ export const Homepage: React.FC = () => {
         </div>
 
         {/* Call to Action Section */}
-        <div style={{ 
-          padding: '80px 50px',
-          background: '#001529',
-          color: 'white',
-          textAlign: 'center'
-        }}>
-          <Title level={2} style={{ color: 'white', marginBottom: '24px' }}>
+        <div className="py-20 px-12 bg-gray-900 text-white text-center">
+          <Title level={2} className="text-white mb-6">
             Ready to Transform Your Financial Operations?
           </Title>
-          <Paragraph style={{ 
-            color: 'rgba(255,255,255,0.8)', 
-            fontSize: '18px',
-            marginBottom: '32px',
-            maxWidth: '600px',
-            margin: '0 auto 32px auto'
-          }}>
+          <Paragraph className="text-white/80 text-lg mb-8 max-w-2xl mx-auto">
             Join thousands of financial professionals who trust our platform for their daily operations.
             Start managing your branch finances more efficiently today.
           </Paragraph>
@@ -235,7 +191,7 @@ export const Homepage: React.FC = () => {
             type="primary" 
             size="large"
             icon={<LoginOutlined />}
-            style={{ height: '50px', fontSize: '16px', padding: '0 32px' }}
+            className="h-12 text-base px-8"
             onClick={handleLogin}
           >
             Start Your Journey
@@ -244,10 +200,10 @@ export const Homepage: React.FC = () => {
       </Content>
 
       {/* Footer */}
-      <Footer style={{ textAlign: 'center', background: '#f5f5f5', padding: '24px 50px' }}>
+      <Footer className="text-center bg-gray-100 py-6 px-12">
         <Divider />
         <Space direction="vertical" size="small">
-          <Title level={4} style={{ margin: 0 }}>
+          <Title level={4} className="m-0">
             Dominion Seedstars Nigeria LTD
           </Title>
           <Text type="secondary">

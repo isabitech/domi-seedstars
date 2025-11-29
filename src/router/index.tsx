@@ -1,11 +1,10 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { LoginPage } from '../pages/auth/LoginPage';
+import { RegisterPage } from '../pages/auth/RegisterPage';
 import { ProtectedRoute } from '../guards/ProtectedRoute';
 import { AppLayout } from '../components/layout/AppLayout';
-import { RoleGuard } from '../guards/RoleGuard';
 import { HeadOfficeDashboard } from '../pages/dashboard/HeadOfficeDashboard';
 import { BranchDashboard } from '../pages/dashboard/BranchDashboard';
-import { CashbookPage } from '../pages/cashbook/CashbookPage';
 import { CombinedCashbookPage } from '../pages/cashbook/CombinedCashbookPage';
 import { PredictionsPage } from '../pages/predictions/PredictionsPage';
 import { BranchManagementPage } from '../pages/branches/BranchManagementPage';
@@ -16,6 +15,11 @@ import { Homepage } from '../components/homepage';
 import { HOOperationsPage } from '../pages/ho-operations/HOOperationsPage';
 import ReportsPage from '../pages/reports/ReportsPage';
 import SettingsPage from '../pages/settings/SettingsPage';
+import DailyReport from '../components/Branch/DailyReport';
+import DailyOperations from '../components/Branch/DailyOperations';
+import { SavingsRegisterPage } from '../pages/registers/SavingsRegisterPage';
+import { LoanRegisterPage } from '../pages/registers/LoanRegisterPage';
+import { DisbursementRollPage } from '../pages/disbursement-roll/DisbursementRollPage';
 
 export const router = createBrowserRouter([
   {
@@ -25,6 +29,10 @@ export const router = createBrowserRouter([
   {
     path: '/login',
     element: <LoginPage />,
+  },
+  {
+    path: '/register',
+    element: <RegisterPage />,
   },
   {
     path: '/app',
@@ -43,19 +51,11 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: (
-              <RoleGuard allowedRoles={['HO']}>
-                <HeadOfficeDashboard />
-              </RoleGuard>
-            ),
+            element: <HeadOfficeDashboard />,
           },
           {
             path: 'branch',
-            element: (
-              <RoleGuard allowedRoles={['BR']}>
-                <BranchDashboard />
-              </RoleGuard>
-            ),
+            element: <BranchDashboard />,
           },
         ],
       },
@@ -64,90 +64,67 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: (
-              <RoleGuard allowedRoles={['BR']}>
-                <CombinedCashbookPage />
-              </RoleGuard>
-            ),
+            element: <CombinedCashbookPage />,
           },
-          {
-            path: 'legacy',
-            element: (
-              <RoleGuard allowedRoles={['BR']}>
-                <CashbookPage />
-              </RoleGuard>
-            ),
-          },
+
         ],
       },
       {
         path: 'online-cih',
-        element: (
-          <RoleGuard allowedRoles={['BR']}>
-            <OnlineCIHPage />
-          </RoleGuard>
-        ),
+        element: <OnlineCIHPage />,
       },
       {
         path: 'predictions',
-        element: (
-          <RoleGuard allowedRoles={['BR']}>
-            <PredictionsPage />
-          </RoleGuard>
-        ),
+        element: <PredictionsPage />,
+      },
+      {
+        path: 'daily-report',
+        element: <DailyReport />,
+      },
+      {
+        path: 'daily-operations',
+        element: <DailyOperations />,
       },
       {
         path: 'bank-statements',
-        element: (
-          <RoleGuard allowedRoles={['BR']}>
-            <BankStatementPage />
-          </RoleGuard>
-        ),
+        element: <BankStatementPage />,
+      },
+      {
+        path: 'branch-savings-register',
+        element: <SavingsRegisterPage />,
+      },
+      {
+        path: 'branch-loan-register',
+        element: <LoanRegisterPage />,
+      },
+      {
+        path: 'branch-disbursement-roll',
+        element: <DisbursementRollPage />,
       },
       {
         path: 'branches',
-        element: (
-          <RoleGuard allowedRoles={['HO']}>
-            <BranchManagementPage />
-          </RoleGuard>
-        ),
+        element: <BranchManagementPage />,
       },
       {
         path: 'reports',
         children: [
           {
             index: true,
-            element: (
-              <RoleGuard allowedRoles={['HO']}>
-                <ReportsPage />
-              </RoleGuard>
-            ),
+            element: <ReportsPage />,
           },
           {
             path: 'daily',
-            element: (
-              <RoleGuard allowedRoles={['HO']}>
-                <BranchDailyReportPage />
-              </RoleGuard>
-            ),
+            element: <BranchDailyReportPage />,
           },
         ],
       },
       {
         path: 'ho-operations',
-        element: (
-          <RoleGuard allowedRoles={['HO']}>
-            <HOOperationsPage />
-          </RoleGuard>
-        ),
+        element: <HOOperationsPage />,
       },
       {
         path: 'settings',
-        element: (
-          <RoleGuard allowedRoles={['HO']}>
-            <SettingsPage />
-          </RoleGuard>
-        ),
+        element: <SettingsPage />,
       },
     ],
   },

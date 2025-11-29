@@ -17,6 +17,7 @@ import {
   type FinancialData,
   type FinancialSummary
 } from './utils/reportDataService';
+import { ReportsComponent } from '../../components/ReportsComponent';
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -89,7 +90,7 @@ const ReportsPage: React.FC = () => {
     {
       key: 'financial',
       label: 'Financial Reports',
-      children: <FinancialReport />,
+      children: <ReportsComponent/>
     },
     {
       key: 'performance',

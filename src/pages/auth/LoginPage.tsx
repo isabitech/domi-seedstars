@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, Card, Typography, Alert, Space } from 'antd';
+import React, { useEffect } from 'react';
+import { Form, Input, Button, Card, Typography, Alert, Space, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuthStore } from '../../store';
-import { authService, emailService } from '../../services/auth';
-import type { LoginForm } from '../../types';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useLogin } from '../../hooks/Auth/useLogin';
+import { useGetMe } from '../../hooks/Auth/useGetMe';
 
 const { Title, Text } = Typography;
 
@@ -15,56 +14,57 @@ interface LocationState {
 }
 
 export const LoginPage: React.FC = () => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { login, isAuthenticated, user } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
+  const loginMutation = useLogin();
+  const { data: currentUser, isSuccess: isAuthenticated } = useGetMe();
+  
+  const [form] = Form.useForm();
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (isAuthenticated && currentUser) {
       const state = location.state as LocationState;
-      const from = state?.from?.pathname || '/';
+      const from = state?.from?.pathname || '/app/dashboard';
       navigate(from, { replace: true });
     }
-  }, [isAuthenticated, user, navigate, location.state]);
+  }, [isAuthenticated, currentUser, navigate, location.state]);
 
-  const onFinish = async (values: LoginForm) => {
-    setLoading(true);
-    setError(null);
-    
+  const onFinish = async (values: { email: string; password: string }) => {
     try {
-      const response = await authService.login(values);
+      const loginResponse = await loginMutation.mutateAsync(values);
       
-      if (response.success && response.data) {
-        login(response.data);
-        
-        // Send email notification for branch login
-        if (response.data.role === 'BR') {
-          await emailService.sendBranchLoginNotification(response.data);
-        }
-        
-        // Navigate to appropriate dashboard based on role
+      message.success('Login successful!');
+      
+      // Get user role from response or current user data
+      const user = loginResponse?.data?.user || currentUser?.data;
+      
+      // Navigate based on user role
+      if (user?.role === 'HO') {
+        navigate('/app/dashboard');
+      } else if (user?.role === 'BR') {
+        navigate('/app/dashboard/branch');
+      } else {
+        // Fallback navigation
         const state = location.state as LocationState;
         const from = state?.from?.pathname;
-        if (from) {
+        if (from && from !== '/') {
           navigate(from, { replace: true });
         } else {
-          // Default navigation based on role
-          if (response.data.role === 'HO') {
-            navigate('/app/dashboard', { replace: true });
-          } else {
-            navigate('/app/dashboard/branch', { replace: true });
-          }
+          navigate('/app/dashboard', { replace: true });
         }
-      } else {
-        setError(response.error || 'Login failed');
       }
-    } catch {
-      setError('An unexpected error occurred');
-    } finally {
-      setLoading(false);
+    } catch (error: unknown) {
+      let errorMessage = 'Login failed';
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (error && typeof error === 'object' && 'response' in error) {
+        const responseError = error as { response?: { data?: { message?: string } } };
+        errorMessage = responseError.response?.data?.message || 'Login failed';
+      }
+      
+      message.error(errorMessage);
     }
   };
 
@@ -96,9 +96,9 @@ export const LoginPage: React.FC = () => {
             <Text type="secondary">Operations Management System</Text>
           </div>
           
-          {error && (
+          {loginMutation.isError && (
             <Alert 
-              message={error} 
+              message={loginMutation.error?.message || 'Login failed'} 
               type="error" 
               showIcon 
               style={{ marginBottom: 16 }}
@@ -106,18 +106,22 @@ export const LoginPage: React.FC = () => {
           )}
           
           <Form
+            form={form}
             name="login"
             onFinish={onFinish}
             autoComplete="off"
             layout="vertical"
           >
             <Form.Item
-              name="username"
-              rules={[{ required: true, message: 'Please input your username!' }]}
+              name="email"
+              rules={[
+                { required: true, message: 'Please input your email!' },
+                { type: 'email', message: 'Please enter a valid email!' }
+              ]}
             >
               <Input 
                 prefix={<UserOutlined />} 
-                placeholder="Username"
+                placeholder="Email"
                 size="large"
               />
             </Form.Item>
@@ -137,7 +141,7 @@ export const LoginPage: React.FC = () => {
               <Button 
                 type="primary" 
                 htmlType="submit" 
-                loading={loading}
+                loading={loginMutation.isPending}
                 size="large"
                 style={{ width: '100%' }}
               >
@@ -146,13 +150,22 @@ export const LoginPage: React.FC = () => {
             </Form.Item>
           </Form>
           
-          <div>
-            <Text type="secondary" style={{ fontSize: '12px' }}>
-              For demo purposes:<br/>
-              HO: admin / admin123<br/>
-              BR: branch1 / branch123
+          <div style={{ textAlign: 'center', marginTop: '16px' }}>
+            <Text type="secondary">
+              Don't have an account?{' '}
+              <Link to="/register" style={{ fontWeight: 'bold' }}>
+                Create Account
+              </Link>
             </Text>
           </div>
+          
+          {/* <div>
+            <Text type="secondary" style={{ fontSize: '12px' }}>
+              For demo purposes:<br/>
+              HO: admin@dominion.com / admin123<br/>
+              BR: branch1@dominion.com / branch123
+            </Text>
+          </div> */}
         </Space>
       </Card>
     </div>

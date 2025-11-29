@@ -27,6 +27,9 @@ import {
 import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
 import { calculations } from '../../utils/calculations';
+import { useUpdateHOFields } from '../../hooks/Operations/useUpdateHOFields';
+import { useListBranches } from '../../hooks/Branches/useListBranches';
+
 
 const { Title, Text } = Typography;
 
@@ -48,25 +51,6 @@ interface BranchHOData {
   lastUpdated?: string;
 }
 
-// Mock branch data
-const mockBranches = [
-  {
-    branchId: 'br-001',
-    branchName: 'Lagos Branch',
-    branchCode: 'LG001',
-  },
-  {
-    branchId: 'br-002', 
-    branchName: 'Abuja Branch',
-    branchCode: 'AB002',
-  },
-  {
-    branchId: 'br-003',
-    branchName: 'Kano Branch',
-    branchCode: 'KN003',
-  }
-];
-
 export const HOOperationsPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [loading, setLoading] = useState(false);
@@ -77,26 +61,38 @@ export const HOOperationsPage: React.FC = () => {
   const [modalForm] = Form.useForm();
   const [form] = Form.useForm();
 
+  // Initialize the useUpdateHOFields hook
+  const updateHOFieldsMutation = useUpdateHOFields();
+  
+  // Fetch branches from API
+  const { data: branchesResponse, isLoading: branchesLoading, error: branchesError, refetch: refetchBranches } = useListBranches();
+
+
   // Initialize branch data
   useEffect(() => {
+
     const loadData = async () => {
+      if (!branchesResponse?.data?.branches) return;
+      
       setLoading(true);
       try {
-        // Simulate API call - in real app, this would fetch existing data for the selected date
-        const initialData: BranchHOData[] = mockBranches.map(branch => ({
-          branchId: branch.branchId,
-          branchName: branch.branchName,
-          branchCode: branch.branchCode,
+        const branches = branchesResponse.data.branches;
+        
+        // Initialize data using API branches
+        const initialData: BranchHOData[] = branches.map(branch => ({
+          branchId: branch._id,
+          branchName: branch.name,
+          branchCode: branch.code,
           cashbook1: {
             frmHO: 0,
             frmBR: 0,
           },
           disbursementRoll: {
-            prevDis: 50000, // Default previous disbursement
+            prevDis: branch.previousDisbursement || 0, // Default previous disbursement
           },
           currentBranchRegister: {
-            prevTotalSav: 100000, // Default previous total savings
-            prevTotalLoan: 75000, // Default previous total loan
+            prevTotalSav: branch.previousSavingsTotal || 0, // Default previous total savings
+            prevTotalLoan: branch.previousLoanTotal || 0, // Default previous total loan
           },
         }));
 
@@ -113,7 +109,8 @@ export const HOOperationsPage: React.FC = () => {
         });
         
         form.setFieldsValue(formValues);
-      } catch {
+      } catch (error) {
+        console.error('Error loading branch data:', error);
         message.error('Failed to load branch data');
       } finally {
         setLoading(false);
@@ -121,31 +118,64 @@ export const HOOperationsPage: React.FC = () => {
     };
     
     loadData();
-  }, [selectedDate, form]);
+  }, [selectedDate, form, branchesResponse]);
 
-  const handleCellUpdate = (branchId: string, field: string, value: number) => {
-    setBranchData(prev => prev.map(branch => {
-      if (branch.branchId === branchId) {
-        const updatedBranch = { ...branch, lastUpdated: dayjs().toISOString() };
-        
-        if (field === 'frmHO') {
-          updatedBranch.cashbook1.frmHO = value;
-        } else if (field === 'frmBR') {
-          updatedBranch.cashbook1.frmBR = value;
-        } else if (field === 'prevDis') {
-          updatedBranch.disbursementRoll.prevDis = value;
-        } else if (field === 'prevTotalSav') {
-          updatedBranch.currentBranchRegister.prevTotalSav = value;
-        } else if (field === 'prevTotalLoan') {
-          updatedBranch.currentBranchRegister.prevTotalLoan = value;
-        }
-        
-        return updatedBranch;
+  const handleCellUpdate = async (branchId: string, field: string, value: number) => {
+    try {
+      // Prepare the API request data
+      const apiData: Record<string, number> = {};
+      
+      if (field === 'frmHO') {
+        apiData.frmHO = value;
+      } else if (field === 'frmBR') {
+        apiData.frmBR = value;
+      } else if (field === 'prevDis') {
+        apiData.previousDisbursement = value;
+      } else if (field === 'prevTotalSav') {
+        apiData.previousSavingsTotal = value;
+      } else if (field === 'prevTotalLoan') {
+        apiData.previousLoanTotal = value;
       }
-      return branch;
-    }));
-    setEditingCell(null);
-    message.success('Value updated successfully');
+
+      // Call the API
+      await updateHOFieldsMutation.mutateAsync({
+        branchId,
+        ...apiData,
+        // Include branch information if needed by your API
+        field1: branchId === 'br-001' ? value : undefined,
+        field2: branchId === 'br-002' ? value : undefined,
+        field3: branchId === 'br-003' ? value : undefined,
+      });
+
+      // Update local state
+      setBranchData(prev => prev.map(branch => {
+        if (branch.branchId === branchId) {
+          const updatedBranch = { ...branch, lastUpdated: dayjs().toISOString() };
+          
+          if (field === 'frmHO') {
+            updatedBranch.cashbook1.frmHO = value;
+          } else if (field === 'frmBR') {
+            updatedBranch.cashbook1.frmBR = value;
+          } else if (field === 'prevDis') {
+            updatedBranch.disbursementRoll.prevDis = value;
+          } else if (field === 'prevTotalSav') {
+            updatedBranch.currentBranchRegister.prevTotalSav = value;
+          } else if (field === 'prevTotalLoan') {
+            updatedBranch.currentBranchRegister.prevTotalLoan = value;
+          }
+          
+          return updatedBranch;
+        }
+        return branch;
+      }));
+      
+      setEditingCell(null);
+      message.success('Value updated successfully');
+    } catch (error) {
+      console.error('Error updating HO fields:', error);
+      message.error('Failed to update value. Please try again.');
+      setEditingCell(null);
+    }
   };
 
   const handleBranchClick = (branch: BranchHOData) => {
@@ -160,44 +190,67 @@ export const HOOperationsPage: React.FC = () => {
     setModalVisible(true);
   };
 
-  const handleModalSave = (values: {
+  const handleModalSave = async (values: {
     frmHO: number;
     frmBR: number;
     prevDis: number;
     prevTotalSav: number;
     prevTotalLoan: number;
   }) => {
+
     if (selectedBranch) {
-      setBranchData(prev => prev.map(branch => 
-        branch.branchId === selectedBranch.branchId 
-          ? {
-              ...branch,
-              cashbook1: {
-                frmHO: values.frmHO || 0,
-                frmBR: values.frmBR || 0,
-              },
-              disbursementRoll: {
-                prevDis: values.prevDis || 0,
-              },
-              currentBranchRegister: {
-                prevTotalSav: values.prevTotalSav || 0,
-                prevTotalLoan: values.prevTotalLoan || 0,
-              },
-              lastUpdated: dayjs().toISOString(),
-            }
-          : branch
-      ));
-      message.success(`${selectedBranch.branchName} data updated successfully`);
+      console.log("branch id", selectedBranch.branchId )
+      try {
+        // Call the API with all the updated values
+        await updateHOFieldsMutation.mutateAsync({
+          branchId: selectedBranch.branchId,
+          frmHO: values.frmHO || 0,
+          frmBR: values.frmBR || 0,
+          previousDisbursement: values.prevDis || 0,
+          previousSavingsTotal: values.prevTotalSav || 0,
+          previousLoanTotal: values.prevTotalLoan || 0,
+          // Map branch-specific fields based on branch ID
+          field1: selectedBranch.branchId === 'br-001' ? values.frmHO : undefined,
+          field2: selectedBranch.branchId === 'br-002' ? values.frmHO : undefined,
+          field3: selectedBranch.branchId === 'br-003' ? values.frmHO : undefined,
+        });
+
+        // Update local state
+        setBranchData(prev => prev.map(branch => 
+          branch.branchId === selectedBranch.branchId 
+            ? {
+                ...branch,
+                cashbook1: {
+                  frmHO: values.frmHO || 0,
+                  frmBR: values.frmBR || 0,
+                },
+                disbursementRoll: {
+                  prevDis: values.prevDis || 0,
+                },
+                currentBranchRegister: {
+                  prevTotalSav: values.prevTotalSav || 0,
+                  prevTotalLoan: values.prevTotalLoan || 0,
+                },
+                lastUpdated: dayjs().toISOString(),
+              }
+            : branch
+        ));
+        
+        message.success(`${selectedBranch.branchName} data updated successfully`);
+        setModalVisible(false);
+        setSelectedBranch(null);
+      } catch (error) {
+        console.error('Error updating branch data:', error);
+        message.error('Failed to update branch data. Please try again.');
+      }
     }
-    setModalVisible(false);
-    setSelectedBranch(null);
   };
 
   const handleRefresh = () => {
     setSelectedDate(dayjs(selectedDate));
+    refetchBranches();
   };
 
-  // Calculate totals for overview
   const totals = branchData.reduce((acc, branch) => ({
     totalFrmHO: acc.totalFrmHO + branch.cashbook1.frmHO,
     totalFrmBR: acc.totalFrmBR + branch.cashbook1.frmBR,
@@ -212,6 +265,25 @@ export const HOOperationsPage: React.FC = () => {
     totalPrevLoan: 0,
   });
 
+  // Show error if branches failed to load
+  if (branchesError) {
+    return (
+      <div className="page-container" style={{ padding: '24px' }}>
+        <Alert
+          message="Error Loading Branches"
+          description="Failed to load branch data. Please refresh the page or contact support."
+          type="error"
+          showIcon
+          action={
+            <Button size="small" onClick={() => window.location.reload()}>
+              Refresh Page
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
+
   const EditableCell: React.FC<{
     value: number;
     branchId: string;
@@ -219,15 +291,20 @@ export const HOOperationsPage: React.FC = () => {
   }> = ({ value, branchId, field }) => {
     const isEditing = editingCell?.branchId === branchId && editingCell?.field === field;
     const [editValue, setEditValue] = useState(value.toString());
+    const isUpdating = updateHOFieldsMutation.isPending && isEditing;
 
     const handleClick = () => {
-      setEditingCell({ branchId, field });
-      setEditValue(value.toString());
+      if (!isUpdating) {
+        setEditingCell({ branchId, field });
+        setEditValue(value.toString());
+      }
     };
 
     const handleSave = () => {
-      const numValue = parseFloat(editValue) || 0;
-      handleCellUpdate(branchId, field, numValue);
+      if (!isUpdating) {
+        const numValue = parseFloat(editValue) || 0;
+        handleCellUpdate(branchId, field, numValue);
+      }
     };
 
     if (isEditing) {
@@ -238,7 +315,9 @@ export const HOOperationsPage: React.FC = () => {
           onPressEnter={handleSave}
           onBlur={handleSave}
           autoFocus
+          disabled={isUpdating}
           style={{ width: '100%' }}
+          placeholder={isUpdating ? 'Updating...' : 'Enter value'}
         />
       );
     }
@@ -497,7 +576,7 @@ export const HOOperationsPage: React.FC = () => {
             rowKey="branchId"
             pagination={false}
             scroll={{ x: 1200 }}
-            loading={loading}
+            loading={loading || branchesLoading}
             size="middle"
             bordered
           />
@@ -617,8 +696,10 @@ export const HOOperationsPage: React.FC = () => {
                     type="primary" 
                     htmlType="submit"
                     icon={<SaveOutlined />}
+                    loading={updateHOFieldsMutation.isPending}
+                    disabled={updateHOFieldsMutation.isPending}
                   >
-                    Save Changes
+                    {updateHOFieldsMutation.isPending ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </Space>
               </Form.Item>

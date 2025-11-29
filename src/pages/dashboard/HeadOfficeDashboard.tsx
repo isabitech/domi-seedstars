@@ -1,146 +1,99 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Card, 
   Row, 
   Col, 
   Statistic, 
   Table, 
-  Select, 
   DatePicker,
   Space,
   Typography,
   Tag,
   Progress,
   Alert,
-  Button
+  Button,
+  Spin,
+  message
 } from 'antd';
 import { 
   DashboardOutlined,
   BankOutlined,
   TrophyOutlined,
-  ExclamationCircleOutlined,
   ReloadOutlined,
   DownloadOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { useGetOnlineCIHTSO } from '../../hooks/Metrics/useGetOnlineCIH-TSO';
 import { calculations } from '../../utils/calculations';
+import { useGetHODashboard, } from '../../hooks/Head Office/HO-Dashboard/useGetHODashboard';
 
 dayjs.extend(relativeTime);
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
 
-// Mock data for demonstration
-const mockBranchData = [
-  {
-    branchId: 'br-001',
-    branchName: 'Lagos Branch',
-    branchCode: 'LG001',
-    todayData: {
-      cashbook1Total: 1250000,
-      cashbook2Total: 980000,
-      onlineCIH: 270000,
-      savingsTotal: 850000,
-      loanCollection: 400000,
-      disbursements: 650000,
-      transferToSenate: 200000
-    },
-    monthlyData: {
-      totalSavings: 12500000,
-      totalLoans: 8900000,
-      totalDisbursements: 15600000,
-      performance: 92
-    },
-    lastUpdated: dayjs().subtract(30, 'minutes').toISOString(),
-    status: 'active'
-  },
-  {
-    branchId: 'br-002',
-    branchName: 'Abuja Branch',
-    branchCode: 'AB002',
-    todayData: {
-      cashbook1Total: 980000,
-      cashbook2Total: 720000,
-      onlineCIH: 260000,
-      savingsTotal: 650000,
-      loanCollection: 330000,
-      disbursements: 450000,
-      transferToSenate: 180000
-    },
-    monthlyData: {
-      totalSavings: 9800000,
-      totalLoans: 7200000,
-      totalDisbursements: 12300000,
-      performance: 88
-    },
-    lastUpdated: dayjs().subtract(15, 'minutes').toISOString(),
-    status: 'active'
-  },
-  {
-    branchId: 'br-003',
-    branchName: 'Kano Branch',
-    branchCode: 'KN003',
-    todayData: {
-      cashbook1Total: 750000,
-      cashbook2Total: 580000,
-      onlineCIH: 170000,
-      savingsTotal: 420000,
-      loanCollection: 280000,
-      disbursements: 380000,
-      transferToSenate: 120000
-    },
-    monthlyData: {
-      totalSavings: 7500000,
-      totalLoans: 5800000,
-      totalDisbursements: 9200000,
-      performance: 85
-    },
-    lastUpdated: dayjs().subtract(2, 'hours').toISOString(),
-    status: 'warning'
-  }
-];
-
 export const HeadOfficeDashboard: React.FC = () => {
-  const [selectedBranch, setSelectedBranch] = useState<string>('all');
+  const [selectedDate, setSelectedDate] = useState<string>(dayjs().format('YYYY-MM-DD'));
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
     dayjs().subtract(7, 'days'), 
     dayjs()
   ]);
-  const [refreshing, setRefreshing] = useState(false);
 
-  // Calculate totals across all branches
-  const totals = mockBranchData.reduce((acc, branch) => ({
-    totalCashbook1: acc.totalCashbook1 + branch.todayData.cashbook1Total,
-    totalCashbook2: acc.totalCashbook2 + branch.todayData.cashbook2Total,
-    totalOnlineCIH: acc.totalOnlineCIH + branch.todayData.onlineCIH,
-    totalSavings: acc.totalSavings + branch.todayData.savingsTotal,
-    totalLoans: acc.totalLoans + branch.todayData.loanCollection,
-    totalDisbursements: acc.totalDisbursements + branch.todayData.disbursements,
-    totalTransferToSenate: acc.totalTransferToSenate + branch.todayData.transferToSenate
-  }), {
+  // Fetch dashboard data using our hooks
+  const { 
+    data: dashboardData, 
+    isLoading: isDashboardLoading, 
+    refetch: refetchDashboard,
+    isRefetching 
+  } = useGetHODashboard();
+
+  const { 
+    isLoading: isMetricsLoading,
+    refetch: refetchMetrics 
+  } = useGetOnlineCIHTSO({ date: selectedDate });
+
+  const isLoading = isDashboardLoading || isMetricsLoading;
+
+  const handleRefresh = async () => {
+    try {
+      await Promise.all([refetchDashboard(), refetchMetrics()]);
+      message.success('Data refreshed successfully');
+    } catch {
+      message.error('Failed to refresh data');
+    }
+  };
+
+  // Get data from hooks
+  const dashboard = dashboardData?.data?.dashboardData;
+
+  if (isLoading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '50vh' 
+      }}>
+        <Spin size="large" tip="Loading dashboard data..." />
+      </div>
+    );
+  }
+
+  const totals = dashboard?.consolidatedSummary || {
     totalCashbook1: 0,
     totalCashbook2: 0,
     totalOnlineCIH: 0,
+    totalLoanCollection: 0,
     totalSavings: 0,
-    totalLoans: 0,
-    totalDisbursements: 0,
-    totalTransferToSenate: 0
-  });
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    // Simulate API call
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1500);
+    totalTSO: 0
   };
 
   const branchTableColumns = [
     {
       title: 'Branch',
       key: 'branch',
-      render: (_: unknown, record: typeof mockBranchData[0]) => (
+      render: (_: unknown, record: any) => (
         <Space>
           <BankOutlined />
           <div>
@@ -153,49 +106,50 @@ export const HeadOfficeDashboard: React.FC = () => {
     },
     {
       title: 'Status',
-      dataIndex: 'status',
       key: 'status',
-      render: (status: string) => (
-        <Tag color={status === 'active' ? 'green' : 'orange'}>
-          {status === 'active' ? 'Online' : 'Warning'}
-        </Tag>
-      )
+      render: (_: unknown, record: any) => {
+        // Determine status based on lastOperation or other criteria
+        const status = record.lastOperation ? 'submitted' : 'pending';
+        return (
+          <Tag color={status === 'submitted' ? 'green' : 'orange'}>
+            {status === 'submitted' ? 'Submitted' : 'Pending'}
+          </Tag>
+        );
+      }
     },
     {
-      title: 'Online CIH',
+      title: 'Online CIH (Avg)',
       key: 'onlineCIH',
-      render: (_: unknown, record: typeof mockBranchData[0]) => 
-        calculations.formatCurrency(record.todayData.onlineCIH)
+      render: (_: unknown, record: any) => 
+        calculations.formatCurrency(record.avgOnlineCIH || 0)
     },
     {
-      title: 'Today\'s Collections',
-      key: 'collections',
-      render: (_: unknown, record: typeof mockBranchData[0]) => 
-        calculations.formatCurrency(record.todayData.loanCollection + record.todayData.savingsTotal)
-    },
-    {
-      title: 'Today\'s Disbursements',
-      key: 'disbursements',
-      render: (_: unknown, record: typeof mockBranchData[0]) => 
-        calculations.formatCurrency(record.todayData.disbursements)
+      title: 'TSO',
+      key: 'tso',
+      render: (_: unknown, record: any) => 
+        calculations.formatCurrency(record.totalTSO || 0)
     },
     {
       title: 'Performance',
       key: 'performance',
-      render: (_: unknown, record: typeof mockBranchData[0]) => (
-        <Progress 
-          percent={record.monthlyData.performance} 
-          size="small"
-          status={record.monthlyData.performance >= 90 ? 'success' : 'active'}
-        />
-      )
+      render: (_: unknown, record: any) => {
+        // Calculate efficiency based on operation days vs expected days
+        const efficiency = parseFloat((Math.min(100, (record.operationDays / 30) * 100).toFixed(2)));
+        return (
+          <Progress 
+            percent={efficiency} 
+            size="small"
+            status={efficiency >= 90 ? 'success' : 'active'}
+          />
+        );
+      }
     },
     {
-      title: 'Last Updated',
-      key: 'lastUpdated',
-      render: (_: unknown, record: typeof mockBranchData[0]) => (
+      title: 'Last Operation',
+      key: 'lastOperation',
+      render: (_: unknown, record: any) => (
         <Text type="secondary">
-          {dayjs(record.lastUpdated).fromNow()}
+          {record.lastOperation ? dayjs(record.lastOperation).format('DD MMM, HH:mm') : 'No operations'}
         </Text>
       )
     }
@@ -218,7 +172,7 @@ export const HeadOfficeDashboard: React.FC = () => {
             <Space>
               <Button 
                 icon={<ReloadOutlined />}
-                loading={refreshing}
+                loading={isRefetching}
                 onClick={handleRefresh}
               >
                 Refresh
@@ -237,21 +191,21 @@ export const HeadOfficeDashboard: React.FC = () => {
         <Card size="small">
           <Row gutter={16} align="middle">
             <Col>
-              <Text strong>Filters:</Text>
+              <Text strong>Date:</Text>
             </Col>
             <Col>
-              <Select
-                value={selectedBranch}
-                onChange={setSelectedBranch}
-                style={{ width: 200 }}
-              >
-                <Select.Option value="all">All Branches</Select.Option>
-                {mockBranchData.map(branch => (
-                  <Select.Option key={branch.branchId} value={branch.branchId}>
-                    {branch.branchName}
-                  </Select.Option>
-                ))}
-              </Select>
+              <DatePicker 
+                value={dayjs(selectedDate)}
+                onChange={(date) => {
+                  if (date) {
+                    setSelectedDate(date.format('YYYY-MM-DD'));
+                  }
+                }}
+                format="YYYY-MM-DD"
+              />
+            </Col>
+            <Col>
+              <Text strong>Date Range:</Text>
             </Col>
             <Col>
               <RangePicker 
@@ -285,7 +239,7 @@ export const HeadOfficeDashboard: React.FC = () => {
             <Card className="stats-card">
               <Statistic
                 title="Total Collections Today"
-                value={totals.totalSavings + totals.totalLoans}
+                value={totals.totalLoanCollection + totals.totalSavings}
                 precision={2}
                 prefix="₦"
                 valueStyle={{ color: '#1890ff', fontSize: '20px' }}
@@ -296,8 +250,8 @@ export const HeadOfficeDashboard: React.FC = () => {
           <Col xs={24} sm={12} lg={6}>
             <Card className="stats-card">
               <Statistic
-                title="Total Disbursements"
-                value={totals.totalDisbursements}
+                title="Total TSO"
+                value={totals.totalTSO}
                 precision={2}
                 prefix="₦"
                 valueStyle={{ color: '#722ed1', fontSize: '20px' }}
@@ -308,25 +262,35 @@ export const HeadOfficeDashboard: React.FC = () => {
           <Col xs={24} sm={12} lg={6}>
             <Card className="stats-card">
               <Statistic
-                title="Transfer to Senate"
-                value={totals.totalTransferToSenate}
-                precision={2}
-                prefix="₦"
+                title="System Efficiency"
+                value={dashboard?.consolidatedSummary?.activeBranches?.length && dashboard?.branches?.length ? 
+                       (dashboard.consolidatedSummary.activeBranches.length / dashboard.branches.length) * 100 : 0}
+                precision={1}
+                suffix="%"
                 valueStyle={{ color: '#52c41a', fontSize: '20px' }}
               />
             </Card>
           </Col>
         </Row>
 
-        {/* Alerts */}
-        <Alert
-          message="System Status"
-          description="All branches are reporting. Kano Branch last updated 2 hours ago - please check connection."
-          type="warning"
-          showIcon
-          icon={<ExclamationCircleOutlined />}
-          closable
-        />
+        {/* System Status Alert */}
+        {dashboard?.todayStatus && dashboard.todayStatus.some(status => !status.isCompleted) ? (
+          <Alert
+            message="Pending Operations"
+            description={`${dashboard.todayStatus.filter(s => !s.isCompleted).length} branches have pending operations for today.`}
+            type="warning"
+            showIcon
+            closable
+          />
+        ) : (
+          <Alert
+            message="System Status"
+            description="All systems are running normally. No alerts at this time."
+            type="success"
+            showIcon
+            closable
+          />
+        )}
 
         {/* Branch Performance Table */}
         <Card 
@@ -341,10 +305,11 @@ export const HeadOfficeDashboard: React.FC = () => {
         >
           <Table
             columns={branchTableColumns}
-            dataSource={mockBranchData}
-            rowKey="branchId"
+            dataSource={dashboard?.branchPerformance || []}
+            rowKey="_id"
             pagination={false}
             size="middle"
+            loading={isLoading}
           />
         </Card>
 
@@ -354,19 +319,25 @@ export const HeadOfficeDashboard: React.FC = () => {
             <Card title="Daily Performance Summary">
               <Space direction="vertical" style={{ width: '100%' }}>
                 <div>
-                  <Text strong>Best Performing Branch:</Text>
+                  <Text strong>Total Active Branches:</Text>
                   <br />
-                  <Text>Lagos Branch - 92% efficiency</Text>
+                  <Text>
+                    {dashboard?.consolidatedSummary?.activeBranches?.length || 0} branches operating today
+                  </Text>
                 </div>
                 <div>
-                  <Text strong>Attention Required:</Text>
+                  <Text strong>Total Operations:</Text>
                   <br />
-                  <Text type="warning">Kano Branch - Connectivity issues</Text>
+                  <Text>
+                    {dashboard?.consolidatedSummary?.totalOperations || 0} operations completed
+                  </Text>
                 </div>
                 <div>
-                  <Text strong>Total Branches Active:</Text>
+                  <Text strong>Today's Collections:</Text>
                   <br />
-                  <Text>{mockBranchData.filter(b => b.status === 'active').length} of {mockBranchData.length}</Text>
+                  <Text>
+                    ₦{((dashboard?.consolidatedSummary?.totalSavings || 0) + (dashboard?.consolidatedSummary?.totalLoanCollection || 0)).toLocaleString()}
+                  </Text>
                 </div>
               </Space>
             </Card>
@@ -376,22 +347,26 @@ export const HeadOfficeDashboard: React.FC = () => {
             <Card title="Financial Summary">
               <Space direction="vertical" style={{ width: '100%' }}>
                 <Statistic
-                  title="Net Cash Flow Today"
-                  value={(totals.totalSavings + totals.totalLoans) - totals.totalDisbursements}
+                  title="Total Disbursements"
+                  value={dashboard?.consolidatedSummary?.totalDisbursements || 0}
                   precision={2}
                   prefix="₦"
-                  valueStyle={{ 
-                    color: (totals.totalSavings + totals.totalLoans) > totals.totalDisbursements ? '#3f8600' : '#cf1322' 
-                  }}
+                  valueStyle={{ color: '#3f8600' }}
                 />
-                <div>
-                  <Text strong>Collection Efficiency:</Text>
-                  <br />
-                  <Progress 
-                    percent={Math.round(((totals.totalSavings + totals.totalLoans) / (totals.totalDisbursements || 1)) * 100)}
-                    status="active"
-                  />
-                </div>
+                <Statistic
+                  title="Total Withdrawals"
+                  value={dashboard?.consolidatedSummary?.totalWithdrawals || 0}
+                  precision={2}
+                  prefix="₦"
+                  valueStyle={{ color: '#ff4d4f' }}
+                />
+                <Statistic
+                  title="Total Charges"
+                  value={dashboard?.consolidatedSummary?.totalCharges || 0}
+                  precision={2}
+                  prefix="₦"
+                  valueStyle={{ color: '#1890ff' }}
+                />
               </Space>
             </Card>
           </Col>
