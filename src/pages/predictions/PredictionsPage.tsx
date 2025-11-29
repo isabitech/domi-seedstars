@@ -57,13 +57,13 @@ export const PredictionsPage: React.FC = () => {
   const getPrediction = useGetEntry(user?.branchId || "", TOMMOROW_DATE);
 
   useEffect(()=>{
-    if(getPrediction?.data?.data){
-      const data = getPrediction.data.data;
+    if(getPrediction?.data?.data?.operations?.prediction){
+      const prediction = getPrediction.data.data.operations.prediction;
       form.setFieldsValue({
-        predictionNo: data.operations.prediction.predictionNo,
-        predictionAmount: data.operations.prediction.predictionAmount,
+        predictionNo: prediction.predictionNo,
+        predictionAmount: prediction.predictionAmount,
       });
-      setExistingPredictionId(data.operations.prediction._id);
+      setExistingPredictionId(prediction._id);
     }
   },[getPrediction.data])
   // Handle form submission
@@ -95,14 +95,14 @@ export const PredictionsPage: React.FC = () => {
     })
   };
 
-  const predictions = getPrediction.data &&  getPrediction.data.data.operations.prediction
+  const predictions = getPrediction.data?.data?.operations?.prediction
     ? [{
         ...getPrediction.data.data.operations.prediction,
         id: getPrediction.data.data.operations.prediction._id || '',
         branchId: user?.branchId || '',
       }]
     : [];
-  const currentPrediction =  getPrediction.data && getPrediction?.data.data.operations.prediction;
+  const currentPrediction = getPrediction.data?.data?.operations?.prediction;
   const loading =
     createPredictionEntry.isPending || updatePredictionMutation.isPending;
 

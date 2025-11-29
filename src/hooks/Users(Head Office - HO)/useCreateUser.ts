@@ -3,10 +3,11 @@ import axiosInstance from '../../instance/axiosInstance';
 import type { User } from '../Auth/useGetMe';
 
 export interface CreateUserRequest {
+  name: string;
   username: string;
   email: string;
   password: string;
-  role: 'HO' | 'BR';
+  role: 'HO' | 'BR' | 'admin';
   branchId?: string;
 }
 

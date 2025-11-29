@@ -59,6 +59,7 @@ export interface Branch {
   name: string
   code: string
   phone: string
+  address: string
   email: string
   dailyLimit: number
   status: string
@@ -70,6 +71,12 @@ export interface Branch {
   createdAt: string
   updatedAt: string
   __v: number
+  managerName?: string
+  managerUsername?: string
+  managerEmail?: string
+  managerId?: string
+  managerPassword?: string
+  operationHours?: string
 }
 
 

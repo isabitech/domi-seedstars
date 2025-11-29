@@ -4,6 +4,7 @@ import { DollarOutlined, LockOutlined, InfoCircleOutlined } from '@ant-design/ic
 import { useAuthStore } from '../store';
 import { calculations } from '../utils/calculations';
 import type { Cashbook2 } from '../types';
+import { useGetMe } from '../hooks/Auth/useGetMe';
 
 const { Text } = Typography;
 
@@ -18,7 +19,8 @@ export const DisbursementRollDisplay: React.FC<DisbursementRollDisplayProps> = (
   previousDisbursement = 50000, // Default previous disbursement from HO
   loading = false
 }) => {
-  const { user } = useAuthStore();
+  const { data:currentUser } = useGetMe();
+  const user = currentUser?.data;
   const [disbursementRoll, setDisbursementRoll] = useState(previousDisbursement);
 
   useEffect(() => {
@@ -75,7 +77,7 @@ export const DisbursementRollDisplay: React.FC<DisbursementRollDisplayProps> = (
               message={
                 <Space>
                   <InfoCircleOutlined />
-                  <Text strong>Branch User Notice</Text>
+                  <Text strong>{user?.branchName} Notice</Text>
                 </Space>
               }
               description="This field is automatically calculated and cannot be edited by branch users. Previous disbursement amounts are set by Head Office."

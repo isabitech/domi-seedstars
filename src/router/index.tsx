@@ -20,6 +20,7 @@ import DailyReport from '../components/Branch/DailyReport';
 import DailyOperations from '../components/Branch/DailyOperations';
 import { SavingsRegisterPage } from '../pages/registers/SavingsRegisterPage';
 import { LoanRegisterPage } from '../pages/registers/LoanRegisterPage';
+import { DisbursementRollPage } from '../pages/disbursement-roll/DisbursementRollPage';
 
 export const router = createBrowserRouter([
   {
@@ -99,6 +100,10 @@ export const router = createBrowserRouter([
       {
         path: 'branch-loan-register',
         element: <LoanRegisterPage />,
+      },
+      {
+        path: 'branch-disbursement-roll',
+        element: <DisbursementRollPage />,
       },
       {
         path: 'branches',

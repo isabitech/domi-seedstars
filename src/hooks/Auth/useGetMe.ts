@@ -11,14 +11,17 @@ export interface GetMeResponse {
 
 export interface User {
   id: string
+  name?: string
   username: string
   email: string
-  role: string
+  role: 'HO' | 'BR' | 'admin'
   branchId: string
   branchName: string
   permissions: string[]
   lastLogin: string
   isFirstLogin: boolean
+  status?: 'active' | 'inactive'
+  _id?: string
 }
 
 

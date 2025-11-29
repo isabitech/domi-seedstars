@@ -31,8 +31,7 @@ import {
   calculateBankStatement2 
 } from '../services/bankStatement';
 import { useGetMe } from '../hooks/Auth/useGetMe';
-import { useGetEntry } from '../hooks/Branch/Cashbook/useGetEntry';
-import type { BankStatement2 } from '../hooks/Branch/Cashbook/useCreateEntry';
+import { useGetBS2, type BankStatement2 } from '../hooks/BankStatements/useGetBS2';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -43,14 +42,6 @@ interface BankStatement2Props {
   loading?: boolean;
 }
 
-// Sample branch options (in real app, this would come from API)
-const branchOptions = [
-  { value: 'BR001', label: 'Lagos Main Branch' },
-  { value: 'BR002', label: 'Abuja Branch' },
-  { value: 'BR003', label: 'Port Harcourt Branch' },
-  { value: 'BR004', label: 'Kano Branch' },
-  { value: 'BR005', label: 'Ibadan Branch' },
-];
 
 export const BankStatement2Component: React.FC<BankStatement2Props> = ({ 
   selectedDate, 
@@ -72,38 +63,21 @@ export const BankStatement2Component: React.FC<BankStatement2Props> = ({
   // Merge internal and external loading states
   const isLoading = loading || externalLoading;
 
-  const getBankStatement2 = useGetEntry(user?.branchId, currentDate);
+  const getBankStatement2 = useGetBS2(currentDate, user?.branchId || "");
 
-  // Load existing statement data
-  const loadStatement = useCallback(async () => {
-    if (!user?.branchId || !currentDate) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const existingStatement =
-        getBankStatement2.data?.data?.operations?.bankStatement2;
-
-      if (existingStatement) {
-        setStatement(existingStatement);
-        setEditMode(false); // Disable editing if data exists
-        form.setFieldsValue({
-          tbo: existingStatement.tbo,
-          exAmt: existingStatement.exAmt,
-          exPurpose: existingStatement.exPurpose || '',
-          date: dayjs(existingStatement.date),
-        });
-      } else {
-        setEditMode(true); // Enable editing if no data
-      }
-    } catch (err) {
-      setError('Failed to load bank statement 2 data');
-      console.error('Error loading statement:', err);
-    } finally {
-      setLoading(false);
+  // Update statement state when data is fetched
+  useEffect(() => {
+    if (getBankStatement2.data?.data?.bankStatement2) {
+      const existingStatement = getBankStatement2.data.data.bankStatement2;
+      setStatement(existingStatement);
+      form.setFieldsValue({
+        tbo: existingStatement.tbo,
+        exAmt: existingStatement.exAmt,
+        exPurpose: existingStatement.exPurpose || '',
+        date: dayjs(existingStatement.date),
+      });
     }
-  }, [user?.branchId, currentDate, form, getBankStatement2.data]);
+  }, [getBankStatement2.data, form]);
 
   // Calculate statement when values change
   const handleRecalculate = useCallback(async () => {
@@ -126,13 +100,15 @@ export const BankStatement2Component: React.FC<BankStatement2Props> = ({
     
     // Call the parent onSubmit callback if provided
     try {
-      if (onSubmit) {
+        if (onSubmit) {
          onSubmit({
           tbo: values.tbo,
           exAmt: values.exAmt,
           exPurpose: values.exPurpose,
         });
-        setEditMode(false); // Disable editing after successful submission
+        // Refetch data to get updated statement
+        await getBankStatement2.refetch();
+        // Keep form editable after successful submission
       }
     } catch (err) {
       setError('Failed to submit bank statement 2');
@@ -155,11 +131,6 @@ export const BankStatement2Component: React.FC<BankStatement2Props> = ({
       setCurrentDate(newDate);
     }
   };
-
-  // Effect to reload when date changes
-  useEffect(() => {
-    loadStatement();
-  }, [loadStatement]);
 
   // Effect to recalculate when form values change
   const handleValuesChange = useCallback((changedValues: { 
@@ -239,7 +210,7 @@ export const BankStatement2Component: React.FC<BankStatement2Props> = ({
       extra={
         <Button 
           icon={<ReloadOutlined />} 
-          onClick={loadStatement}
+          onClick={() => getBankStatement2.refetch()}
           size="small"
         >
           Refresh
@@ -263,7 +234,6 @@ export const BankStatement2Component: React.FC<BankStatement2Props> = ({
           layout="vertical"
           onFinish={handleSubmit}
           onValuesChange={handleValuesChange}
-          disabled={!editMode}
         >
           <Row gutter={16}>
             <Col span={12}>
@@ -329,33 +299,21 @@ export const BankStatement2Component: React.FC<BankStatement2Props> = ({
           </Form.Item>
 
           <Space>
-            {editMode ? (
-              <>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  icon={<SaveOutlined />}
-                  loading={isLoading}
-                >
-                  {statement ? 'Update Statement' : 'Save Statement'}
-                </Button>
-                <Button
-                  icon={<CalculatorOutlined />}
-                  onClick={handleRecalculate}
-                  loading={calculating}
-                >
-                  Recalculate
-                </Button>
-              </>
-            ) : (
-              <Button
-                type="default"
-                icon={<SaveOutlined />}
-                onClick={handleEdit}
-              >
-                Edit Statement
-              </Button>
-            )}
+            <Button
+              type="primary"
+              htmlType="submit"
+              icon={<SaveOutlined />}
+              loading={isLoading}
+            >
+              {statement ? 'Update Statement' : 'Save Statement'}
+            </Button>
+            <Button
+              icon={<CalculatorOutlined />}
+              onClick={handleRecalculate}
+              loading={calculating}
+            >
+              Recalculate
+            </Button>
           </Space>
         </Form>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Card, 
   Row, 
@@ -24,26 +24,14 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { useGetHODashboard } from '../../hooks/Dashboard/useGetHODashboard';
 import { useGetOnlineCIHTSO } from '../../hooks/Metrics/useGetOnlineCIH-TSO';
 import { calculations } from '../../utils/calculations';
+import { useGetHODashboard, type BranchPerformance as APiBranchPerformance } from '../../hooks/Head Office/HO-Dashboard/useGetHODashboard';
 
 dayjs.extend(relativeTime);
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
-
-// Interface for branch performance data
-interface BranchPerformance {
-  branchId: string;
-  branchName: string;
-  branchCode: string;
-  status: 'submitted' | 'pending' | 'overdue';
-  onlineCIH: number;
-  tso: number;
-  submissionTime?: string;
-  efficiency: number;
-}
 
 export const HeadOfficeDashboard: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>(dayjs().format('YYYY-MM-DD'));
@@ -58,7 +46,7 @@ export const HeadOfficeDashboard: React.FC = () => {
     isLoading: isDashboardLoading, 
     refetch: refetchDashboard,
     isRefetching 
-  } = useGetHODashboard({ date: selectedDate });
+  } = useGetHODashboard();
 
   const { 
     isLoading: isMetricsLoading,
@@ -77,7 +65,7 @@ export const HeadOfficeDashboard: React.FC = () => {
   };
 
   // Get data from hooks
-  const dashboard = dashboardData?.data?.dashboard;
+  const dashboard = dashboardData?.data?.dashboardData;
 
   if (isLoading) {
     return (
@@ -92,12 +80,12 @@ export const HeadOfficeDashboard: React.FC = () => {
     );
   }
 
-  const totals = dashboard?.dailyConsolidation || {
+  const totals = dashboard?.consolidatedSummary || {
     totalCashbook1: 0,
     totalCashbook2: 0,
     totalOnlineCIH: 0,
     totalLoanCollection: 0,
-    totalSavingsDeposit: 0,
+    totalSavings: 0,
     totalTSO: 0
   };
 
@@ -105,7 +93,7 @@ export const HeadOfficeDashboard: React.FC = () => {
     {
       title: 'Branch',
       key: 'branch',
-      render: (_: unknown, record: BranchPerformance) => (
+      render: (_: unknown, record: APiBranchPerformance) => (
         <Space>
           <BankOutlined />
           <div>
@@ -118,43 +106,50 @@ export const HeadOfficeDashboard: React.FC = () => {
     },
     {
       title: 'Status',
-      dataIndex: 'status',
       key: 'status',
-      render: (status: string) => (
-        <Tag color={status === 'submitted' ? 'green' : status === 'pending' ? 'orange' : 'red'}>
-          {status === 'submitted' ? 'Submitted' : status === 'pending' ? 'Pending' : 'Overdue'}
-        </Tag>
-      )
+      render: (_: unknown, record: APiBranchPerformance) => {
+        // Determine status based on lastOperation or other criteria
+        const status = record.lastOperation ? 'submitted' : 'pending';
+        return (
+          <Tag color={status === 'submitted' ? 'green' : 'orange'}>
+            {status === 'submitted' ? 'Submitted' : 'Pending'}
+          </Tag>
+        );
+      }
     },
     {
-      title: 'Online CIH',
+      title: 'Online CIH (Avg)',
       key: 'onlineCIH',
-      render: (_: unknown, record: BranchPerformance) => 
-        calculations.formatCurrency(record.onlineCIH)
+      render: (_: unknown, record: APiBranchPerformance) => 
+        calculations.formatCurrency(record.avgOnlineCIH || 0)
     },
     {
       title: 'TSO',
       key: 'tso',
-      render: (_: unknown, record: BranchPerformance) => 
-        calculations.formatCurrency(record.tso)
+      render: (_: unknown, record: APiBranchPerformance) => 
+        calculations.formatCurrency(record.totalTSO || 0)
     },
     {
-      title: 'Efficiency',
-      key: 'efficiency',
-      render: (_: unknown, record: BranchPerformance) => (
-        <Progress 
-          percent={record.efficiency || 0} 
-          size="small"
-          status={record.efficiency >= 90 ? 'success' : 'active'}
-        />
-      )
+      title: 'Performance',
+      key: 'performance',
+      render: (_: unknown, record: APiBranchPerformance) => {
+        // Calculate efficiency based on operation days vs expected days
+        const efficiency = parseFloat((Math.min(100, (record.operationDays / 30) * 100).toFixed(2)));
+        return (
+          <Progress 
+            percent={efficiency} 
+            size="small"
+            status={efficiency >= 90 ? 'success' : 'active'}
+          />
+        );
+      }
     },
     {
-      title: 'Submission Time',
-      key: 'submissionTime',
-      render: (_: unknown, record: BranchPerformance) => (
+      title: 'Last Operation',
+      key: 'lastOperation',
+      render: (_: unknown, record: APiBranchPerformance) => (
         <Text type="secondary">
-          {record.submissionTime ? dayjs(record.submissionTime).format('HH:mm') : 'Not submitted'}
+          {record.lastOperation ? dayjs(record.lastOperation).format('DD MMM, HH:mm') : 'No operations'}
         </Text>
       )
     }
@@ -244,7 +239,7 @@ export const HeadOfficeDashboard: React.FC = () => {
             <Card className="stats-card">
               <Statistic
                 title="Total Collections Today"
-                value={totals.totalLoanCollection + totals.totalSavingsDeposit}
+                value={totals.totalLoanCollection + totals.totalSavings}
                 precision={2}
                 prefix="₦"
                 valueStyle={{ color: '#1890ff', fontSize: '20px' }}
@@ -268,7 +263,8 @@ export const HeadOfficeDashboard: React.FC = () => {
             <Card className="stats-card">
               <Statistic
                 title="System Efficiency"
-                value={dashboard?.topMetrics?.systemEfficiency || 0}
+                value={dashboard?.consolidatedSummary?.activeBranches?.length && dashboard?.branches?.length ? 
+                       (dashboard.consolidatedSummary.activeBranches.length / dashboard.branches.length) * 100 : 0}
                 precision={1}
                 suffix="%"
                 valueStyle={{ color: '#52c41a', fontSize: '20px' }}
@@ -277,18 +273,15 @@ export const HeadOfficeDashboard: React.FC = () => {
           </Col>
         </Row>
 
-        {/* Alerts */}
-        {dashboard?.recentAlerts && dashboard.recentAlerts.length > 0 ? (
-          dashboard.recentAlerts.map((alert, index) => (
-            <Alert
-              key={index}
-              message={`${alert.branchName}: ${alert.message}`}
-              description={`Type: ${alert.type} | Time: ${dayjs(alert.timestamp).fromNow()}`}
-              type={alert.type === 'error' ? 'error' : alert.type === 'warning' ? 'warning' : 'info'}
-              showIcon
-              closable
-            />
-          ))
+        {/* System Status Alert */}
+        {dashboard?.todayStatus && dashboard.todayStatus.some(status => !status.isCompleted) ? (
+          <Alert
+            message="Pending Operations"
+            description={`${dashboard.todayStatus.filter(s => !s.isCompleted).length} branches have pending operations for today.`}
+            type="warning"
+            showIcon
+            closable
+          />
         ) : (
           <Alert
             message="System Status"
@@ -313,7 +306,7 @@ export const HeadOfficeDashboard: React.FC = () => {
           <Table
             columns={branchTableColumns}
             dataSource={dashboard?.branchPerformance || []}
-            rowKey="branchId"
+            rowKey="_id"
             pagination={false}
             size="middle"
             loading={isLoading}
@@ -326,25 +319,24 @@ export const HeadOfficeDashboard: React.FC = () => {
             <Card title="Daily Performance Summary">
               <Space direction="vertical" style={{ width: '100%' }}>
                 <div>
-                  <Text strong>Best Performing Branch:</Text>
+                  <Text strong>Total Active Branches:</Text>
                   <br />
                   <Text>
-                    {dashboard?.topMetrics?.highestPerformingBranch?.branchName || 'N/A'} - 
-                    {dashboard?.topMetrics?.highestPerformingBranch?.performance || 0}% efficiency
+                    {dashboard?.consolidatedSummary?.activeBranches?.length || 0} branches operating today
                   </Text>
                 </div>
                 <div>
-                  <Text strong>Total Branches:</Text>
+                  <Text strong>Total Operations:</Text>
                   <br />
                   <Text>
-                    {dashboard?.systemOverview?.activeBranches || 0} active of {dashboard?.systemOverview?.totalBranches || 0}
+                    {dashboard?.consolidatedSummary?.totalOperations || 0} operations completed
                   </Text>
                 </div>
                 <div>
-                  <Text strong>Today's Submissions:</Text>
+                  <Text strong>Today's Collections:</Text>
                   <br />
                   <Text>
-                    {dashboard?.systemOverview?.todaySubmissions || 0} submitted, {dashboard?.systemOverview?.pendingSubmissions || 0} pending
+                    ₦{((dashboard?.consolidatedSummary?.totalSavings || 0) + (dashboard?.consolidatedSummary?.totalLoanCollection || 0)).toLocaleString()}
                   </Text>
                 </div>
               </Space>
@@ -355,27 +347,26 @@ export const HeadOfficeDashboard: React.FC = () => {
             <Card title="Financial Summary">
               <Space direction="vertical" style={{ width: '100%' }}>
                 <Statistic
-                  title="Total System Cashflow"
-                  value={dashboard?.topMetrics?.totalSystemCashflow || 0}
+                  title="Total Disbursements"
+                  value={dashboard?.consolidatedSummary?.totalDisbursements || 0}
                   precision={2}
                   prefix="₦"
                   valueStyle={{ color: '#3f8600' }}
                 />
                 <Statistic
-                  title="Average Branch Cashflow"
-                  value={dashboard?.topMetrics?.averageBranchCashflow || 0}
+                  title="Total Withdrawals"
+                  value={dashboard?.consolidatedSummary?.totalWithdrawals || 0}
+                  precision={2}
+                  prefix="₦"
+                  valueStyle={{ color: '#ff4d4f' }}
+                />
+                <Statistic
+                  title="Total Charges"
+                  value={dashboard?.consolidatedSummary?.totalCharges || 0}
                   precision={2}
                   prefix="₦"
                   valueStyle={{ color: '#1890ff' }}
                 />
-                <div>
-                  <Text strong>System Efficiency:</Text>
-                  <br />
-                  <Progress 
-                    percent={dashboard?.topMetrics?.systemEfficiency || 0}
-                    status="active"
-                  />
-                </div>
               </Space>
             </Card>
           </Col>

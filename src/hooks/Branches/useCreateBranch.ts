@@ -2,13 +2,32 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '../../instance/axiosInstance';
 import type { Branch } from './useListBranches';
 
+
+
 export interface CreateBranchRequest {
-  name: string;
-  code: string;
-  address: string;
-  phone: string;
-  email: string;
+  name: string
+  code: string
+  address: string
+  phone: string
+  email: string
+  managerName: string
+  managerUsername: string
+  managerEmail: string
+  managerPassword: string
+  operationHours: string
+  previousLoanTotal: number
+  previousSavingsTotal: number
+  previousDisbursement: number
 }
+
+// export interface Address {
+//   street: string
+//   city: string
+//   state: string
+//   zipCode: string
+//   country: string
+// }
+
 
 export interface CreateBranchResponse {
   success: boolean;

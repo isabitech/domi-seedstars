@@ -1,77 +1,77 @@
 import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '../../instance/axiosInstance';
 
-export interface HODashboardParams {
+ interface HODashboardParams {
   date?: string;
 }
 
-export interface HODashboardData {
-  systemOverview: {
-    totalBranches: number;
-    activeBranches: number;
-    totalUsers: number;
-    activeUsers: number;
-    todaySubmissions: number;
-    pendingSubmissions: number;
-  };
-  dailyConsolidation: {
-    date: string;
-    totalCashbook1: number;
-    totalCashbook2: number;
-    totalOnlineCIH: number;
-    totalTSO: number;
-    totalLoanCollection: number;
-    totalSavingsDeposit: number;
-  };
-  branchPerformance: Array<{
-    branchId: string;
-    branchName: string;
-    branchCode: string;
-    status: 'submitted' | 'pending' | 'overdue';
-    onlineCIH: number;
-    tso: number;
-    submissionTime?: string;
-    efficiency: number; // percentage
-  }>;
-  trends: {
-    last30Days: {
-      dates: string[];
-      totalCashflow: number[];
-      activeBranches: number[];
-    };
-    monthlyGrowth: {
-      months: string[];
-      totalOperations: number[];
-      avgCashflow: number[];
-    };
-  };
-  topMetrics: {
-    highestPerformingBranch: {
-      branchId: string;
-      branchName: string;
-      performance: number;
-    };
-    totalSystemCashflow: number;
-    averageBranchCashflow: number;
-    systemEfficiency: number;
-  };
-  recentAlerts: Array<{
-    id: string;
-    branchId: string;
-    branchName: string;
-    type: 'warning' | 'error' | 'info';
-    message: string;
-    timestamp: string;
-  }>;
+ interface GetHODashboardResponse {
+  success: boolean
+  data: GetHODashboardResponseData
+  message: string
+  timestamp: string
 }
 
-export interface GetHODashboardResponse {
-  success: boolean;
-  data: {
-    dashboard: HODashboardData;
-  };
-  message: string;
+ interface GetHODashboardResponseData {
+  dashboardData: DashboardData
 }
+
+export interface DashboardData {
+  branches: Branch[]
+  consolidatedSummary: ConsolidatedSummary
+  branchPerformance: BranchPerformance[]
+  todayStatus: TodayStatus[]
+  trendData: TrendData[]
+}
+
+export interface Branch {
+  _id: string
+  name: string
+  code: string
+}
+
+export interface ConsolidatedSummary {
+  totalSavings: number
+  totalLoanCollection: number
+  totalCharges: number
+  totalDisbursements: number
+  totalWithdrawals: number
+  totalOnlineCIH: number
+  totalTSO: number
+  activeBranches: string[]
+  totalOperations: number
+}
+
+export interface BranchPerformance {
+  _id: string
+  branchName: string
+  branchCode: string
+  totalSavings: number
+  totalLoanCollection: number
+  totalDisbursements: number
+  avgOnlineCIH: number
+  totalTSO: number
+  operationDays: number
+  lastOperation: string
+}
+
+export interface TodayStatus {
+  _id: string
+  onlineCIH: number
+  tso: number
+  isCompleted: boolean
+  branchName: string
+  branchCode: string
+}
+
+export interface TrendData {
+  date: string
+  totalSavings: number
+  totalDisbursements: number
+  totalTSO: number
+  operatingBranches: number
+}
+
 
 const getHODashboard = async (params: HODashboardParams): Promise<GetHODashboardResponse> => {
   const { data } = await axiosInstance.get('/dashboard/ho', { params });

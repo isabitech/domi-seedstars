@@ -30,6 +30,7 @@ import { calculations } from '../../utils/calculations';
 import { useUpdateHOFields } from '../../hooks/Operations/useUpdateHOFields';
 import { useListBranches } from '../../hooks/Branches/useListBranches';
 
+
 const { Title, Text } = Typography;
 
 interface BranchHOData {
@@ -64,10 +65,12 @@ export const HOOperationsPage: React.FC = () => {
   const updateHOFieldsMutation = useUpdateHOFields();
   
   // Fetch branches from API
-  const { data: branchesResponse, isLoading: branchesLoading, error: branchesError } = useListBranches();
+  const { data: branchesResponse, isLoading: branchesLoading, error: branchesError, refetch: refetchBranches } = useListBranches();
+
 
   // Initialize branch data
   useEffect(() => {
+
     const loadData = async () => {
       if (!branchesResponse?.data?.branches) return;
       
@@ -85,11 +88,11 @@ export const HOOperationsPage: React.FC = () => {
             frmBR: 0,
           },
           disbursementRoll: {
-            prevDis: 50000, // Default previous disbursement
+            prevDis: branch.previousDisbursement || 0, // Default previous disbursement
           },
           currentBranchRegister: {
-            prevTotalSav: 100000, // Default previous total savings
-            prevTotalLoan: 75000, // Default previous total loan
+            prevTotalSav: branch.previousSavingsTotal || 0, // Default previous total savings
+            prevTotalLoan: branch.previousLoanTotal || 0, // Default previous total loan
           },
         }));
 
@@ -245,6 +248,7 @@ export const HOOperationsPage: React.FC = () => {
 
   const handleRefresh = () => {
     setSelectedDate(dayjs(selectedDate));
+    refetchBranches();
   };
 
   const totals = branchData.reduce((acc, branch) => ({

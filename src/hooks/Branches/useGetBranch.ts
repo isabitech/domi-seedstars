@@ -10,16 +10,16 @@ export interface GetBranchResponse {
   message: string;
 }
 
-const getBranch = async (id: string): Promise<GetBranchResponse> => {
-  const { data } = await axiosInstance.get(`/branches/${id}`);
+const getBranch = async (branchId: string): Promise<GetBranchResponse> => {
+  const { data } = await axiosInstance.get(`/branches/${branchId}`);
   return data;
 };
 
-export const useGetBranch = (id: string) => {
+export const useGetBranch = (branchId: string) => {
   return useQuery({
-    queryKey: ['branch', id],
-    queryFn: () => getBranch(id),
-    enabled: !!id,
+    queryKey: ['branch', branchId],
+    queryFn: () => getBranch(branchId),
+    enabled: !!branchId,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };

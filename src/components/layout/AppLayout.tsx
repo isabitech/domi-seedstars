@@ -48,6 +48,7 @@ export const AppLayout: React.FC = () => {
     if (path.includes('/bank-statements')) return 'bank-statements';
     if (path.includes('/branch-savings-register')) return 'savings-register';
     if (path.includes('/branch-loan-register')) return 'loan-register';
+    if (path.includes('/branch-disbursement-roll')) return 'disbursement-roll';
     if (path.includes('/branches')) return 'branches';
     if (path.includes('/daily-report')) return 'daily-report';
     if (path.includes('/daily-operations')) return 'daily-operations';
@@ -81,6 +82,12 @@ export const AppLayout: React.FC = () => {
       return [
         ...baseItems,
         {
+          key: 'daily-report',
+          icon: <FileTextOutlined />,
+          label: 'Branch Daily Report',
+          onClick: () => navigate('/app/reports/daily'),
+        },
+        {
           key: 'branches',
           icon: <BankOutlined />,
           label: 'Branch Management',
@@ -93,22 +100,12 @@ export const AppLayout: React.FC = () => {
           onClick: () => navigate('/app/ho-operations'),
         },
         {
-          key: 'reports',
+          key: 'reports-overview',
           icon: <FileTextOutlined />,
-          label: 'Reports',
-          children: [
-            {
-              key: 'reports-overview',
-              label: 'Reports Overview',
-              onClick: () => navigate('/app/reports'),
-            },
-            {
-              key: 'daily-report',
-              label: 'Branch Daily Report',
-              onClick: () => navigate('/app/reports/daily'),
-            },
-          ],
+          label: 'Reports Overview',
+          onClick: () => navigate('/app/reports'),
         },
+        
         {
           key: 'settings',
           icon: <SettingOutlined />,
@@ -157,21 +154,22 @@ export const AppLayout: React.FC = () => {
           onClick: () => navigate('/app/bank-statements'),
         },
         {
-          key: 'registers',
+          key: 'savings-register',
           icon: <FileTextOutlined />,
-          label: 'Registers',
-          children: [
-            {
-              key: 'savings-register',
-              label: 'Savings Register',
-              onClick: () => navigate('/app/branch-savings-register'),
-            },
-            {
-              key: 'loan-register',
-              label: 'Loan Register',
-              onClick: () => navigate('/app/branch-loan-register'),
-            },
-          ],
+          label: 'Savings Register',
+          onClick: () => navigate('/app/branch-savings-register'),
+        },
+        {
+          key: 'loan-register',
+          icon: <FileTextOutlined />,
+          label: 'Loan Register',
+          onClick: () => navigate('/app/branch-loan-register'),
+        },
+        {
+          key: 'disbursement-roll',
+          icon: <FileTextOutlined />,
+          label: 'Disbursement Roll',
+          onClick: () => navigate('/app/branch-disbursement-roll'),
         },
       ];
     }
@@ -192,6 +190,7 @@ export const AppLayout: React.FC = () => {
       '/app/bank-statements': 'Bank Statements',
       '/app/branch-savings-register': 'Savings Register',
       '/app/branch-loan-register': 'Loan Register',
+      '/app/branch-disbursement-roll': 'Disbursement Roll',
       '/app/reports': 'Reports & Analytics',
       '/app/reports/daily': 'Branch Daily Report',
       '/app/settings': 'System Settings',
@@ -255,7 +254,7 @@ export const AppLayout: React.FC = () => {
               
             </Space>
             <span className=' text-black'>
-                <p>{user?.role === 'HO' ? 'Head Office' : 'Branch User'}</p>
+                <p>{user?.role === 'HO' ? 'Head Office' : `Branch: ${user?.branchName || 'Branch User'} `}</p>
                 {/* <p>{user?.branchId && ` • ${user.branchId}`}</p> */}
             </span>
             <Button 

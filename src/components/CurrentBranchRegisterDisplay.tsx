@@ -4,6 +4,7 @@ import { BankOutlined, LockOutlined, InfoCircleOutlined } from '@ant-design/icon
 import { useAuthStore } from '../store';
 import { calculations } from '../utils/calculations';
 import type { Cashbook1, Cashbook2 } from '../types';
+import { useGetMe } from '../hooks/Auth/useGetMe';
 
 const { Text } = Typography;
 
@@ -22,7 +23,8 @@ export const CurrentBranchRegisterDisplay: React.FC<CurrentBranchRegisterDisplay
   previousTotalLoan = 75000, // Default from HO
   loading = false
 }) => {
-  const { user } = useAuthStore();
+  const { data:currentUser } = useGetMe();
+  const user = currentUser?.data;
   const [currentSavings, setCurrentSavings] = useState(previousTotalSavings);
   const [currentLoan, setCurrentLoan] = useState(previousTotalLoan);
 
@@ -132,7 +134,7 @@ export const CurrentBranchRegisterDisplay: React.FC<CurrentBranchRegisterDisplay
               message={
                 <Space>
                   <InfoCircleOutlined />
-                  <Text strong>Branch User Notice</Text>
+                  <Text strong>{user?.branchName} Notice</Text>
                 </Space>
               }
               description="These registers are automatically calculated and cannot be edited by branch users. Previous totals are set by Head Office monthly."

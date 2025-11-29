@@ -10,16 +10,15 @@ export interface GetUserResponse {
   message: string;
 }
 
-const getUser = async (id: string): Promise<GetUserResponse> => {
-  const { data } = await axiosInstance.get(`/users/${id}`);
+const getUser = async (): Promise<GetUserResponse> => {
+  const { data } = await axiosInstance.get(`/users`);
   return data;
 };
 
-export const useGetUser = (id: string) => {
+export const useGetUser = () => {
   return useQuery({
-    queryKey: ['user', id],
-    queryFn: () => getUser(id),
-    enabled: !!id,
+    queryKey: ['user'],
+    queryFn: getUser,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };

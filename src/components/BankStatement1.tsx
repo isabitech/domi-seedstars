@@ -26,8 +26,8 @@ import dayjs from "dayjs";
 import {  calculateBankStatement1,
 } from "../services/bankStatement";
 import { useGetMe } from "../hooks/Auth/useGetMe";
-import { useGetEntry } from "../hooks/Branch/Cashbook/useGetEntry";
-import type { BankStatement1 } from "../hooks/Branch/Cashbook/useCreateEntry";
+import { useGetBS1, type BankStatement1 } from "../hooks/BankStatements/useGetBs1";
+// import { useGetBS1, type BankStatement1 } from "../hooks/BankStatements/useGetBS1";
 
 const { Title, Text } = Typography;
 
@@ -57,36 +57,19 @@ export const BankStatement1Component: React.FC<BankStatement1Props> = ({
   // Merge internal and external loading states
   const isLoading = loading || externalLoading;
 
-  const getBankStatement1 = useGetEntry(user.branchId, currentDate);
+  const getBankStatement1 = useGetBS1(currentDate, user?.branchId || "");
 
-  // Load existing statement data
-  const loadStatement = useCallback(async () => {
-    if (user?.branchId || !currentDate) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const existingStatement =
-        getBankStatement1.data.data.operations.bankStatement1;
-
-      if (existingStatement) {
-        setStatement(existingStatement);
-        setEditMode(false); // Disable editing if data exists
-        form.setFieldsValue({
-          opening: existingStatement.opening,
-          date: dayjs(existingStatement.date),
-        });
-      } else {
-        setEditMode(true); // Enable editing if no data
-      }
-    } catch (err) {
-      setError("Failed to load bank statement data");
-      console.error("Error loading statement:", err);
-    } finally {
-      setLoading(false);
+  // Update statement state when data is fetched
+  useEffect(() => {
+    if (getBankStatement1.data?.data?.bankStatement1) {
+      const existingStatement = getBankStatement1.data.data.bankStatement1;
+      setStatement(existingStatement);
+      form.setFieldsValue({
+        opening: existingStatement.opening,
+        date: dayjs(existingStatement.date),
+      });
     }
-  }, [user?.branchId, currentDate, form, getBankStatement1.data]);
+  }, [getBankStatement1.data, form]);
 
   // Calculate statement when opening value changes
   const handleRecalculate = useCallback(async () => {
@@ -120,10 +103,12 @@ export const BankStatement1Component: React.FC<BankStatement1Props> = ({
 
     setLoading(true);
     setError(null);
-    if (onSubmit) {
+        if (onSubmit) {
       try {
          await onSubmit(values.opening);
-         setEditMode(false); // Disable editing after successful submission
+         // Refetch data to get updated statement
+         await getBankStatement1.refetch();
+         // Keep form editable after successful submission
       } catch (err) {
         setError("Failed to submit bank statement");
         console.error("Error submitting statement:", err);
@@ -145,11 +130,6 @@ export const BankStatement1Component: React.FC<BankStatement1Props> = ({
       setCurrentDate(newDate);
     }
   };
-
-  // Effect to reload when date changes
-  useEffect(() => {
-    loadStatement();
-  }, [loadStatement]);
 
   // Effect to recalculate when opening changes
   const handleValuesChange = useCallback(
@@ -238,7 +218,7 @@ export const BankStatement1Component: React.FC<BankStatement1Props> = ({
       }
       loading={isLoading}
       extra={
-        <Button icon={<ReloadOutlined />} onClick={loadStatement} size="small">
+        <Button icon={<ReloadOutlined />} onClick={() => getBankStatement1.refetch()} size="small">
           Refresh
         </Button>
       }
@@ -260,7 +240,6 @@ export const BankStatement1Component: React.FC<BankStatement1Props> = ({
           layout="vertical"
           onFinish={handleSubmit}
           onValuesChange={handleValuesChange}
-          disabled={isLoading || !editMode}
         >
           <Row gutter={16}>
             <Col span={12}>
@@ -301,33 +280,21 @@ export const BankStatement1Component: React.FC<BankStatement1Props> = ({
           </Row>
 
           <Space>
-            {editMode ? (
-              <>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  icon={<SaveOutlined />}
-                  loading={isLoading}
-                >
-                  {statement ? 'Update Statement' : 'Save Statement'}
-                </Button>
-                <Button
-                  icon={<CalculatorOutlined />}
-                  onClick={handleRecalculate}
-                  loading={calculating}
-                >
-                  Recalculate
-                </Button>
-              </>
-            ) : (
-              <Button
-                type="default"
-                icon={<SaveOutlined />}
-                onClick={handleEdit}
-              >
-                Edit Statement
-              </Button>
-            )}
+            <Button
+              type="primary"
+              htmlType="submit"
+              icon={<SaveOutlined />}
+              loading={isLoading}
+            >
+              {statement ? 'Update Statement' : 'Save Statement'}
+            </Button>
+            <Button
+              icon={<CalculatorOutlined />}
+              onClick={handleRecalculate}
+              loading={calculating}
+            >
+              Recalculate
+            </Button>
           </Space>
         </Form>
 
