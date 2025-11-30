@@ -350,53 +350,138 @@ export const BankStatementSummaryComponent: React.FC<BankStatementSummaryProps> 
 
         {/* Summary Statistics */}
         {summaryData && (
-          <Row gutter={[16, 16]}>
-            <Col xs={24} sm={8}>
-              <Card size="small" style={{ backgroundColor: '#f6ffed', border: '1px solid #b7eb8f' }}>
-                <Statistic
-                  title="Total Inflow (BS1)"
-                  value={summaryData.totalInflow}
-                  precision={2}
-                  prefix="₦"
-                  valueStyle={{ 
-                    color: '#52c41a',
-                    fontSize: window.innerWidth <= 768 ? '18px' : '24px'
-                  }}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={8}>
-              <Card size="small" style={{ backgroundColor: '#fff7e6', border: '1px solid #ffd591' }}>
-                <Statistic
-                  title="Total Outflow (BS2)"
-                  value={summaryData.totalOutflow}
-                  precision={2}
-                  prefix="₦"
-                  valueStyle={{ 
-                    color: '#fa8c16',
-                    fontSize: window.innerWidth <= 768 ? '18px' : '24px'
-                  }}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={8}>
-              <Card size="small" style={{ 
-                backgroundColor: summaryData.netPosition >= 0 ? '#f6ffed' : '#fff2f0',
-                border: summaryData.netPosition >= 0 ? '1px solid #b7eb8f' : '1px solid #ffccc7'
-              }}>
-                <Statistic
-                  title="Net Position"
-                  value={summaryData.netPosition}
-                  precision={2}
-                  prefix="₦"
-                  valueStyle={{ 
-                    color: summaryData.netPosition >= 0 ? '#52c41a' : '#ff4d4f',
-                    fontSize: window.innerWidth <= 768 ? '18px' : '24px'
-                  }}
-                />
-              </Card>
-            </Col>
-          </Row>
+          <>
+            <Row gutter={[16, 16]}>
+              <Col xs={24} sm={8}>
+                <Card size="small" style={{ backgroundColor: '#f6ffed', border: '1px solid #b7eb8f' }}>
+                  <Statistic
+                    title="Total Inflow (BS1)"
+                    value={summaryData.totalInflow}
+                    precision={2}
+                    prefix="₦"
+                    valueStyle={{ 
+                      color: '#52c41a',
+                      fontSize: window.innerWidth <= 768 ? '18px' : '24px'
+                    }}
+                  />
+                </Card>
+              </Col>
+              <Col xs={24} sm={8}>
+                <Card size="small" style={{ backgroundColor: '#fff7e6', border: '1px solid #ffd591' }}>
+                  <Statistic
+                    title="Total Outflow (BS2)"
+                    value={summaryData.totalOutflow}
+                    precision={2}
+                    prefix="₦"
+                    valueStyle={{ 
+                      color: '#fa8c16',
+                      fontSize: window.innerWidth <= 768 ? '18px' : '24px'
+                    }}
+                  />
+                </Card>
+              </Col>
+              <Col xs={24} sm={8}>
+                <Card size="small" style={{ 
+                  backgroundColor: summaryData.netPosition >= 0 ? '#f6ffed' : '#fff2f0',
+                  border: summaryData.netPosition >= 0 ? '1px solid #b7eb8f' : '1px solid #ffccc7'
+                }}>
+                  <Statistic
+                    title="Net Position"
+                    value={summaryData.netPosition}
+                    precision={2}
+                    prefix="₦"
+                    valueStyle={{ 
+                      color: summaryData.netPosition >= 0 ? '#52c41a' : '#ff4d4f',
+                      fontSize: window.innerWidth <= 768 ? '18px' : '24px'
+                    }}
+                  />
+                </Card>
+              </Col>
+            </Row>
+
+            {/* TSO Display */}
+            <Card 
+              style={{ 
+                backgroundColor: '#e6f7ff', 
+                border: '2px solid #1890ff',
+                borderRadius: '12px',
+                textAlign: 'center',
+                padding: window.innerWidth <= 768 ? '12px' : '20px'
+              }}
+            >
+              <Space direction="vertical" size={window.innerWidth <= 768 ? "small" : "large"} style={{ width: '100%' }}>
+                <div>
+                  <Title 
+                    level={window.innerWidth <= 768 ? 4 : 3} 
+                    style={{ 
+                      color: '#1890ff',
+                      margin: 0,
+                      fontSize: window.innerWidth <= 768 ? '16px' : '24px'
+                    }}
+                  >
+                    TSO (Transfer to Senate Office)
+                  </Title>
+                  <Text type="secondary" style={{ fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>
+                    Bank Statement 1 Total - Bank Statement 2 Total
+                  </Text>
+                </div>
+                
+                <div style={{
+                  backgroundColor: '#fff',
+                  borderRadius: '8px',
+                  padding: window.innerWidth <= 768 ? '12px' : '20px',
+                  border: '1px solid #d9d9d9'
+                }}>
+                  <Statistic
+                    value={summaryData.totalInflow - summaryData.totalOutflow}
+                    precision={2}
+                    prefix="₦"
+                    valueStyle={{ 
+                      color: (summaryData.totalInflow - summaryData.totalOutflow) >= 0 ? '#52c41a' : '#ff4d4f',
+                      fontSize: window.innerWidth <= 768 ? '20px' : '36px',
+                      fontWeight: 'bold'
+                    }}
+                  />
+                </div>
+
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+                  gap: window.innerWidth <= 768 ? '12px' : '16px',
+                  width: '100%'
+                }}>
+                  <Space direction={window.innerWidth <= 768 ? "horizontal" : "vertical"} size="small" style={{ 
+                    textAlign: window.innerWidth <= 768 ? 'center' : 'left',
+                    flex: 1
+                  }}>
+                    <Text strong style={{ color: '#52c41a', fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>
+                      BS1: ₦{summaryData.totalInflow.toLocaleString()}
+                    </Text>
+                    <Text strong style={{ color: '#fa8c16', fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>
+                      BS2: ₦{summaryData.totalOutflow.toLocaleString()}
+                    </Text>
+                  </Space>
+                  
+                  <Tag 
+                    color={(summaryData.totalInflow - summaryData.totalOutflow) >= 0 ? 'success' : 'error'}
+                    style={{ 
+                      fontSize: window.innerWidth <= 768 ? '10px' : '14px',
+                      padding: window.innerWidth <= 768 ? '2px 6px' : '6px 12px',
+                      borderRadius: '6px',
+                      textAlign: 'center'
+                    }}
+                  >
+                    {window.innerWidth <= 768 
+                      ? ((summaryData.totalInflow - summaryData.totalOutflow) >= 0 ? 'Available' : 'Insufficient')
+                      : ((summaryData.totalInflow - summaryData.totalOutflow) >= 0 ? 'Available for Transfer' : 'Insufficient Funds')
+                    }
+                  </Tag>
+                </div>
+              </Space>
+            </Card>
+          </>
         )}
 
         {/* Summary Table */}
