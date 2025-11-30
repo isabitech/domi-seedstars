@@ -136,12 +136,12 @@ export const AppLayout: React.FC = () => {
           onClick: () => navigate('/app/reports'),
         },
         
-        {
-          key: 'settings',
-          icon: <SettingOutlined />,
-          label: 'Settings',
-          onClick: () => navigate('/app/settings'),
-        },
+        // {
+        //   key: 'settings',
+        //   icon: <SettingOutlined />,
+        //   label: 'Settings',
+        //   onClick: () => navigate('/app/settings'),
+        // },
       ];
     } else {
       // Branch user menu
@@ -223,7 +223,7 @@ export const AppLayout: React.FC = () => {
       '/app/branch-disbursement-roll': 'Disbursement Roll',
       '/app/reports': 'Reports & Analytics',
       '/app/reports/daily': 'Branch Daily Report',
-      '/app/settings': 'System Settings',
+      // '/app/settings': 'System Settings',
     };
     
     return titles[path] || 'Dashboard';

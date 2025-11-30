@@ -412,7 +412,11 @@ export const BranchManagementPage: React.FC = () => {
             <Space style={{ width: '100%', justifyContent: 'space-between' }}>
               <div>
                 <BankOutlined style={{ fontSize: 24, marginRight: 8 }} />
-                <Title level={2} style={{ margin: 0, display: 'inline' }}>System Management</Title>
+                <Title level={2} style={{ 
+                  margin: 0, 
+                  display: 'inline',
+                  fontSize: window.innerWidth <= 768 ? '20px' : '28px'
+                }}>System Management</Title>
               </div>
             </Space>
           </Card>
@@ -449,16 +453,26 @@ export const BranchManagementPage: React.FC = () => {
                           <Spin size="large" />
                         </div>
                       ) : (
-                        <Table
-                          columns={columns}
-                          dataSource={branches}
-                          rowKey="id"
-                          pagination={{
-                            pageSize: 10,
-                            showSizeChanger: true,
-                            showTotal: (total) => `Total ${total} branches`,
-                          }}
-                        />
+                        <div style={{
+                          overflow: 'auto',
+                          ...(window.innerWidth <= 768 && {
+                            maxWidth: '100%',
+                            border: '1px solid #f0f0f0',
+                            borderRadius: '6px'
+                          })
+                        }}>
+                          <Table
+                            columns={columns}
+                            dataSource={branches}
+                            rowKey="id"
+                            scroll={window.innerWidth <= 768 ? { x: 1000 } : undefined}
+                            pagination={{
+                              pageSize: 10,
+                              showSizeChanger: true,
+                              showTotal: (total) => `Total ${total} branches`,
+                            }}
+                          />
+                        </div>
                       )}
                     </div>
                   ),
@@ -488,16 +502,26 @@ export const BranchManagementPage: React.FC = () => {
                           <Spin size="large" />
                         </div>
                       ) : (
-                        <Table
-                          columns={userColumns}
-                          dataSource={users}
-                          rowKey="id"
-                          pagination={{
-                            pageSize: 10,
-                            showSizeChanger: true,
-                            showTotal: (total) => `Total ${total} users`,
-                          }}
-                        />
+                        <div style={{
+                          overflow: 'auto',
+                          ...(window.innerWidth <= 768 && {
+                            maxWidth: '100%',
+                            border: '1px solid #f0f0f0',
+                            borderRadius: '6px'
+                          })
+                        }}>
+                          <Table
+                            columns={userColumns}
+                            dataSource={users}
+                            rowKey="id"
+                            scroll={window.innerWidth <= 768 ? { x: 900 } : undefined}
+                            pagination={{
+                              pageSize: 10,
+                              showSizeChanger: true,
+                              showTotal: (total) => `Total ${total} users`,
+                            }}
+                          />
+                        </div>
                       )}
                     </div>
                   ),
