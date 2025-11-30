@@ -47,6 +47,17 @@ export const ReportsComponent: React.FC = () => {
     dayjs()
   ]);
 
+  // Mobile responsive state
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Get branches for filter
   const { data: branchesData } = useListBranches();
   
@@ -136,19 +147,31 @@ export const ReportsComponent: React.FC = () => {
           title: 'Savings',
           dataIndex: 'totalSavings',
           key: 'totalSavings',
-          render: (value: number) => calculations.formatCurrency(value)
+          render: (value: number) => (
+            <span style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: '500' }}>
+              {calculations.formatCurrency(value)}
+            </span>
+          )
         },
         {
           title: 'Loan Collection',
           dataIndex: 'totalLoanCollection',
           key: 'totalLoanCollection',
-          render: (value: number) => calculations.formatCurrency(value)
+          render: (value: number) => (
+            <span style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: '500' }}>
+              {calculations.formatCurrency(value)}
+            </span>
+          )
         },
         {
           title: 'Charges',
           dataIndex: 'totalCharges',
           key: 'totalCharges',
-          render: (value: number) => calculations.formatCurrency(value)
+          render: (value: number) => (
+            <span style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: '500' }}>
+              {calculations.formatCurrency(value)}
+            </span>
+          )
         }
       ]
     },
@@ -156,26 +179,38 @@ export const ReportsComponent: React.FC = () => {
       title: 'Disbursements',
       dataIndex: 'totalDisbursements',
       key: 'totalDisbursements',
-      render: (value: number) => calculations.formatCurrency(value)
+      render: (value: number) => (
+        <span style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: '500' }}>
+          {calculations.formatCurrency(value)}
+        </span>
+      )
     },
     {
       title: 'Withdrawals',
       dataIndex: 'totalWithdrawals',
       key: 'totalWithdrawals',
-      render: (value: number) => calculations.formatCurrency(value)
+      render: (value: number) => (
+        <span style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: '500' }}>
+          {calculations.formatCurrency(value)}
+        </span>
+      )
     },
     {
       title: 'TSO',
       dataIndex: 'totalTSO',
       key: 'totalTSO',
-      render: (value: number) => calculations.formatCurrency(value)
+      render: (value: number) => (
+        <span style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: '500' }}>
+          {calculations.formatCurrency(value)}
+        </span>
+      )
     },
     {
       title: 'Avg Online CIH',
       dataIndex: 'avgOnlineCIH',
       key: 'avgOnlineCIH',
       render: (value: number) => (
-        <Tag color={value >= 0 ? 'green' : 'red'}>
+        <Tag color={value >= 0 ? 'green' : 'red'} style={{ fontSize: isMobile ? '12px' : '14px' }}>
           {calculations.formatCurrency(value)}
         </Tag>
       )
@@ -210,7 +245,7 @@ export const ReportsComponent: React.FC = () => {
       dataIndex: 'currentLoanBalance',
       key: 'currentLoanBalance',
       render: (value: number) => (
-        <Text strong style={{ color: '#722ed1' }}>
+        <Text strong style={{ color: '#722ed1', fontSize: isMobile ? '14px' : '16px' }}>
           {calculations.formatCurrency(value)}
         </Text>
       )
@@ -220,7 +255,7 @@ export const ReportsComponent: React.FC = () => {
       dataIndex: 'currentSavingsBalance',
       key: 'currentSavingsBalance',
       render: (value: number) => (
-        <Text strong style={{ color: '#3f8600' }}>
+        <Text strong style={{ color: '#3f8600', fontSize: isMobile ? '14px' : '16px' }}>
           {calculations.formatCurrency(value)}
         </Text>
       )
@@ -275,40 +310,44 @@ export const ReportsComponent: React.FC = () => {
     <div className="page-container">
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: isMobile ? 'flex-start' : 'center',
+          flexDirection: isMobile ? 'column' : 'row',
+          gap: isMobile ? '16px' : '0'
+        }}>
           <div>
-            <Title level={3}>
-              <FileTextOutlined /> Consolidated Financial Reports
+            <Title level={4} style={{ fontSize: isMobile ? '18px' : '20px', marginBottom: '8px' }}>
+              <FileTextOutlined /> Financial Reports
             </Title>
-            <Text type="secondary">
+            <Text type="secondary" style={{ fontSize: isMobile ? '12px' : '14px' }}>
               Comprehensive financial overview across all branches for {reportData?.period ? 
                 `${dayjs(reportData.period.startDate).format('MMM DD')} - ${dayjs(reportData.period.endDate).format('MMM DD, YYYY')}` : 
                 'selected period'
               }
             </Text>
           </div>
-          <Space>
-            <Button 
-              icon={<PrinterOutlined />}
-              onClick={() => window.print()}
-            >
-              Print
-            </Button>
+          <Space direction={isMobile ? 'vertical' : 'horizontal'} style={{ width: isMobile ? '100%' : 'auto' }}>
             <Button 
               type="primary" 
               icon={<DownloadOutlined />}
               loading={exportLoading}
               onClick={() => handleExport('excel')}
+              size={isMobile ? 'small' : 'middle'}
+              block={isMobile}
             >
               Export Excel
             </Button>
-            <Button 
+            {/* <Button 
               icon={<ExportOutlined />}
               loading={exportLoading}
               onClick={() => handleExport('pdf')}
+              size={isMobile ? 'small' : 'middle'}
+              block={isMobile}
             >
               Export PDF
-            </Button>
+            </Button> */}
           </Space>
         </div>
 
@@ -350,7 +389,10 @@ export const ReportsComponent: React.FC = () => {
                 value={totalStats.totalCollections}
                 precision={2}
                 prefix="₦"
-                valueStyle={{ color: '#3f8600' }}
+                valueStyle={{ 
+                  color: '#3f8600',
+                  fontSize: isMobile ? '18px' : '24px'
+                }}
               />
               <Text type="secondary" style={{ fontSize: '12px' }}>
                 Savings + Loan Collections
@@ -364,7 +406,10 @@ export const ReportsComponent: React.FC = () => {
                 value={totalStats.totalDisbursements}
                 precision={2}
                 prefix="₦"
-                valueStyle={{ color: '#722ed1' }}
+                valueStyle={{ 
+                  color: '#722ed1',
+                  fontSize: isMobile ? '18px' : '24px'
+                }}
               />
               <Text type="secondary" style={{ fontSize: '12px' }}>
                 Loan disbursements
@@ -379,7 +424,8 @@ export const ReportsComponent: React.FC = () => {
                 precision={2}
                 prefix="₦"
                 valueStyle={{ 
-                  color: totalStats.totalOnlineCIH >= 0 ? '#3f8600' : '#cf1322' 
+                  color: totalStats.totalOnlineCIH >= 0 ? '#3f8600' : '#cf1322',
+                  fontSize: isMobile ? '18px' : '24px'
                 }}
               />
               <Text type="secondary" style={{ fontSize: '12px' }}>
@@ -394,7 +440,10 @@ export const ReportsComponent: React.FC = () => {
                 value={totalStats.totalTransferToSenate}
                 precision={2}
                 prefix="₦"
-                valueStyle={{ color: '#1890ff' }}
+                valueStyle={{ 
+                  color: '#1890ff',
+                  fontSize: isMobile ? '18px' : '24px'
+                }}
               />
               <Text type="secondary" style={{ fontSize: '12px' }}>
                 Transfers to senate
@@ -412,7 +461,10 @@ export const ReportsComponent: React.FC = () => {
                 value={totalStats.totalCharges}
                 precision={2}
                 prefix="₦"
-                valueStyle={{ color: '#fa8c16' }}
+                valueStyle={{ 
+                  color: '#fa8c16',
+                  fontSize: isMobile ? '18px' : '24px'
+                }}
               />
             </Card>
           </Col>
@@ -423,7 +475,10 @@ export const ReportsComponent: React.FC = () => {
                 value={totalStats.totalWithdrawals}
                 precision={2}
                 prefix="₦"
-                valueStyle={{ color: '#ff4d4f' }}
+                valueStyle={{ 
+                  color: '#ff4d4f',
+                  fontSize: isMobile ? '18px' : '24px'
+                }}
               />
             </Card>
           </Col>
@@ -432,7 +487,10 @@ export const ReportsComponent: React.FC = () => {
               <Statistic
                 title="Active Branches"
                 value={totalStats.activeBranches}
-                valueStyle={{ color: '#52c41a' }}
+                valueStyle={{ 
+                  color: '#52c41a',
+                  fontSize: isMobile ? '18px' : '24px'
+                }}
               />
               <Text type="secondary" style={{ fontSize: '12px' }}>
                 Operating branches
@@ -444,7 +502,10 @@ export const ReportsComponent: React.FC = () => {
               <Statistic
                 title="Total Operations"
                 value={totalStats.totalOperations}
-                valueStyle={{ color: '#13c2c2' }}
+                valueStyle={{ 
+                  color: '#13c2c2',
+                  fontSize: isMobile ? '18px' : '24px'
+                }}
               />
               <Text type="secondary" style={{ fontSize: '12px' }}>
                 Total transactions
@@ -476,8 +537,9 @@ export const ReportsComponent: React.FC = () => {
               dataSource={consolidatedData}
               rowKey="_id"
               pagination={{ pageSize: 10, showSizeChanger: true }}
-              scroll={{ x: 1200 }}
+              scroll={{ x: isMobile ? 1000 : 1200 }}
               size="small"
+              style={isMobile ? { overflowX: 'auto' } : {}}
             />
           )}
         </Card>
@@ -497,7 +559,9 @@ export const ReportsComponent: React.FC = () => {
               dataSource={currentRegisters}
               rowKey="_id"
               pagination={false}
+              scroll={{ x: isMobile ? 600 : 'auto' }}
               size="small"
+              style={isMobile ? { overflowX: 'auto' } : {}}
             />
           </Card>
         )}
@@ -508,7 +572,6 @@ export const ReportsComponent: React.FC = () => {
           description={
             <Space direction="vertical">
               <Text>• Excel export includes detailed calculations and formulas</Text>
-              <Text>• PDF export provides formatted reports ready for printing</Text>
               <Text>• All exports include the current filter selections</Text>
               <Text>• Data is exported with proper formatting and company branding</Text>
             </Space>

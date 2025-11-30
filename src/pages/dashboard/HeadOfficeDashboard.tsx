@@ -161,7 +161,7 @@ export const HeadOfficeDashboard: React.FC = () => {
         {/* Header */}
         <Row justify="space-between" align="middle">
           <Col>
-            <Title level={2}>
+            <Title level={2} style={{ fontSize: window.innerWidth <= 768 ? '20px' : '28px' }}>
               <DashboardOutlined /> Head Office Dashboard
             </Title>
             <Text type="secondary">
@@ -229,7 +229,10 @@ export const HeadOfficeDashboard: React.FC = () => {
                 value={totals.totalOnlineCIH}
                 precision={2}
                 prefix="₦"
-                valueStyle={{ color: '#3f8600', fontSize: '20px' }}
+                valueStyle={{ 
+                  color: '#3f8600', 
+                  fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                }}
                 suffix={<TrophyOutlined style={{ color: '#faad14' }} />}
               />
             </Card>
@@ -242,7 +245,10 @@ export const HeadOfficeDashboard: React.FC = () => {
                 value={totals.totalLoanCollection + totals.totalSavings}
                 precision={2}
                 prefix="₦"
-                valueStyle={{ color: '#1890ff', fontSize: '20px' }}
+                valueStyle={{ 
+                  color: '#1890ff', 
+                  fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                }}
               />
             </Card>
           </Col>
@@ -254,7 +260,10 @@ export const HeadOfficeDashboard: React.FC = () => {
                 value={totals.totalTSO}
                 precision={2}
                 prefix="₦"
-                valueStyle={{ color: '#722ed1', fontSize: '20px' }}
+                valueStyle={{ 
+                  color: '#722ed1', 
+                  fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                }}
               />
             </Card>
           </Col>
@@ -267,7 +276,10 @@ export const HeadOfficeDashboard: React.FC = () => {
                        (dashboard.consolidatedSummary.activeBranches.length / dashboard.branches.length) * 100 : 0}
                 precision={1}
                 suffix="%"
-                valueStyle={{ color: '#52c41a', fontSize: '20px' }}
+                valueStyle={{ 
+                  color: '#52c41a', 
+                  fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                }}
               />
             </Card>
           </Col>
@@ -303,14 +315,24 @@ export const HeadOfficeDashboard: React.FC = () => {
             </Space>
           }
         >
-          <Table
-            columns={branchTableColumns}
-            dataSource={dashboard?.branchPerformance || []}
-            rowKey="_id"
-            pagination={false}
-            size="middle"
-            loading={isLoading}
-          />
+          <div style={{
+            overflow: 'auto',
+            ...(window.innerWidth <= 768 && {
+              maxWidth: '100%',
+              border: '1px solid #f0f0f0',
+              borderRadius: '6px'
+            })
+          }}>
+            <Table
+              columns={branchTableColumns}
+              dataSource={dashboard?.branchPerformance || []}
+              rowKey="_id"
+              pagination={false}
+              size="middle"
+              loading={isLoading}
+              scroll={window.innerWidth <= 768 ? { x: 800 } : undefined}
+            />
+          </div>
         </Card>
 
         {/* Performance Summary */}
@@ -351,21 +373,30 @@ export const HeadOfficeDashboard: React.FC = () => {
                   value={dashboard?.consolidatedSummary?.totalDisbursements || 0}
                   precision={2}
                   prefix="₦"
-                  valueStyle={{ color: '#3f8600' }}
+                  valueStyle={{ 
+                    color: '#3f8600',
+                    fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                  }}
                 />
                 <Statistic
                   title="Total Withdrawals"
                   value={dashboard?.consolidatedSummary?.totalWithdrawals || 0}
                   precision={2}
                   prefix="₦"
-                  valueStyle={{ color: '#ff4d4f' }}
+                  valueStyle={{ 
+                    color: '#ff4d4f',
+                    fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                  }}
                 />
                 <Statistic
                   title="Total Charges"
                   value={dashboard?.consolidatedSummary?.totalCharges || 0}
                   precision={2}
                   prefix="₦"
-                  valueStyle={{ color: '#1890ff' }}
+                  valueStyle={{ 
+                    color: '#1890ff',
+                    fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                  }}
                 />
               </Space>
             </Card>

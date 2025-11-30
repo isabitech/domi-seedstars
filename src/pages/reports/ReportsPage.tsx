@@ -92,36 +92,36 @@ const ReportsPage: React.FC = () => {
       label: 'Financial Reports',
       children: <ReportsComponent/>
     },
-    {
-      key: 'performance',
-      label: 'Branch Performance',
-      children: <BranchPerformanceComponent 
-        data={branchPerformanceData} 
-        dateRange={dateRange}
-        loading={loading}
-      />,
-    },
-    {
-      key: 'transactions',
-      label: 'Transaction Log',
-      children: <TransactionLogComponent 
-        data={transactionData} 
-        dateRange={dateRange}
-        loading={loading}
-      />,
-    },
+    // {
+    //   key: 'performance',
+    //   label: 'Branch Performance',
+    //   children: <BranchPerformanceComponent 
+    //     data={branchPerformanceData} 
+    //     dateRange={dateRange}
+    //     loading={loading}
+    //   />,
+    // },
+    // {
+    //   key: 'transactions',
+    //   label: 'Transaction Log',
+    //   children: <TransactionLogComponent 
+    //     data={transactionData} 
+    //     dateRange={dateRange}
+    //     loading={loading}
+    //   />,
+    // },
   ];
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div style={{ padding: window.innerWidth <= 768 ? '16px' : '24px' }}>
       <div style={{ marginBottom: 24 }}>
-        <Title level={2}>Reports & Analytics</Title>
+        <Title level={2} style={{ fontSize: window.innerWidth <= 768 ? '20px' : '28px' }}>Reports & Analytics</Title>
         
         {/* Filters */}
         <Card size="small" style={{ marginBottom: 16 }}>
-          <Space wrap>
-            <div>
-              <span style={{ marginRight: 8 }}>Date Range:</span>
+          <Space wrap direction={window.innerWidth <= 768 ? 'vertical' : 'horizontal'}>
+            <div style={{ width: window.innerWidth <= 768 ? '100%' : 'auto' }}>
+              <span style={{ marginRight: 8, display: 'block', marginBottom: window.innerWidth <= 768 ? 4 : 0 }}>Date Range:</span>
               <RangePicker
                 value={dateRange}
                 onChange={(dates) => {
@@ -130,16 +130,8 @@ const ReportsPage: React.FC = () => {
                   }
                 }}
                 format="YYYY-MM-DD"
+                style={{ width: window.innerWidth <= 768 ? '100%' : 'auto' }}
               />
-            </div>
-            <div>
-              <span style={{ marginRight: 8 }}>Branch:</span>
-              <Select value={branchFilter} onChange={setBranchFilter} style={{ width: 200 }}>
-                <Option value="all">All Branches</Option>
-                <Option value="br-001">Lagos Branch</Option>
-                <Option value="br-002">Abuja Branch</Option>
-                <Option value="br-003">Kano Branch</Option>
-              </Select>
             </div>
           </Space>
         </Card>

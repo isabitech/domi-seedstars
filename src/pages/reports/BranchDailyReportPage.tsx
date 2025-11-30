@@ -377,16 +377,27 @@ export const BranchDailyReportPage: React.FC = () => {
   const renderCurrency = (value: number, record: BranchDailyReportData, color?: string) => {
     if (record.branchId === 'grand-total') {
       return (
-        <Text strong style={{ color: color || '#1890ff', fontSize: '13px' }}>
+        <Text strong style={{ 
+          color: color || '#1890ff', 
+          fontSize: window.innerWidth <= 768 ? '11px' : '13px'
+        }}>
           {calculations.formatCurrency(value)}
         </Text>
       );
     }
     return color ? (
-      <Text style={{ color, fontWeight: 'bold' }}>
+      <Text style={{ 
+        color, 
+        fontWeight: 'bold',
+        fontSize: window.innerWidth <= 768 ? '12px' : '14px'
+      }}>
         {calculations.formatCurrency(value)}
       </Text>
-    ) : calculations.formatCurrency(value);
+    ) : (
+      <span style={{ fontSize: window.innerWidth <= 768 ? '12px' : '14px' }}>
+        {calculations.formatCurrency(value)}
+      </span>
+    );
   };
 
   const columns: ColumnsType<BranchDailyReportData> = [
@@ -598,7 +609,7 @@ export const BranchDailyReportPage: React.FC = () => {
         {/* Header */}
         <Row justify="space-between" align="middle">
           <Col>
-            <Title level={2}>
+            <Title level={2} style={{ fontSize: window.innerWidth <= 768 ? '20px' : '28px' }}>
               <FileTextOutlined /> Branch Daily Report
             </Title>
             <Text type="secondary">
@@ -662,7 +673,10 @@ export const BranchDailyReportPage: React.FC = () => {
                   value={totals.onlineCIH}
                   precision={2}
                   prefix="₦"
-                  valueStyle={{ color: '#52c41a' }}
+                  valueStyle={{ 
+                    color: '#52c41a',
+                    fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                  }}
                 />
               </Card>
             </Col>
@@ -673,7 +687,10 @@ export const BranchDailyReportPage: React.FC = () => {
                   value={totals.tso}
                   precision={2}
                   prefix="₦"
-                  valueStyle={{ color: '#1890ff' }}
+                  valueStyle={{ 
+                    color: '#1890ff',
+                    fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                  }}
                 />
               </Card>
             </Col>
@@ -684,7 +701,10 @@ export const BranchDailyReportPage: React.FC = () => {
                   value={totals.cbrSavings}
                   precision={2}
                   prefix="₦"
-                  valueStyle={{ color: '#722ed1' }}
+                  valueStyle={{ 
+                    color: '#722ed1',
+                    fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                  }}
                 />
               </Card>
             </Col>
@@ -695,7 +715,10 @@ export const BranchDailyReportPage: React.FC = () => {
                   value={totals.cbrLoan}
                   precision={2}
                   prefix="₦"
-                  valueStyle={{ color: '#fa8c16' }}
+                  valueStyle={{ 
+                    color: '#fa8c16',
+                    fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                  }}
                 />
               </Card>
             </Col>
@@ -726,21 +749,30 @@ export const BranchDailyReportPage: React.FC = () => {
                 </Text>
               </div>
             ) : (
-              <Table
-                columns={columns}
-                dataSource={[...reportData, grandTotal]}
-                rowKey="branchId"
-                scroll={{ x: 2000 }}
-                pagination={false}
-                size="small"
-                bordered
-                rowClassName={(record) => {
-                  if (record.branchId === 'grand-total') {
-                    return 'grand-total-row';
-                  }
-                  return '';
-                }}
-              />
+              <div style={{
+                overflow: 'auto',
+                ...(window.innerWidth <= 768 && {
+                  maxWidth: '100%',
+                  border: '1px solid #f0f0f0',
+                  borderRadius: '6px'
+                })
+              }}>
+                <Table
+                  columns={columns}
+                  dataSource={[...reportData, grandTotal]}
+                  rowKey="branchId"
+                  scroll={{ x: window.innerWidth <= 768 ? 2200 : 2000 }}
+                  pagination={false}
+                  size="small"
+                  bordered
+                  rowClassName={(record) => {
+                    if (record.branchId === 'grand-total') {
+                      return 'grand-total-row';
+                    }
+                    return '';
+                  }}
+                />
+              </div>
             )}
           </Card>
         )}
