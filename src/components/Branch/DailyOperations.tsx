@@ -42,6 +42,7 @@ const DailyOperations = () => {
   const [selectedDate, setSelectedDate] = useState<string>(CURRENT_DATE);
   // State for confirmation modal
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [operationId, setOperationId] = useState<string>("");
 
   // Hook to fetch operations data
   const {
@@ -52,7 +53,7 @@ const DailyOperations = () => {
   } = useGetMyBranchDailyOperations(selectedDate);
 
   const submitTodayOperations = useSubmitOperations(
-    operationsData?.data.operations._id || ""
+    operationId || ""
   );
 
   useEffect(() => {
@@ -60,6 +61,7 @@ const DailyOperations = () => {
       toast.success(
         `${operationsData.message} || Loaded operations for ${selectedDate}`
       );
+      setOperationId(operationsData.data.operations._id);
     }
   }, [operationsData, selectedDate]);
 
@@ -968,7 +970,7 @@ const DailyOperations = () => {
                   size="small"
                 >
                   <Descriptions.Item label="Operation ID">
-                    <Text code>{operationsData.data.operations._id}</Text>
+                   {operationId && <Text code>{operationId}</Text>}
                   </Descriptions.Item>
                   <Descriptions.Item label="Status">
                     {operationsData.data.operations.isCompleted ? (
