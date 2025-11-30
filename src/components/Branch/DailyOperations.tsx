@@ -970,7 +970,7 @@ const DailyOperations = () => {
                   size="small"
                 >
                   <Descriptions.Item label="Operation ID">
-                    <Text code>{operationsData.data.operations._id}</Text>
+                   {operationId && <Text code>{operationId}</Text>}
                   </Descriptions.Item>
                   <Descriptions.Item label="Status">
                     {operationsData.data.operations.isCompleted ? (
