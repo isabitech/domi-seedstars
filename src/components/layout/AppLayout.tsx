@@ -154,16 +154,10 @@ export const AppLayout: React.FC = () => {
           onClick: () => navigate('/app/cashbook'),
         },
         {
-          key: 'daily-operations',
-          icon: <CalendarOutlined />,
-          label: 'Daily Operations',
-          onClick: () => navigate('/app/daily-operations'),
-        },
-        {
-          key: 'daily-report',
-          icon: <FileTextOutlined />,
-          label: 'Daily Report',
-          onClick: () => navigate('/app/daily-report'),
+          key: 'bank-statements',
+          icon: <BankOutlined />,
+          label: 'Bank Statements',
+          onClick: () => navigate('/app/bank-statements'),
         },
         {
           key: 'predictions',
@@ -178,10 +172,16 @@ export const AppLayout: React.FC = () => {
           onClick: () => navigate('/app/online-cih'),
         },
         {
-          key: 'bank-statements',
-          icon: <BankOutlined />,
-          label: 'Bank Statements',
-          onClick: () => navigate('/app/bank-statements'),
+          key: 'daily-operations',
+          icon: <CalendarOutlined />,
+          label: 'Daily Operations',
+          onClick: () => navigate('/app/daily-operations'),
+        },
+        {
+          key: 'daily-report',
+          icon: <FileTextOutlined />,
+          label: 'Daily Report',
+          onClick: () => navigate('/app/daily-report'),
         },
         {
           key: 'savings-register',

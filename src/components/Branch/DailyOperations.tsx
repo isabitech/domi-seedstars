@@ -14,41 +14,47 @@ import {
   Tag,
   Empty,
   Descriptions,
-  Badge,
-  Progress
+  Modal,
 } from "antd";
 import {
   CalendarOutlined,
   ReloadOutlined,
   HistoryOutlined,
   CalendarFilled,
-  UserOutlined,
   BankOutlined,
   DollarOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
   FileTextOutlined,
-  RiseOutlined
+  RiseOutlined,
+  ExclamationCircleOutlined
 } from "@ant-design/icons";
 import { useGetMyBranchDailyOperations } from "../../hooks/Branch/Operations/useGetOperations";
 import { CURRENT_DATE } from "../../lib/utils";
 import dayjs from "dayjs";
+import { toast } from "sonner";
+import { useSubmitOperations } from "../../hooks/Branch/Operations/useSubmitOperations";
 
 const { Title, Text } = Typography;
 
 const DailyOperations = () => {
   // State for selected date
   const [selectedDate, setSelectedDate] = useState<string>(CURRENT_DATE);
+  // State for confirmation modal
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   
   // Hook to fetch operations data
   const { data: operationsData, isLoading, error, refetch } = 
     useGetMyBranchDailyOperations(selectedDate);
+    
+  const submitTodayOperations = useSubmitOperations(operationsData?.data.operations._id || "");
+
 
   useEffect(() => {
     if (operationsData) {
-      console.log("Daily Operations Data:", operationsData);
+      toast.success(`${operationsData.message} || Loaded operations for ${selectedDate}`);
     }
-  }, [operationsData]);
+  }, [operationsData, selectedDate]);
 
   // Handle date change
   const handleDateChange = (date: any) => {
@@ -71,6 +77,28 @@ const DailyOperations = () => {
   // Disable future dates
   const disabledDate = (current: any) => {
     return current && current > dayjs().endOf('day');
+  };
+
+  const handleSubmitOperations = () => {
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmSubmit = () => {
+    setIsConfirmModalOpen(false);
+    submitTodayOperations.mutate(
+      undefined,{
+        onSuccess:  () => {
+          toast.success("Today's operations submitted successfully!");
+        },
+        onError: () => {
+          toast.error("Failed to submit today's operations.");
+        }
+      }
+    );
+  };
+
+  const handleCancelSubmit = () => {
+    setIsConfirmModalOpen(false);
   };
 
   // Format date for display
@@ -718,10 +746,10 @@ const DailyOperations = () => {
                   </Button> */}
                   <Button 
                     type="primary"
-                    icon={<ReloadOutlined />}
-                    onClick={() => refetch()}
+                    onClick={() => handleSubmitOperations()}
+                    loading={submitTodayOperations.isPending}
                   >
-                    Refresh Data
+                    Submit Todays Operations
                   </Button>
                 </Space>
               </div>
@@ -788,6 +816,37 @@ const DailyOperations = () => {
             </Text>
           </Space>
         </Card>
+
+        {/* Confirmation Modal */}
+        <Modal
+          title="Confirm Operations Submission"
+          open={isConfirmModalOpen}
+          onOk={handleConfirmSubmit}
+          onCancel={handleCancelSubmit}
+          okText="Yes, Submit"
+          cancelText="Cancel"
+          okButtonProps={{
+            danger: true,
+            loading: submitTodayOperations.isPending,
+          }}
+          cancelButtonProps={{
+            disabled: submitTodayOperations.isPending,
+          }}
+        >
+          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <ExclamationCircleOutlined style={{ color: '#faad14', fontSize: '20px' }} />
+              <Text strong>Are you sure you want to submit today's daily operations?</Text>
+            </div>
+            <Alert
+              message="Warning"
+              description="Once submitted, you won't be able to edit or update any data for this day."
+              type="warning"
+              showIcon
+              banner
+            />
+          </Space>
+        </Modal>
       </Space>
     </div>
   );
