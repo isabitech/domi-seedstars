@@ -3,7 +3,7 @@ import { Card, Row, Col, Button, Modal, App, Space, Table, Tag, Typography, Form
 import { toast } from 'sonner';
 import { PlusOutlined, EditOutlined, DeleteOutlined, BankOutlined, UserAddOutlined, MoreOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { useListBranches } from '../../hooks/Branches/useListBranches';
+import { useListBranches, type ListBranchesParams, type Branch } from '../../hooks/Branches/useListBranches';
 import { useCreateBranch } from '../../hooks/Branches/useCreateBranch';
 import { useUpdateBranch } from '../../hooks/Branches/useUpdateBranch';
 import { useDeleteBranch } from '../../hooks/Branches/useDeleteBranch';
@@ -11,7 +11,6 @@ import { useListUsers } from '../../hooks/Users(Head Office - HO)/useListUsers';
 import { useCreateUser } from '../../hooks/Users(Head Office - HO)/useCreateUser';
 import { useUpdateUser } from '../../hooks/Users(Head Office - HO)/useUpdateUser';
 import { useDeleteUser } from '../../hooks/Users(Head Office - HO)/useDeleteUser';
-import type { Branch } from '../../hooks/Branches/useListBranches';
 import type { User } from '../../hooks/Auth/useGetMe';
 import { queryClient } from '../../lib/queryClient';
 
@@ -52,14 +51,30 @@ export const BranchManagementPage: React.FC = () => {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [userForm] = Form.useForm<UserFormData>();
 
+  // Pagination state
+  const [branchPagination, setBranchPagination] = useState({
+    current: 1,
+    pageSize: 10,
+  });
+  const [userPagination, setUserPagination] = useState({
+    current: 1,
+    pageSize: 10,
+  });
+
   // Hooks for branch operations
-  const { data: branchesData, isLoading: isLoadingBranches } = useListBranches();
+  const { data: branchesData, isLoading: isLoadingBranches } = useListBranches({
+    page: branchPagination.current,
+    limit: branchPagination.pageSize,
+  });
   const createBranchMutation = useCreateBranch();
   const updateBranchMutation = useUpdateBranch();
   const deleteBranchMutation = useDeleteBranch();
   
   // Hooks for user operations
-  const { data: usersData, isLoading: isLoadingUsers } = useListUsers();
+  const { data: usersData, isLoading: isLoadingUsers } = useListUsers({
+    page: userPagination.current,
+    limit: userPagination.pageSize,
+  });
   const createUserMutation = useCreateUser();
   const updateUserMutation = useUpdateUser();
   const deleteUserMutation = useDeleteUser();
@@ -256,7 +271,7 @@ export const BranchManagementPage: React.FC = () => {
       key: 'branchName',
       render: (branchName: string, record: User) => {
         if (record.role === 'HO') return <Tag color="purple">N/A</Tag>;
-        return branchName || 'Unassigned';
+        return record.branch?.name || 'Unassigned';
       }
     },
     {
@@ -464,12 +479,23 @@ export const BranchManagementPage: React.FC = () => {
                           <Table
                             columns={columns}
                             dataSource={branches}
-                            rowKey="id"
+                            rowKey="_id"
+                            loading={isLoadingBranches}
                             scroll={window.innerWidth <= 768 ? { x: 1000 } : undefined}
                             pagination={{
-                              pageSize: 10,
+                              current: branchPagination.current,
+                              pageSize: branchPagination.pageSize,
+                              total: branchesData?.data?.total || 0,
                               showSizeChanger: true,
-                              showTotal: (total) => `Total ${total} branches`,
+                              showQuickJumper: true,
+                              showTotal: (total, range) => 
+                                `${range[0]}-${range[1]} of ${total} branches`,
+                              onChange: (page, pageSize) => {
+                                setBranchPagination({ current: page, pageSize: pageSize || 10 });
+                              },
+                              onShowSizeChange: (current, size) => {
+                                setBranchPagination({ current: 1, pageSize: size });
+                              },
                             }}
                           />
                         </div>
@@ -514,11 +540,22 @@ export const BranchManagementPage: React.FC = () => {
                             columns={userColumns}
                             dataSource={users}
                             rowKey="id"
+                            loading={isLoadingUsers}
                             scroll={window.innerWidth <= 768 ? { x: 900 } : undefined}
                             pagination={{
-                              pageSize: 10,
+                              current: userPagination.current,
+                              pageSize: userPagination.pageSize,
+                              total: usersData?.data?.pagination?.total || 0,
                               showSizeChanger: true,
-                              showTotal: (total) => `Total ${total} users`,
+                              showQuickJumper: true,
+                              showTotal: (total, range) => 
+                                `${range[0]}-${range[1]} of ${total} users`,
+                              onChange: (page, pageSize) => {
+                                setUserPagination({ current: page, pageSize: pageSize || 10 });
+                              },
+                              onShowSizeChange: (current, size) => {
+                                setUserPagination({ current: 1, pageSize: size });
+                              },
                             }}
                           />
                         </div>
