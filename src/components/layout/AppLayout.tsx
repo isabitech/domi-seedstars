@@ -353,7 +353,7 @@ export const AppLayout: React.FC = () => {
               />
             )}
             <Title level={isMobile ? 4 : 3} style={{ margin: 0 }}>
-              {isMobile ? 'Dominion' : getPageTitle()}
+              {isMobile ? `${user?.branchName || 'Branch'} Branch` : getPageTitle()}
             </Title>
           </div>
           

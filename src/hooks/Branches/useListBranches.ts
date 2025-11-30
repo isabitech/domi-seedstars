@@ -80,16 +80,22 @@ export interface Branch {
 }
 
 
-const getBranches = async (): Promise<ListBranchesResponse> => {
-  const { data } = await axiosInstance.get('/branches');
+export interface ListBranchesParams {
+  page?: number;
+  limit?: number;
+  status?: 'active' | 'inactive';
+  search?: string;
+}
+
+const getBranches = async (params: ListBranchesParams = {}): Promise<ListBranchesResponse> => {
+  const { data } = await axiosInstance.get('/branches', { params });
   return data;
 };
 
-export const useListBranches = (options?: Partial<ListBranchesResponse>) => {
+export const useListBranches = (params: ListBranchesParams = {}) => {
   return useQuery({
-    queryKey: ['branches'],
-    queryFn: getBranches,
+    queryKey: ['branches', 'list', params],
+    queryFn: () => getBranches(params),
     staleTime: 5 * 60 * 1000, // 5 minutes
-    ...options,
   });
 };
