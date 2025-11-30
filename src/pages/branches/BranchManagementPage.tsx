@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Row, Col, Button, Modal, App, Space, Table, Tag, Typography, Form, Input, Spin, Tabs, Select, Dropdown } from 'antd';
 import { toast } from 'sonner';
 import { PlusOutlined, EditOutlined, DeleteOutlined, BankOutlined, UserAddOutlined, MoreOutlined } from '@ant-design/icons';
@@ -66,6 +66,13 @@ export const BranchManagementPage: React.FC = () => {
     page: branchPagination.current,
     limit: branchPagination.pageSize,
   });
+  
+  // Separate hook to fetch all branches for modal dropdown
+  const { data: allBranchesData } = useListBranches({
+    page: 1,
+    limit: 100, // Large limit to get all branches
+  });
+  
   const createBranchMutation = useCreateBranch();
   const updateBranchMutation = useUpdateBranch();
   const deleteBranchMutation = useDeleteBranch();
@@ -80,6 +87,7 @@ export const BranchManagementPage: React.FC = () => {
   const deleteUserMutation = useDeleteUser();
 
   const branches = branchesData?.data?.branches || [];
+  const allBranches = allBranchesData?.data?.branches || [];
   const users = usersData?.data?.users || [];
 
   const handleAddBranch = () => {
@@ -87,6 +95,12 @@ export const BranchManagementPage: React.FC = () => {
     form.resetFields();
     setIsModalVisible(true);
   };
+
+  useEffect(()=>{
+    if(allBranchesData){
+      console.log("all branches fetched")
+    }
+  }, [allBranchesData]);  
 
   const handleEditBranch = (branch: Branch) => {
     setEditingBranch(branch);
@@ -269,8 +283,8 @@ export const BranchManagementPage: React.FC = () => {
       title: 'Branch',
       dataIndex: 'branchName',
       key: 'branchName',
-      render: (record: User) => {
-        if (record.role === 'HO') return <Tag color="purple">N/A</Tag>;
+      render: (_,record: User) => {
+        if (record?.role === 'HO') return <Tag color="purple">N/A</Tag>;
         return record.branch?.name || 'Unassigned';
       }
     },
@@ -816,7 +830,7 @@ export const BranchManagementPage: React.FC = () => {
                 rules={[{ required: true, message: 'Please select role' }]}
               >
                 <Select placeholder="Select user role">
-                  <Select.Option value="HO">Head Office</Select.Option>
+                  {/* <Select.Option value="HO">Head Office</Select.Option> */}
                   <Select.Option value="BR">Branch User</Select.Option>
                 </Select>
               </Form.Item>
@@ -837,7 +851,7 @@ export const BranchManagementPage: React.FC = () => {
                     rules={[{ required: true, message: 'Please select a branch' }]}
                   >
                     <Select placeholder="Select branch">
-                      {branches.map((branch) => (
+                      {allBranches.map((branch) => (
                         <Select.Option key={branch._id} value={branch._id}>
                           {branch.name} ({branch.code})
                         </Select.Option>
@@ -849,6 +863,7 @@ export const BranchManagementPage: React.FC = () => {
               return null;
             }}
           </Form.Item>
+          
 
           {!editingUser && (
             <Form.Item
