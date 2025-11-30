@@ -61,6 +61,8 @@ const DailyOperations = () => {
       toast.success(
         `${operationsData.message} || Loaded operations for ${selectedDate}`
       );
+    }
+    if (operationsData?.data?.operations?._id) {
       setOperationId(operationsData.data.operations._id);
     }
   }, [operationsData, selectedDate]);
