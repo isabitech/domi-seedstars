@@ -29,6 +29,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { calculations } from '../../utils/calculations';
 import { useUpdateHOFields } from '../../hooks/Operations/useUpdateHOFields';
 import { useListBranches } from '../../hooks/Branches/useListBranches';
+import { useListAllDailyOperations } from '../../hooks/Operations/useListAllDailyOperations';
 
 
 const { Title, Text } = Typography;
@@ -65,12 +66,17 @@ export const HOOperationsPage: React.FC = () => {
   const updateHOFieldsMutation = useUpdateHOFields();
   
   // Fetch branches from API
-  const { data: branchesResponse, isLoading: branchesLoading, error: branchesError, refetch: refetchBranches } = useListBranches();
+  const { data: branchesResponse, isLoading: branchesLoading, error: branchesError, refetch: refetchBranches } = useListBranches({
+    page: 1,
+    limit: 100
+  });
 
+  const getAllOperationsData = useListAllDailyOperations(
+    selectedDate.format('YYYY-MM-DD')
+  );
 
   // Initialize branch data
   useEffect(() => {
-
     const loadData = async () => {
       if (!branchesResponse?.data?.branches) return;
       
@@ -78,23 +84,38 @@ export const HOOperationsPage: React.FC = () => {
       try {
         const branches = branchesResponse.data.branches;
         
-        // Initialize data using API branches
-        const initialData: BranchHOData[] = branches.map(branch => ({
-          branchId: branch._id,
-          branchName: branch.name,
-          branchCode: branch.code,
-          cashbook1: {
-            frmHO: 0,
-            frmBR: 0,
-          },
-          disbursementRoll: {
-            prevDis: branch.previousDisbursement || 0, // Default previous disbursement
-          },
-          currentBranchRegister: {
-            prevTotalSav: branch.previousSavingsTotal || 0, // Default previous total savings
-            prevTotalLoan: branch.previousLoanTotal || 0, // Default previous total loan
-          },
-        }));
+        // Wait for operations data to be available
+        await new Promise(resolve => setTimeout(resolve, 100));
+        const operationsData = getAllOperationsData?.data?.data?.operations || [];
+        
+        // Initialize data using API branches and operations data
+        const initialData: BranchHOData[] = branches.map(branch => {
+          // Find the corresponding operation data for this branch
+          const branchOperation = operationsData.find(
+            (op: any) => op.branch._id === branch._id
+          );
+          
+          // Extract cashbook1 data if available
+          const frmHO = branchOperation?.cashbook1?.frmHO || 0;
+          const frmBR = branchOperation?.cashbook1?.frmBR || 0;
+          
+          return {
+            branchId: branch._id,
+            branchName: branch.name,
+            branchCode: branch.code,
+            cashbook1: {
+              frmHO: frmHO,
+              frmBR: frmBR,
+            },
+            disbursementRoll: {
+              prevDis: branch.previousDisbursement || 0,
+            },
+            currentBranchRegister: {
+              prevTotalSav: branch.previousSavingsTotal || 0,
+              prevTotalLoan: branch.previousLoanTotal || 0,
+            },
+          };
+        });
 
         setBranchData(initialData);
         
@@ -118,7 +139,7 @@ export const HOOperationsPage: React.FC = () => {
     };
     
     loadData();
-  }, [selectedDate, form, branchesResponse]);
+  }, [selectedDate.format('YYYY-MM-DD'), branchesResponse?.data?.branches, getAllOperationsData?.data?.data?.operations, form, refetchBranches]);
 
   const handleCellUpdate = async (branchId: string, field: string, value: number) => {
     try {
@@ -246,9 +267,19 @@ export const HOOperationsPage: React.FC = () => {
     }
   };
 
-  const handleRefresh = () => {
-    setSelectedDate(dayjs(selectedDate));
-    refetchBranches();
+  const handleRefresh = async () => {
+    setLoading(true);
+    try {
+      await refetchBranches();
+      // Re-fetch operations data by updating the date
+      setSelectedDate(dayjs(selectedDate));
+      toast.success('Data refreshed successfully');
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+      toast.error('Failed to refresh data');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const totals = branchData.reduce((acc, branch) => ({
