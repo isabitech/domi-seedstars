@@ -27,6 +27,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useGetBranchDashboard } from '../../hooks/Branch/Dashboard/useGetBranchDashboard';
 import type { ColumnsType } from 'antd/es/table';
+import { toast } from 'sonner';
 
 const { Title, Text } = Typography;
 
@@ -38,12 +39,8 @@ export const BranchDashboard: React.FC = () => {
 
   useEffect(() => {
     if (dashboardData) {
-      console.log("branch dashboard data", dashboardData);
-      notification.success({
-        message: 'Dashboard Data Loaded',
-        description: 'Branch dashboard data has been successfully loaded.',
-        placement: 'topRight',
-      });
+      // console.log("branch dashboard data", dashboardData);
+      toast.success(`${dashboardData.message || 'Dashboard data loaded successfully'}`);
     }
   }, [dashboardData]);
 
@@ -162,7 +159,7 @@ export const BranchDashboard: React.FC = () => {
                 prefix="₦"
                 valueStyle={{ 
                   color: (todayOps?.onlineCIH || 0) >= 0 ? '#3f8600' : '#cf1322',
-                  fontSize: '18px'
+                  fontSize: window.innerWidth <= 768 ? '18px' : '24px'
                 }}
               />
             </Card>
@@ -175,7 +172,10 @@ export const BranchDashboard: React.FC = () => {
                 value={todayOps?.tso || 0}
                 precision={2}
                 prefix="₦"
-                valueStyle={{ color: '#1890ff', fontSize: '18px' }}
+                valueStyle={{ 
+                  color: '#1890ff', 
+                  fontSize: window.innerWidth <= 768 ? '18px' : '24px' 
+                }}
               />
             </Card>
           </Col>
@@ -187,7 +187,10 @@ export const BranchDashboard: React.FC = () => {
                 value={currentRegisters?.loanBalance || 0}
                 precision={2}
                 prefix="₦"
-                valueStyle={{ color: '#722ed1', fontSize: '18px' }}
+                valueStyle={{ 
+                  color: '#722ed1', 
+                  fontSize: window.innerWidth <= 768 ? '18px' : '24px' 
+                }}
               />
             </Card>
           </Col>
@@ -199,7 +202,10 @@ export const BranchDashboard: React.FC = () => {
                 value={currentRegisters?.savingsBalance || 0}
                 precision={2}
                 prefix="₦"
-                valueStyle={{ color: '#52c41a', fontSize: '18px' }}
+                valueStyle={{ 
+                  color: '#52c41a', 
+                  fontSize: window.innerWidth <= 768 ? '18px' : '24px' 
+                }}
               />
             </Card>
           </Col>
@@ -225,7 +231,7 @@ export const BranchDashboard: React.FC = () => {
                         value={todayOps.cashbook1.pcih}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}
                       />
                     </Col>
                     <Col span={8}>
@@ -234,7 +240,7 @@ export const BranchDashboard: React.FC = () => {
                         value={todayOps.cashbook1.savings}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}
                       />
                     </Col>
                     <Col span={8}>
@@ -243,7 +249,7 @@ export const BranchDashboard: React.FC = () => {
                         value={todayOps.cashbook1.loanCollection}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}
                       />
                     </Col>
                     <Col span={8}>
@@ -252,7 +258,7 @@ export const BranchDashboard: React.FC = () => {
                         value={todayOps.cashbook1.chargesCollection}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}
                       />
                     </Col>
                     <Col span={8}>
@@ -261,7 +267,7 @@ export const BranchDashboard: React.FC = () => {
                         value={todayOps.cashbook1.frmHO}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}
                       />
                     </Col>
                     <Col span={8}>
@@ -270,8 +276,11 @@ export const BranchDashboard: React.FC = () => {
                         value={todayOps.cashbook1.cbTotal1}
                         precision={2}
                         prefix="₦"
-                        // size="small"
-                        valueStyle={{ color: '#1890ff', fontWeight: 'bold' }}
+                        valueStyle={{ 
+                          color: '#1890ff', 
+                          fontWeight: 'bold',
+                          fontSize: window.innerWidth <= 768 ? '16px' : '18px'
+                        }}
                       />
                     </Col>
                   </Row>
@@ -296,7 +305,7 @@ export const BranchDashboard: React.FC = () => {
                       <Statistic
                         title="Disbursement No."
                         value={todayOps.cashbook2.disNo}
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '16px' : '18px' }}
                       />
                     </Col>
                     <Col span={8}>
@@ -305,7 +314,7 @@ export const BranchDashboard: React.FC = () => {
                         value={todayOps.cashbook2.disAmt}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}
                       />
                     </Col>
                     <Col span={8}>
@@ -314,7 +323,7 @@ export const BranchDashboard: React.FC = () => {
                         value={todayOps.cashbook2.savWith}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}
                       />
                     </Col>
                     <Col span={8}>
@@ -323,7 +332,7 @@ export const BranchDashboard: React.FC = () => {
                         value={todayOps.cashbook2.domiBank}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}
                       />
                     </Col>
                     <Col span={8}>
@@ -332,7 +341,7 @@ export const BranchDashboard: React.FC = () => {
                         value={todayOps.cashbook2.posT}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}
                       />
                     </Col>
                     <Col span={8}>
@@ -341,8 +350,11 @@ export const BranchDashboard: React.FC = () => {
                         value={todayOps.cashbook2.cbTotal2}
                         precision={2}
                         prefix="₦"
-                        // size="small"
-                        valueStyle={{ color: '#722ed1', fontWeight: 'bold' }}
+                        valueStyle={{ 
+                          color: '#722ed1', 
+                          fontWeight: 'bold',
+                          fontSize: window.innerWidth <= 768 ? '16px' : '18px'
+                        }}
                       />
                     </Col>
                   </Row>
@@ -364,7 +376,10 @@ export const BranchDashboard: React.FC = () => {
                   value={summary.totalSavings}
                   precision={2}
                   prefix="₦"
-                  valueStyle={{ color: '#52c41a' }}
+                  valueStyle={{ 
+                    color: '#52c41a',
+                    fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                  }}
                 />
               </Col>
               <Col xs={12} sm={8} lg={4}>
@@ -373,7 +388,10 @@ export const BranchDashboard: React.FC = () => {
                   value={summary.totalLoanCollection}
                   precision={2}
                   prefix="₦"
-                  valueStyle={{ color: '#1890ff' }}
+                  valueStyle={{ 
+                    color: '#1890ff',
+                    fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                  }}
                 />
               </Col>
               <Col xs={12} sm={8} lg={4}>
@@ -382,7 +400,10 @@ export const BranchDashboard: React.FC = () => {
                   value={summary.totalCharges}
                   precision={2}
                   prefix="₦"
-                  valueStyle={{ color: '#fa8c16' }}
+                  valueStyle={{ 
+                    color: '#fa8c16',
+                    fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                  }}
                 />
               </Col>
               <Col xs={12} sm={8} lg={4}>
@@ -391,7 +412,10 @@ export const BranchDashboard: React.FC = () => {
                   value={summary.totalDisbursements}
                   precision={2}
                   prefix="₦"
-                  valueStyle={{ color: '#722ed1' }}
+                  valueStyle={{ 
+                    color: '#722ed1',
+                    fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                  }}
                 />
               </Col>
               <Col xs={12} sm={8} lg={4}>
@@ -400,7 +424,10 @@ export const BranchDashboard: React.FC = () => {
                   value={summary.totalWithdrawals}
                   precision={2}
                   prefix="₦"
-                  valueStyle={{ color: '#f5222d' }}
+                  valueStyle={{ 
+                    color: '#f5222d',
+                    fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                  }}
                 />
               </Col>
               <Col xs={12} sm={8} lg={4}>
@@ -409,7 +436,10 @@ export const BranchDashboard: React.FC = () => {
                   value={summary.avgOnlineCIH}
                   precision={2}
                   prefix="₦"
-                  valueStyle={{ color: summary.avgOnlineCIH >= 0 ? '#3f8600' : '#cf1322' }}
+                  valueStyle={{ 
+                    color: summary.avgOnlineCIH >= 0 ? '#3f8600' : '#cf1322',
+                    fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                  }}
                 />
               </Col>
             </Row>
@@ -423,7 +453,10 @@ export const BranchDashboard: React.FC = () => {
                   value={summary.totalTSO}
                   precision={2}
                   prefix="₦"
-                  valueStyle={{ color: '#13c2c2' }}
+                  valueStyle={{ 
+                    color: '#13c2c2',
+                    fontSize: window.innerWidth <= 768 ? '16px' : '18px'
+                  }}
                 />
               </Col>
               <Col span={12}>
@@ -431,7 +464,10 @@ export const BranchDashboard: React.FC = () => {
                   title="Operation Days"
                   value={summary.operationDays}
                   suffix="days"
-                  valueStyle={{ color: '#595959' }}
+                  valueStyle={{ 
+                    color: '#595959',
+                    fontSize: window.innerWidth <= 768 ? '16px' : '18px'
+                  }}
                 />
               </Col>
             </Row>
@@ -449,7 +485,10 @@ export const BranchDashboard: React.FC = () => {
                     value={currentRegisters.loanBalance}
                     precision={2}
                     prefix="₦"
-                    valueStyle={{ color: '#722ed1', fontSize: '24px' }}
+                    valueStyle={{ 
+                      color: '#722ed1', 
+                      fontSize: window.innerWidth <= 768 ? '18px' : '24px' 
+                    }}
                   />
                 </Card>
               </Col>
@@ -460,7 +499,10 @@ export const BranchDashboard: React.FC = () => {
                     value={currentRegisters.savingsBalance}
                     precision={2}
                     prefix="₦"
-                    valueStyle={{ color: '#52c41a', fontSize: '24px' }}
+                    valueStyle={{ 
+                      color: '#52c41a', 
+                      fontSize: window.innerWidth <= 768 ? '18px' : '24px' 
+                    }}
                   />
                 </Card>
               </Col>
@@ -471,7 +513,10 @@ export const BranchDashboard: React.FC = () => {
                     value={currentRegisters.monthlyDisbursement}
                     precision={2}
                     prefix="₦"
-                    valueStyle={{ color: '#fa8c16', fontSize: '24px' }}
+                    valueStyle={{ 
+                      color: '#fa8c16', 
+                      fontSize: window.innerWidth <= 768 ? '18px' : '24px' 
+                    }}
                   />
                 </Card>
               </Col>
@@ -482,13 +527,16 @@ export const BranchDashboard: React.FC = () => {
         {/* Trend Data */}
         {trendData.length > 0 && (
           <Card title={<span><LineChartOutlined /> Recent Trend Data</span>}>
-            <Table
-              dataSource={trendData}
-              columns={trendColumns}
-              pagination={{ pageSize: 5 }}
-              size="small"
-              rowKey="date"
-            />
+            <div style={{ overflowX: 'auto' }}>
+              <Table
+                dataSource={trendData}
+                columns={trendColumns}
+                pagination={{ pageSize: 5 }}
+                size="small"
+                rowKey="date"
+                scroll={{ x: 600 }}
+              />
+            </div>
           </Card>
         )}
 
@@ -501,20 +549,23 @@ export const BranchDashboard: React.FC = () => {
                   <Space direction="vertical" style={{ width: '100%' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Text>Previous Loan Total:</Text>
-                      <Text strong>₦{todayOps.loanRegister.previousLoanTotal.toLocaleString()}</Text>
+                      <Text strong style={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}>₦{todayOps.loanRegister.previousLoanTotal.toLocaleString()}</Text>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Text>Loan Disbursement (with Interest):</Text>
-                      <Text strong>₦{todayOps.loanRegister.loanDisbursementWithInterest.toLocaleString()}</Text>
+                      <Text strong style={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}>₦{todayOps.loanRegister.loanDisbursementWithInterest.toLocaleString()}</Text>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Text>Loan Collection:</Text>
-                      <Text strong>₦{todayOps.loanRegister.loanCollection.toLocaleString()}</Text>
+                      <Text strong style={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}>₦{todayOps.loanRegister.loanCollection.toLocaleString()}</Text>
                     </div>
                     <Divider />
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Text strong>Current Loan Balance:</Text>
-                      <Text strong style={{ color: '#722ed1', fontSize: '16px' }}>
+                      <Text strong style={{ 
+                        color: '#722ed1', 
+                        fontSize: window.innerWidth <= 768 ? '16px' : '18px' 
+                      }}>
                         ₦{todayOps.loanRegister.currentLoanBalance.toLocaleString()}
                       </Text>
                     </div>
@@ -531,20 +582,23 @@ export const BranchDashboard: React.FC = () => {
                   <Space direction="vertical" style={{ width: '100%' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Text>Previous Savings Total:</Text>
-                      <Text strong>₦{todayOps.savingsRegister.previousSavingsTotal.toLocaleString()}</Text>
+                      <Text strong style={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}>₦{todayOps.savingsRegister.previousSavingsTotal.toLocaleString()}</Text>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Text>New Savings:</Text>
-                      <Text strong>₦{todayOps.savingsRegister.savings.toLocaleString()}</Text>
+                      <Text strong style={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}>₦{todayOps.savingsRegister.savings.toLocaleString()}</Text>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Text>Savings Withdrawal:</Text>
-                      <Text strong>₦{todayOps.savingsRegister.savingsWithdrawal.toLocaleString()}</Text>
+                      <Text strong style={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}>₦{todayOps.savingsRegister.savingsWithdrawal.toLocaleString()}</Text>
                     </div>
                     <Divider />
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Text strong>Current Savings:</Text>
-                      <Text strong style={{ color: '#52c41a', fontSize: '16px' }}>
+                      <Text strong style={{ 
+                        color: '#52c41a', 
+                        fontSize: window.innerWidth <= 768 ? '16px' : '18px' 
+                      }}>
                         ₦{todayOps.savingsRegister.currentSavings.toLocaleString()}
                       </Text>
                     </div>
@@ -559,7 +613,7 @@ export const BranchDashboard: React.FC = () => {
 
         {/* Quick Actions */}
         <Card title="Quick Actions">
-          <Row gutter={16}>
+          <Row gutter={[16, 16]}>
             <Col xs={24} sm={6}>
               <Button 
                 block 

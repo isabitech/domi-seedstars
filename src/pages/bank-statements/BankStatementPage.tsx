@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Space, Typography, Breadcrumb, Tabs } from "antd";
 import { toast } from 'sonner';
-import { HomeOutlined, BankOutlined } from "@ant-design/icons";
 import { BankStatement1Component } from "../../components/BankStatement1";
 import { BankStatement2Component } from "../../components/BankStatement2";
+import { BankStatementSummaryComponent } from "../../components/BankStatementSummary";
 import { useCreateBankStatement } from "../../hooks/Branch/BankStatement/useCreateBankStatement";
 
 const { Title } = Typography;
@@ -41,6 +41,9 @@ export const BankStatementPage: React.FC = () => {
       });
 
       toast.success("Bank Statement 2 created successfully!");
+      
+      // Navigate to the summary tab
+      setActiveTab("summary");
     } catch (error) {
       console.error("Failed to create Bank Statement 2:", error);
       toast.error("Failed to create Bank Statement 2. Please try again.");
@@ -50,7 +53,7 @@ export const BankStatementPage: React.FC = () => {
   const tabItems = [
     {
       key: "bs1",
-      label: "Bank Statement 1 (BS1)",
+      label: window.innerWidth <= 768 ? "BS1" : "Bank Statement 1 (BS1)",
       children: (
         <BankStatement1Component
           onSubmit={handleBankStatement1Submit}
@@ -60,7 +63,7 @@ export const BankStatementPage: React.FC = () => {
     },
     {
       key: "bs2",
-      label: "Bank Statement 2 (BS2)",
+      label: window.innerWidth <= 768 ? "BS2" : "Bank Statement 2 (BS2)",
       children: (
         <BankStatement2Component
           onSubmit={handleBankStatement2Submit}
@@ -68,14 +71,29 @@ export const BankStatementPage: React.FC = () => {
         />
       ),
     },
+    {
+      key: "summary",
+      label: window.innerWidth <= 768 ? "Summary" : "Bank Statement Summary",
+      children: (
+        <BankStatementSummaryComponent />
+      ),
+    },
   ];
 
   return (
-    <div className="page-container" style={{ padding: "24px" }}>
+    <div className="page-container" style={{ 
+      padding: window.innerWidth <= 768 ? "16px" : "24px" 
+    }}>
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
         <div>
-          <Title level={2}>Bank Statements</Title>
-          <p style={{ color: "#666", marginBottom: 0 }}>
+          <Title level={2} style={{ fontSize: window.innerWidth <= 768 ? '20px' : '28px' }}>
+            Bank Statements
+          </Title>
+          <p style={{ 
+            color: "#666", 
+            marginBottom: 0,
+            fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+          }}>
             Manage and view bank statements with automatic data integration from
             cashbook entries.
           </p>
@@ -85,9 +103,10 @@ export const BankStatementPage: React.FC = () => {
           activeKey={activeTab}
           onChange={setActiveTab}
           items={tabItems}
-          size="large"
+          size={window.innerWidth <= 768 ? "small" : "large"}
           style={{ width: "100%" }}
           type="card"
+          tabBarGutter={window.innerWidth <= 768 ? 4 : 8}
         />
       </Space>
     </div>

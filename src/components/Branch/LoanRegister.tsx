@@ -134,7 +134,8 @@ const LoanRegister = () => {
           style={{
             color: record.type === 'disbursement' ? '#52c41a' : 
                    record.type === 'collection' ? '#ff4d4f' : 
-                   record.type === 'closing' ? '#1890ff' : '#722ed1'
+                   record.type === 'closing' ? '#1890ff' : '#722ed1',
+            fontSize: window.innerWidth <= 768 ? '14px' : '16px'
           }}
         >
           {formatCurrency(amount)}
@@ -245,7 +246,10 @@ const LoanRegister = () => {
               value={data.previousLoanTotal}
               formatter={(value) => formatCurrency(Number(value))}
               prefix={<></>}
-              valueStyle={{ color: '#722ed1' }}
+              valueStyle={{ 
+                color: '#722ed1',
+                fontSize: window.innerWidth <= 768 ? '16px' : '24px'
+              }}
             />
           </Card>
         </Col>
@@ -256,7 +260,10 @@ const LoanRegister = () => {
               value={data.loanDisbursementWithInterest}
               formatter={(value) => formatCurrency(Number(value))}
               prefix={<ArrowUpOutlined />}
-              valueStyle={{ color: '#52c41a' }}
+              valueStyle={{ 
+                color: '#52c41a',
+                fontSize: window.innerWidth <= 768 ? '16px' : '24px'
+              }}
             />
           </Card>
         </Col>
@@ -267,7 +274,10 @@ const LoanRegister = () => {
               value={data.loanCollection}
               formatter={(value) => formatCurrency(Number(value))}
               prefix={<ArrowDownOutlined />}
-              valueStyle={{ color: '#ff4d4f' }}
+              valueStyle={{ 
+                color: '#ff4d4f',
+                fontSize: window.innerWidth <= 768 ? '16px' : '24px'
+              }}
             />
           </Card>
         </Col>
@@ -278,7 +288,10 @@ const LoanRegister = () => {
               value={data.currentLoanBalance}
               formatter={(value) => formatCurrency(Number(value))}
               prefix={<BankOutlined />}
-              valueStyle={{ color: '#1890ff' }}
+              valueStyle={{ 
+                color: '#1890ff',
+                fontSize: window.innerWidth <= 768 ? '16px' : '24px'
+              }}
             />
           </Card>
         </Col>
@@ -293,7 +306,7 @@ const LoanRegister = () => {
               formatter={(value) => formatCurrency(Number(value))}
               valueStyle={{ 
                 color: netChange >= 0 ? '#52c41a' : '#ff4d4f',
-                fontSize: '20px' 
+                fontSize: window.innerWidth <= 768 ? '16px' : '20px'
               }}
               prefix={netChange >= 0 ? '+' : '-'}
               suffix={
@@ -311,7 +324,10 @@ const LoanRegister = () => {
                 value={collectionRate}
                 precision={2}
                 suffix="%"
-                valueStyle={{ color: '#ff7a00', fontSize: '20px' }}
+                valueStyle={{ 
+                  color: '#ff7a00', 
+                  fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                }}
                 prefix={<PercentageOutlined />}
               />
               <Progress
@@ -335,7 +351,7 @@ const LoanRegister = () => {
                 suffix="%"
                 valueStyle={{ 
                   color: portfolioGrowth >= 0 ? '#52c41a' : '#ff4d4f',
-                  fontSize: '20px'
+                  fontSize: window.innerWidth <= 768 ? '16px' : '20px'
                 }}
                 prefix={portfolioGrowth >= 0 ? '+' : '-'}
               />
@@ -362,37 +378,47 @@ const LoanRegister = () => {
           </Tag>
         }
       >
-        <Table
-          columns={columns}
-          dataSource={tableData}
-          pagination={false}
-          size="middle"
-          summary={() => (
-            <Table.Summary>
-              <Table.Summary.Row style={{ backgroundColor: '#fafafa' }}>
-                <Table.Summary.Cell index={0}>
-                  <Text strong>Portfolio Net Change</Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={1} align="right">
-                  <Text
-                    strong
-                    style={{
-                      color: netChange >= 0 ? '#52c41a' : '#ff4d4f',
-                      fontSize: '16px'
-                    }}
-                  >
-                    {netChange >= 0 ? '+' : ''}{formatCurrency(netChange)}
-                  </Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={2}>
-                  <Tag color={netChange >= 0 ? 'green' : 'red'}>
-                    {netChange >= 0 ? 'GROWTH' : 'REDUCTION'}
-                  </Tag>
-                </Table.Summary.Cell>
-              </Table.Summary.Row>
-            </Table.Summary>
-          )}
-        />
+        <div style={{
+          overflow: 'auto',
+          ...(window.innerWidth <= 768 && {
+            maxWidth: '100%',
+            border: '1px solid #f0f0f0',
+            borderRadius: '6px'
+          })
+        }}>
+          <Table
+            columns={columns}
+            dataSource={tableData}
+            pagination={false}
+            size="middle"
+            scroll={window.innerWidth <= 768 ? { x: 600 } : undefined}
+            summary={() => (
+              <Table.Summary>
+                <Table.Summary.Row style={{ backgroundColor: '#fafafa' }}>
+                  <Table.Summary.Cell index={0}>
+                    <Text strong>Portfolio Net Change</Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={1} align="right">
+                    <Text
+                      strong
+                      style={{
+                        color: netChange >= 0 ? '#52c41a' : '#ff4d4f',
+                        fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                      }}
+                    >
+                      {netChange >= 0 ? '+' : ''}{formatCurrency(netChange)}
+                    </Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={2}>
+                    <Tag color={netChange >= 0 ? 'green' : 'red'}>
+                      {netChange >= 0 ? 'GROWTH' : 'REDUCTION'}
+                    </Tag>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+              </Table.Summary>
+            )}
+          />
+        </div>
         
         <Divider />
         
@@ -403,7 +429,10 @@ const LoanRegister = () => {
               <Row gutter={16}>
                 <Col span={8}>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '24px', color: '#52c41a' }}>
+                    <div style={{ 
+                      fontSize: window.innerWidth <= 768 ? '18px' : '24px', 
+                      color: '#52c41a' 
+                    }}>
                       {((data.loanCollection / (data.loanDisbursementWithInterest || 1)) * 100).toFixed(1)}%
                     </div>
                     <Text type="secondary">Collection vs Disbursement</Text>
@@ -411,7 +440,10 @@ const LoanRegister = () => {
                 </Col>
                 <Col span={8}>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '24px', color: '#1890ff' }}>
+                    <div style={{ 
+                      fontSize: window.innerWidth <= 768 ? '18px' : '24px', 
+                      color: '#1890ff' 
+                    }}>
                       ₦{(data.currentLoanBalance / 1000000).toFixed(2)}M
                     </div>
                     <Text type="secondary">Portfolio Size (Millions)</Text>
@@ -420,7 +452,7 @@ const LoanRegister = () => {
                 <Col span={8}>
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ 
-                      fontSize: '24px', 
+                      fontSize: window.innerWidth <= 768 ? '18px' : '24px', 
                       color: portfolioGrowth >= 0 ? '#52c41a' : '#ff4d4f' 
                     }}>
                       {portfolioGrowth >= 0 ? '+' : ''}{portfolioGrowth.toFixed(1)}%

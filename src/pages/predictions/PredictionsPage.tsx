@@ -59,6 +59,7 @@ export const PredictionsPage: React.FC = () => {
   useEffect(()=>{
     if(getPrediction?.data?.data?.operations?.prediction){
       const prediction = getPrediction.data.data.operations.prediction;
+      toast.info(`Loaded prediction for ${prediction.date}`)
       form.setFieldsValue({
         predictionNo: prediction.predictionNo,
         predictionAmount: prediction.predictionAmount,
@@ -118,59 +119,91 @@ export const PredictionsPage: React.FC = () => {
       title: "Date",
       dataIndex: "date",
       key: "date",
-      render: (date: string) => dayjs(date).format("DD MMM YYYY"),
+      width: window.innerWidth <= 768 ? 100 : 120,
+      render: (date: string) => (
+        <Text style={{ fontSize: window.innerWidth <= 768 ? '12px' : '14px' }}>
+          {dayjs(date).format(window.innerWidth <= 768 ? "DD MMM" : "DD MMM YYYY")}
+        </Text>
+      ),
     },
     {
-      title: "Prediction No.",
+      title: "Clients",
       dataIndex: "predictionNo",
       key: "predictionNo",
       align: "center" as const,
-      render: (value: number) => <Text strong>{value} clients</Text>,
+      width: window.innerWidth <= 768 ? 80 : 120,
+      render: (value: number) => (
+        <Text strong style={{ fontSize: window.innerWidth <= 768 ? '12px' : '14px' }}>
+          {window.innerWidth <= 768 ? value : `${value} clients`}
+        </Text>
+      ),
     },
     {
-      title: "Prediction Amount",
+      title: "Amount",
       dataIndex: "predictionAmount",
       key: "predictionAmount",
       align: "right" as const,
-      render: (value: number) => <Text strong>₦{value.toLocaleString()}</Text>,
+      width: window.innerWidth <= 768 ? 100 : 150,
+      render: (value: number) => (
+        <Text strong style={{ fontSize: window.innerWidth <= 768 ? '12px' : '14px' }}>
+          ₦{window.innerWidth <= 768 ? 
+            (value / 1000).toFixed(0) + 'K' : 
+            value.toLocaleString()}
+        </Text>
+      ),
     },
     {
-      title: "Avg per Client",
+      title: "Avg/Client",
       key: "avgPerClient",
       align: "right" as const,
+      width: window.innerWidth <= 768 ? 90 : 120,
       render: (_: unknown, record: Prediction) => {
         const avg =
           record.predictionNo > 0
             ? record.predictionAmount / record.predictionNo
             : 0;
-        return <Text>₦{avg.toLocaleString()}</Text>;
+        return (
+          <Text style={{ fontSize: window.innerWidth <= 768 ? '12px' : '14px' }}>
+            ₦{window.innerWidth <= 768 ? 
+              (avg / 1000).toFixed(0) + 'K' : 
+              avg.toLocaleString()}
+          </Text>
+        );
       },
     },
     {
       title: "Status",
       key: "status",
+      width: window.innerWidth <= 768 ? 80 : 100,
       render: (_: unknown, record: Prediction) => {
         const isToday = dayjs(record.date).isSame(dayjs(), "day");
         const isTomorrow = dayjs(record.date).isSame(tomorrow, "day");
         const isPast = dayjs(record.date).isBefore(dayjs(), "day");
 
+        const statusStyle = {
+          fontSize: window.innerWidth <= 768 ? '11px' : '14px',
+          fontWeight: window.innerWidth <= 768 ? 'normal' : 'bold'
+        };
+
         if (isTomorrow)
-          return <span style={{ color: "#1890ff" }}>Tomorrow</span>;
-        if (isToday) return <span style={{ color: "#52c41a" }}>Today</span>;
-        if (isPast) return <span style={{ color: "#999" }}>Past</span>;
-        return <span style={{ color: "#722ed1" }}>Future</span>;
+          return <span style={{ color: "#1890ff", ...statusStyle }}>Tomorrow</span>;
+        if (isToday) return <span style={{ color: "#52c41a", ...statusStyle }}>Today</span>;
+        if (isPast) return <span style={{ color: "#999", ...statusStyle }}>Past</span>;
+        return <span style={{ color: "#722ed1", ...statusStyle }}>Future</span>;
       },
     },
   ];
 
   return (
-    <div className="page-container" style={{ padding: "24px" }}>
+    <div className="page-container" style={{ 
+      padding: window.innerWidth <= 768 ? "16px" : "24px" 
+    }}>
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
         <div>
-          <Title level={2}>
+          <Title level={2} style={{ fontSize: window.innerWidth <= 768 ? '20px' : '28px' }}>
             <RiseOutlined /> Tomorrow's Disbursement Predictions
           </Title>
-          <Text type="secondary">
+          <Text type="secondary" style={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}>
             Plan and predict tomorrow's loan disbursements for{" "}
             {tomorrow.format("dddd, DD MMMM YYYY")}
           </Text>
@@ -178,7 +211,7 @@ export const PredictionsPage: React.FC = () => {
 
         {/* Remove the error alert and update the loading states */}
 
-        <Row gutter={[24, 24]}>
+        <Row gutter={[window.innerWidth <= 768 ? 16 : 24, window.innerWidth <= 768 ? 16 : 24]}>
           <Col xs={24} lg={12}>
             <Card
               title={
@@ -294,21 +327,27 @@ export const PredictionsPage: React.FC = () => {
                   style={{ width: "100%" }}
                 >
                   <Row gutter={16}>
-                    <Col span={12}>
+                    <Col xs={24} sm={12}>
                       <Statistic
                         title="Clients to Serve"
                         value={currentPrediction.predictionNo}
                         prefix={<UserOutlined />}
-                        valueStyle={{ color: "#1890ff" }}
+                        valueStyle={{ 
+                          color: "#1890ff",
+                          fontSize: window.innerWidth <= 768 ? '18px' : '24px'
+                        }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={24} sm={12}>
                       <Statistic
                         title="Total Amount"
                         value={currentPrediction.predictionAmount}
                         precision={0}
                         prefix="₦"
-                        valueStyle={{ color: "#52c41a" }}
+                        valueStyle={{ 
+                          color: "#52c41a",
+                          fontSize: window.innerWidth <= 768 ? '18px' : '24px'
+                        }}
                       />
                     </Col>
                   </Row>
@@ -320,7 +359,10 @@ export const PredictionsPage: React.FC = () => {
                     value={avgPerClient}
                     precision={0}
                     prefix="₦"
-                    valueStyle={{ color: "#fa8c16", fontSize: "24px" }}
+                    valueStyle={{ 
+                      color: "#fa8c16", 
+                      fontSize: window.innerWidth <= 768 ? '18px' : '24px'
+                    }}
                   />
 
                   <Alert
@@ -350,18 +392,31 @@ export const PredictionsPage: React.FC = () => {
           </Col>
         </Row>
 
-        <Card title="Predictions History">
-          <Table
-            columns={columns}
-            dataSource={predictions}
-            rowKey="id"
-            pagination={{
-              pageSize: 10,
-              showSizeChanger: false,
-              showTotal: (total) => `Total ${total} predictions`,
-            }}
-            loading={loading}
-          />
+        <Card title="Predictions History" style={{ overflow: 'hidden' }}>
+          <div style={{ 
+            overflow: 'auto', 
+            maxWidth: '100%',
+            ...(window.innerWidth <= 768 && {
+              maxHeight: '400px',
+              border: '1px solid #f0f0f0',
+              borderRadius: '6px'
+            })
+          }}>
+            <Table
+              columns={columns}
+              dataSource={predictions}
+              rowKey="id"
+              pagination={{
+                pageSize: 10,
+                showSizeChanger: false,
+                showTotal: (total) => `Total ${total} predictions`,
+                size: window.innerWidth <= 768 ? 'small' : 'default'
+              }}
+              loading={loading}
+              size={window.innerWidth <= 768 ? 'small' : 'middle'}
+              scroll={{ x: window.innerWidth <= 768 ? 600 : undefined }}
+            />
+          </div>
         </Card>
       </Space>
     </div>

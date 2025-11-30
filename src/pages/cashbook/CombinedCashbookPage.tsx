@@ -235,22 +235,12 @@ export const CombinedCashbookPage: React.FC = () => {
 
     await createDailyEntry.mutate(payload, {
       onSuccess: (data: any) => {
-        notification.success({
-          message: "Success",
-          description: data.message || "Daily cashbook entry submitted successfully.",
-          placement: "topRight",
-        });
+       toast.success(data.message || "Daily entry submitted successfully!");
         getDailyEntry.refetch();
         setSummaryLoading(false);
       },
       onError: (err: any) => {
-        notification.error({
-          message: "Submission Failed",
-          description:
-            err.message ||
-            "An error occurred while submitting the daily entry.",
-          placement: "topRight",
-        });
+        toast.error(err.message || "An error occurred while submitting the daily entry.");
         setSummaryLoading(false);
       },
     });
@@ -312,35 +302,35 @@ export const CombinedCashbookPage: React.FC = () => {
           />
 
           {todaysSummary && (
-            <Row gutter={16} style={{ marginTop: 20 }}>
-              <Col span={6}>
+            <Row gutter={[16, 16]} style={{ marginTop: 20 }}>
+              <Col xs={12} sm={6}>
                 <Statistic
                   title="Collection Total"
                   value={todaysSummary.collectionTotal || 0}
                   precision={2}
                   prefix="₦"
-                  valueStyle={{ color: "#3f8600" }}
+                  valueStyle={{ color: "#3f8600", fontSize: window.innerWidth <= 768 ? '16px' : '20px' }}
                 />
               </Col>
-              <Col span={6}>
+              <Col xs={12} sm={6}>
                 <Statistic
                   title="CB Total 1"
                   value={todaysSummary.cbTotal1 || 0}
                   precision={2}
                   prefix="₦"
-                  valueStyle={{ color: "#1890ff" }}
+                  valueStyle={{ color: "#1890ff", fontSize: window.innerWidth <= 768 ? '16px' : '20px' }}
                 />
               </Col>
-              <Col span={6}>
+              <Col xs={12} sm={6}>
                 <Statistic
                   title="CB Total 2"
                   value={todaysSummary.cbTotal2 || 0}
                   precision={2}
                   prefix="₦"
-                  valueStyle={{ color: "#722ed1" }}
+                  valueStyle={{ color: "#722ed1", fontSize: window.innerWidth <= 768 ? '16px' : '20px' }}
                 />
               </Col>
-              <Col span={6}>
+              <Col xs={12} sm={6}>
                 <Statistic
                   title="Online Cash in Hand"
                   value={todaysSummary.cbTotal1 - (todaysSummary.cbTotal2 || 0)}
@@ -348,6 +338,7 @@ export const CombinedCashbookPage: React.FC = () => {
                   prefix="₦"
                   valueStyle={{
                     color: (todaysSummary.cbTotal1 - (todaysSummary.cbTotal2 || 0)) >= 0 ? "#3f8600" : "#cf1322",
+                    fontSize: window.innerWidth <= 768 ? '16px' : '20px'
                   }}
                 />
               </Col>
@@ -389,7 +380,7 @@ export const CombinedCashbookPage: React.FC = () => {
               />
 
               <Row gutter={[16, 16]}>
-                <Col span={12}>
+                <Col xs={24} lg={12}>
                   <Card
                     title="Cashbook 1 - Collections"
                     size="small"
@@ -497,7 +488,7 @@ export const CombinedCashbookPage: React.FC = () => {
                   </Card>
                 </Col>
 
-                <Col span={12}>
+                <Col xs={24} lg={12}>
                   <Card
                     title="Cashbook 2 - Disbursements"
                     size="small"
@@ -611,8 +602,8 @@ export const CombinedCashbookPage: React.FC = () => {
                   borderBottom: "1px solid rgba(255,255,255,0.2)",
                 }}
               >
-                <Row gutter={16}>
-                  <Col span={8}>
+                <Row gutter={[16, 16]}>
+                  <Col xs={24} sm={8}>
                     <Statistic
                       title={
                         <span style={{ color: "rgba(255,255,255,0.8)" }}>
@@ -622,10 +613,10 @@ export const CombinedCashbookPage: React.FC = () => {
                       value={todaysSummary?.collectionTotal || 0}
                       precision={2}
                       prefix="₦"
-                      valueStyle={{ color: "#52c41a", fontSize: "20px" }}
+                      valueStyle={{ color: "#52c41a", fontSize: window.innerWidth <= 768 ? '16px' : '20px' }}
                     />
                   </Col>
-                  <Col span={8}>
+                  <Col xs={24} sm={8}>
                     <Statistic
                       title={
                         <span style={{ color: "rgba(255,255,255,0.8)" }}>
@@ -635,10 +626,10 @@ export const CombinedCashbookPage: React.FC = () => {
                       value={todaysSummary?.cbTotal1 || 0}
                       precision={2}
                       prefix="₦"
-                      valueStyle={{ color: "#1890ff", fontSize: "20px" }}
+                      valueStyle={{ color: "#1890ff", fontSize: window.innerWidth <= 768 ? '16px' : '20px' }}
                     />
                   </Col>
-                  <Col span={8}>
+                  <Col xs={24} sm={8}>
                     <Statistic
                       title={
                         <span style={{ color: "rgba(255,255,255,0.8)" }}>
@@ -653,7 +644,7 @@ export const CombinedCashbookPage: React.FC = () => {
                           (todaysSummary?.cbTotal1 - (todaysSummary?.cbTotal2 || 0)) >= 0
                             ? "#52c41a"
                             : "#ff4d4f",
-                        fontSize: "24px",
+                        fontSize: window.innerWidth <= 768 ? '18px' : '24px',
                         fontWeight: "bold",
                       }}
                     />
@@ -680,21 +671,28 @@ export const CombinedCashbookPage: React.FC = () => {
                 </Space>
 
                 <div style={{ marginTop: "16px" }}>
-                  <Button
-                    type="primary"
-                    size="large"
-                    onClick={() => goToStep(0)}
-                    style={{ marginRight: 16 }}
-                  >
-                    Edit Cashbook 1
-                  </Button>
-                  <Button
-                    type="primary"
-                    size="large"
-                    onClick={() => goToStep(1)}
-                  >
-                    Edit Cashbook 2
-                  </Button>
+                  <Row gutter={[16, 16]} justify="center">
+                    <Col xs={24} sm={12} md={8}>
+                      <Button
+                        type="primary"
+                        size="large"
+                        onClick={() => goToStep(0)}
+                        block
+                      >
+                        Edit Cashbook 1
+                      </Button>
+                    </Col>
+                    <Col xs={24} sm={12} md={8}>
+                      <Button
+                        type="primary"
+                        size="large"
+                        onClick={() => goToStep(1)}
+                        block
+                      >
+                        Edit Cashbook 2
+                      </Button>
+                    </Col>
+                  </Row>
                 </div>
               </div>
             </Space>

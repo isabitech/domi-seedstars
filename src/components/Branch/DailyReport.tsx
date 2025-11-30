@@ -37,6 +37,7 @@ import {
 } from '../../hooks/Branch/Reports/useGetBranchReport'
 import { useGetMe } from '../../hooks/Auth/useGetMe';
 import dayjs from 'dayjs';
+import { toast } from 'sonner';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -66,19 +67,14 @@ const DailyReport = () => {
     useEffect(() => {
         if (reportData) {
             console.log('Report Data:', reportData);
-            notification.success({
-                message: 'Report Generated',
-                description: `The ${reportType} report has been generated successfully.`,
-                duration: 3,
-            });
+            toast.success(`${reportData.message || 'Report generated successfully'}`);
         }
-    }, [reportData]);
+        else if(error) {
+            toast.error(`${reportData?.message || 'Failed to generate report'}`);
+        }
+    }, [reportData, error]);
 
-    useEffect(() => {
-        if (error) {
-            console.error('Error fetching report:', error);
-        }
-    }, [error]);
+ 
 
     const handleGenerateReport = () => {
         setShouldFetch(true);
@@ -122,7 +118,7 @@ const DailyReport = () => {
                 {/* Report Configuration */}
                 <Card title="Report Configuration" className="shadow-sm">
                     <Row gutter={[16, 16]} align="middle">
-                        <Col xs={24} sm={8} lg={6}>
+                        <Col xs={24} sm={12} lg={6}>
                             <Space direction="vertical" size="small" style={{ width: '100%' }}>
                                 <Text strong>Report Type</Text>
                                 <Select
@@ -138,7 +134,7 @@ const DailyReport = () => {
                         </Col>
 
                         {reportType === 'daily' ? (
-                            <Col xs={24} sm={8} lg={6}>
+                            <Col xs={24} sm={12} lg={6}>
                                 <Space direction="vertical" size="small" style={{ width: '100%' }}>
                                     <Text strong>Select Date</Text>
                                     <DatePicker
@@ -152,7 +148,7 @@ const DailyReport = () => {
                                 </Space>
                             </Col>
                         ) : (
-                            <Col xs={24} sm={8} lg={6}>
+                            <Col xs={24} sm={12} lg={6}>
                                 <Space direction="vertical" size="small" style={{ width: '100%' }}>
                                     <Text strong>Select Month & Year</Text>
                                     <DatePicker
@@ -168,16 +164,17 @@ const DailyReport = () => {
                             </Col>
                         )}
 
-                        <Col xs={24} sm={8} lg={6}>
+                        <Col xs={24} sm={12} lg={6}>
                             <Space direction="vertical" size="small" style={{ width: '100%' }}>
                                 <Text strong>Actions</Text>
-                                <Space style={{ width: '100%' }}>
+                                <Space style={{ width: '100%', flexWrap: 'wrap' }} size={[8, 8]}>
                                     <Button
                                         type="primary"
                                         icon={<SearchOutlined />}
                                         onClick={handleGenerateReport}
                                         loading={isLoading}
                                         size="large"
+                                        style={{ minWidth: '140px' }}
                                     >
                                         Generate Report
                                     </Button>
@@ -196,7 +193,7 @@ const DailyReport = () => {
                         <Col xs={24} sm={24} lg={6}>
                             <Space direction="vertical" size="small" style={{ width: '100%' }}>
                                 <Text strong>Quick Actions</Text>
-                                <Space style={{ width: '100%' }}>
+                                <Space style={{ width: '100%', flexWrap: 'wrap' }} size={[8, 8]}>
                                     <Button
                                         type="default"
                                         onClick={() => {
@@ -206,6 +203,7 @@ const DailyReport = () => {
                                             refetch();
                                         }}
                                         size="large"
+                                        style={{ minWidth: '120px' }}
                                     >
                                         Today's Report
                                     </Button>
@@ -219,6 +217,7 @@ const DailyReport = () => {
                                             refetch();
                                         }}
                                         size="large"
+                                        style={{ minWidth: '120px' }}
                                     >
                                         This Month
                                     </Button>
@@ -236,6 +235,9 @@ const DailyReport = () => {
                                 title="Report Type"
                                 value={reportType === 'daily' ? 'Daily' : 'Monthly'}
                                 prefix={<FileTextOutlined />}
+                                valueStyle={{
+                                    fontSize: window.innerWidth <= 768 ? '18px' : '24px'
+                                }}
                             />
                         </Card>
                     </Col>
@@ -248,6 +250,9 @@ const DailyReport = () => {
                                     : `${dayjs().month(parseInt(selectedMonth) - 1).format('MMMM')} ${selectedYear}`
                                 }
                                 prefix={<CalendarOutlined />}
+                                valueStyle={{
+                                    fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                                }}
                             />
                         </Card>
                     </Col>
@@ -257,7 +262,8 @@ const DailyReport = () => {
                                 title="Status"
                                 value={isLoading ? 'Loading...' : error ? 'Error' : reportData ? 'Ready' : 'No Data'}
                                 valueStyle={{
-                                    color: isLoading ? '#1890ff' : error ? '#ff4d4f' : reportData ? '#52c41a' : '#faad14'
+                                    color: isLoading ? '#1890ff' : error ? '#ff4d4f' : reportData ? '#52c41a' : '#faad14',
+                                    fontSize: window.innerWidth <= 768 ? '16px' : '20px'
                                 }}
                             />
                         </Card>
@@ -320,7 +326,7 @@ const DailyReport = () => {
                             className="shadow-sm"
                         >
                             {reportType === 'daily' ? (
-                                <Descriptions bordered column={2}>
+                                <Descriptions bordered column={window.innerWidth <= 768 ? 1 : 2}>
                                     <Descriptions.Item label="Report Date">
                                         {dayjs(reportData.data.reportData.reportDate).format('MMMM DD, YYYY')}
                                     </Descriptions.Item>
@@ -338,7 +344,7 @@ const DailyReport = () => {
                                     </Descriptions.Item>
                                 </Descriptions>
                             ) : (
-                                <Descriptions bordered column={2}>
+                                <Descriptions bordered column={window.innerWidth <= 768 ? 1 : 2}>
                                     <Descriptions.Item label="Report Period">
                                         {isMonthlyReportResponse(reportData) && dayjs().month(reportData.data.month - 1).year(reportData.data.year).format('MMMM YYYY')}
                                     </Descriptions.Item>
@@ -391,7 +397,7 @@ const DailyReport = () => {
                                                         prefix="₦"
                                                         valueStyle={{ 
                                                             color: operation.calculated.onlineCIH >= 0 ? '#3f8600' : '#cf1322',
-                                                            fontSize: '16px'
+                                                            fontSize: window.innerWidth <= 768 ? '18px' : '24px'
                                                         }}
                                                     />
                                                 </Col>
@@ -401,7 +407,10 @@ const DailyReport = () => {
                                                         value={operation.calculated.tso}
                                                         precision={2}
                                                         prefix="₦"
-                                                        valueStyle={{ color: '#1890ff', fontSize: '16px' }}
+                                                        valueStyle={{ 
+                                                            color: '#1890ff', 
+                                                            fontSize: window.innerWidth <= 768 ? '18px' : '24px' 
+                                                        }}
                                                     />
                                                 </Col>
                                                 <Col xs={12} sm={6}>
@@ -410,7 +419,10 @@ const DailyReport = () => {
                                                         value={operation.cashbook1.cbTotal1}
                                                         precision={2}
                                                         prefix="₦"
-                                                        valueStyle={{ color: '#722ed1', fontSize: '16px' }}
+                                                        valueStyle={{ 
+                                                            color: '#722ed1', 
+                                                            fontSize: window.innerWidth <= 768 ? '18px' : '24px' 
+                                                        }}
                                                     />
                                                 </Col>
                                                 <Col xs={12} sm={6}>
@@ -419,7 +431,10 @@ const DailyReport = () => {
                                                         value={operation.cashbook2.cbTotal2}
                                                         precision={2}
                                                         prefix="₦"
-                                                        valueStyle={{ color: '#fa8c16', fontSize: '16px' }}
+                                                        valueStyle={{ 
+                                                            color: '#fa8c16', 
+                                                            fontSize: window.innerWidth <= 768 ? '18px' : '24px' 
+                                                        }}
                                                     />
                                                 </Col>
                                             </Row>
@@ -429,58 +444,70 @@ const DailyReport = () => {
                                                 <Col xs={24} lg={12}>
                                                     <Card type="inner" title="Cashbook 1 - Collections" size="small">
                                                         <Row gutter={[8, 8]}>
-                                                            <Col span={12}>
+                                                            <Col xs={24} sm={12}>
                                                                 <Statistic
                                                                     title="Previous CIH"
                                                                     value={operation.cashbook1.pcih}
                                                                     precision={2}
                                                                     prefix="₦"
-                                                                    // size="small"
+                                                                    valueStyle={{ 
+                                                                        fontSize: window.innerWidth <= 768 ? '14px' : '16px' 
+                                                                    }}
                                                                 />
                                                             </Col>
-                                                            <Col span={12}>
+                                                            <Col xs={24} sm={12}>
                                                                 <Statistic
                                                                     title="Savings"
                                                                     value={operation.cashbook1.savings}
                                                                     precision={2}
                                                                     prefix="₦"
-                                                                    // size="small"
+                                                                    valueStyle={{ 
+                                                                        fontSize: window.innerWidth <= 768 ? '14px' : '16px' 
+                                                                    }}
                                                                 />
                                                             </Col>
-                                                            <Col span={12}>
+                                                            <Col xs={24} sm={12}>
                                                                 <Statistic
                                                                     title="Loan Collection"
                                                                     value={operation.cashbook1.loanCollection}
                                                                     precision={2}
                                                                     prefix="₦"
-                                                                    // size="small"
+                                                                    valueStyle={{ 
+                                                                        fontSize: window.innerWidth <= 768 ? '14px' : '16px' 
+                                                                    }}
                                                                 />
                                                             </Col>
-                                                            <Col span={12}>
+                                                            <Col xs={24} sm={12}>
                                                                 <Statistic
                                                                     title="Charges Collection"
                                                                     value={operation.cashbook1.chargesCollection}
                                                                     precision={2}
                                                                     prefix="₦"
-                                                                    // size="small"
+                                                                    valueStyle={{ 
+                                                                        fontSize: window.innerWidth <= 768 ? '14px' : '16px' 
+                                                                    }}
                                                                 />
                                                             </Col>
-                                                            <Col span={12}>
+                                                            <Col xs={24} sm={12}>
                                                                 <Statistic
                                                                     title="From HO"
                                                                     value={operation.cashbook1.frmHO}
                                                                     precision={2}
                                                                     prefix="₦"
-                                                                    // size="small"
+                                                                    valueStyle={{ 
+                                                                        fontSize: window.innerWidth <= 768 ? '14px' : '16px' 
+                                                                    }}
                                                                 />
                                                             </Col>
-                                                            <Col span={12}>
+                                                            <Col xs={24} sm={12}>
                                                                 <Statistic
                                                                     title="From BR"
                                                                     value={operation.cashbook1.frmBR}
                                                                     precision={2}
                                                                     prefix="₦"
-                                                                    // size="small"
+                                                                    valueStyle={{ 
+                                                                        fontSize: window.innerWidth <= 768 ? '14px' : '16px' 
+                                                                    }}
                                                                 />
                                                             </Col>
                                                         </Row>
@@ -490,47 +517,57 @@ const DailyReport = () => {
                                                 <Col xs={24} lg={12}>
                                                     <Card type="inner" title="Cashbook 2 - Disbursements" size="small">
                                                         <Row gutter={[8, 8]}>
-                                                            <Col span={12}>
+                                                            <Col xs={24} sm={12}>
                                                                 <Statistic
                                                                     title="Disbursement No."
                                                                     value={operation.cashbook2.disNo}
-                                                                    // size="small"
+                                                                    valueStyle={{ 
+                                                                        fontSize: window.innerWidth <= 768 ? '16px' : '18px' 
+                                                                    }}
                                                                 />
                                                             </Col>
-                                                            <Col span={12}>
+                                                            <Col xs={24} sm={12}>
                                                                 <Statistic
                                                                     title="Disbursement Amt"
                                                                     value={operation.cashbook2.disAmt}
                                                                     precision={2}
                                                                     prefix="₦"
-                                                                    // size="small"
+                                                                    valueStyle={{ 
+                                                                        fontSize: window.innerWidth <= 768 ? '14px' : '16px' 
+                                                                    }}
                                                                 />
                                                             </Col>
-                                                            <Col span={12}>
+                                                            <Col xs={24} sm={12}>
                                                                 <Statistic
                                                                     title="Savings Withdrawal"
                                                                     value={operation.cashbook2.savWith}
                                                                     precision={2}
                                                                     prefix="₦"
-                                                                    // size="small"
+                                                                    valueStyle={{ 
+                                                                        fontSize: window.innerWidth <= 768 ? '14px' : '16px' 
+                                                                    }}
                                                                 />
                                                             </Col>
-                                                            <Col span={12}>
+                                                            <Col xs={24} sm={12}>
                                                                 <Statistic
                                                                     title="DOMI Bank"
                                                                     value={operation.cashbook2.domiBank}
                                                                     precision={2}
                                                                     prefix="₦"
-                                                                    
+                                                                    valueStyle={{ 
+                                                                        fontSize: window.innerWidth <= 768 ? '14px' : '16px' 
+                                                                    }}
                                                                 />
                                                             </Col>
-                                                            <Col span={12}>
+                                                            <Col xs={24} sm={12}>
                                                                 <Statistic
                                                                     title="POS/Transfer"
                                                                     value={operation.cashbook2.posT}
                                                                     precision={2}
                                                                     prefix="₦"
-                                                                    
+                                                                    valueStyle={{ 
+                                                                        fontSize: window.innerWidth <= 768 ? '14px' : '16px' 
+                                                                    }}
                                                                 />
                                                             </Col>
                                                         </Row>
@@ -542,48 +579,54 @@ const DailyReport = () => {
 
                                             {/* Additional Information Row */}
                                             <Row gutter={[16, 16]}>
-                                                <Col xs={24} sm={8}>
+                                                <Col xs={24} sm={12} md={8}>
                                                     <Card type="inner" title="Prediction" size="small">
                                                         <Space direction="vertical" style={{ width: '100%' }}>
                                                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                                <Text>Prediction No:</Text>
-                                                                <Text strong>{operation.prediction.predictionNo}</Text>
+                                                                <Text style={{ fontSize: window.innerWidth <= 768 ? '12px' : '14px' }}>Prediction No:</Text>
+                                                                <Text strong style={{ fontSize: window.innerWidth <= 768 ? '16px' : '18px' }}>{operation.prediction.predictionNo}</Text>
                                                             </div>
                                                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                                <Text>Amount:</Text>
-                                                                <Text strong>₦{operation.prediction.predictionAmount.toLocaleString()}</Text>
+                                                                <Text style={{ fontSize: window.innerWidth <= 768 ? '12px' : '14px' }}>Amount:</Text>
+                                                                <Text strong style={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}>₦{operation.prediction.predictionAmount.toLocaleString()}</Text>
                                                             </div>
                                                         </Space>
                                                     </Card>
                                                 </Col>
 
-                                                <Col xs={24} sm={8}>
+                                                <Col xs={24} sm={12} md={8}>
                                                     <Card type="inner" title="Bank Statements" size="small">
                                                         <Space direction="vertical" style={{ width: '100%' }}>
                                                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                                <Text>BS1 Total:</Text>
-                                                                <Text strong>₦{operation.bankStatements.bs1Total.toLocaleString()}</Text>
+                                                                <Text style={{ fontSize: window.innerWidth <= 768 ? '12px' : '14px' }}>BS1 Total:</Text>
+                                                                <Text strong style={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}>₦{operation.bankStatements.bs1Total.toLocaleString()}</Text>
                                                             </div>
                                                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                                <Text>BS2 Total:</Text>
-                                                                <Text strong>₦{operation.bankStatements.bs2Total.toLocaleString()}</Text>
+                                                                <Text style={{ fontSize: window.innerWidth <= 768 ? '12px' : '14px' }}>BS2 Total:</Text>
+                                                                <Text strong style={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}>₦{operation.bankStatements.bs2Total.toLocaleString()}</Text>
                                                             </div>
                                                         </Space>
                                                     </Card>
                                                 </Col>
 
-                                                <Col xs={24} sm={8}>
+                                                <Col xs={24} sm={12} md={8}>
                                                     <Card type="inner" title="Current Registers" size="small">
                                                         <Space direction="vertical" style={{ width: '100%' }}>
                                                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                                <Text>Loan Balance:</Text>
-                                                                <Text strong style={{ color: '#722ed1' }}>
+                                                                <Text style={{ fontSize: window.innerWidth <= 768 ? '12px' : '14px' }}>Loan Balance:</Text>
+                                                                <Text strong style={{ 
+                                                                    color: '#722ed1', 
+                                                                    fontSize: window.innerWidth <= 768 ? '14px' : '16px' 
+                                                                }}>
                                                                     ₦{operation.registers.currentLoanBalance.toLocaleString()}
                                                                 </Text>
                                                             </div>
                                                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                                <Text>Savings:</Text>
-                                                                <Text strong style={{ color: '#52c41a' }}>
+                                                                <Text style={{ fontSize: window.innerWidth <= 768 ? '12px' : '14px' }}>Savings:</Text>
+                                                                <Text strong style={{ 
+                                                                    color: '#52c41a', 
+                                                                    fontSize: window.innerWidth <= 768 ? '14px' : '16px' 
+                                                                }}>
                                                                     ₦{operation.registers.currentSavings.toLocaleString()}
                                                                 </Text>
                                                             </div>
@@ -895,12 +938,7 @@ const DailyReport = () => {
                         <Card title="Report Actions" size="small">
                             <div style={{ textAlign: 'center' }}>
                                 <Space>
-                                    <Button 
-                                        onClick={() => console.log('Report Data:', reportData)}
-                                        icon={<SearchOutlined />}
-                                    >
-                                        View in Console
-                                    </Button>
+
                                     <Button 
                                         onClick={() => refetch()}
                                         icon={<ReloadOutlined />}
@@ -912,20 +950,12 @@ const DailyReport = () => {
                                         onClick={() => {
                                             const dataStr = JSON.stringify(reportData, null, 2);
                                             navigator.clipboard.writeText(dataStr);
-                                            notification.success({
-                                                message: 'Copied to Clipboard',
-                                                description: 'Report data has been copied to clipboard.',
-                                            });
+                                            toast.success('Report data has been copied to clipboard.');
                                         }}
                                     >
                                         Copy to Clipboard
                                     </Button>
-                                    <Button 
-                                        type="primary"
-                                        icon={<DownloadOutlined />}
-                                    >
-                                        Download PDF
-                                    </Button>
+    
                                 </Space>
                             </div>
                         </Card>
@@ -951,7 +981,6 @@ const DailyReport = () => {
                             <Text>1. Select your desired report type: <strong>Daily</strong> or <strong>Monthly</strong></Text>
                             <Text>2. Choose the specific date (for daily) or month/year (for monthly reports)</Text>
                             <Text>3. Click <strong>"Generate Report"</strong> to fetch the data</Text>
-                            <Text>4. View the detailed report data in the browser console</Text>
                             <Text type="secondary">
                                 💡 Use the "Today's Report" and "This Month" buttons for quick access to current period reports.
                             </Text>

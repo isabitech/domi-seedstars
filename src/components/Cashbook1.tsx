@@ -177,19 +177,11 @@ const handleSubmit = () => {
                 Enter daily operations data for {new Date(currentDate).toLocaleDateString()}
               </Text>
             </div>
-            {/* <Button 
-              icon={<ReloadOutlined />} 
-              onClick={handleRefresh}
-              loading={dataLoading}
-              size="large"
-            >
-              Refresh
-            </Button> */}
           </div>
         </div>
 
         <Row gutter={[16, 16]}>
-          <Col span={16}>
+          <Col xs={24} lg={16}>
             <Card 
               title={
                 <Space>
@@ -224,7 +216,7 @@ const handleSubmit = () => {
                 disabled={readonly}
               >
                 <Row gutter={16}>
-                  <Col span={12}>
+                  <Col xs={24} sm={12}>
                     <Form.Item
                       label={
                         <Space>
@@ -257,13 +249,14 @@ const handleSubmit = () => {
                         disabled={user?.role === 'BR'} // Disable for branches
                         style={{ 
                           backgroundColor: user?.role === 'BR' ? '#fff2e8' : 'white',
-                          borderColor: user?.role === 'BR' ? '#ffb366' : '#d9d9d9'
+                          borderColor: user?.role === 'BR' ? '#ffb366' : '#d9d9d9',
+                          width: '100%'
                         }}
                       />
                     </Form.Item>
                   </Col>
                   
-                  <Col span={12}>
+                  <Col xs={24} sm={12}>
                     <Form.Item
                       label={
                         <Space>
@@ -285,13 +278,14 @@ const handleSubmit = () => {
                         prefix="₦"
                         size="large"
                         step="0.01"
+                        style={{ width: '100%' }}
                       />
                     </Form.Item>
                   </Col>
                 </Row>
 
                 <Row gutter={16}>
-                  <Col span={12}>
+                  <Col xs={24} sm={12}>
                     <Form.Item
                       label={
                         <Space>
@@ -313,11 +307,12 @@ const handleSubmit = () => {
                         prefix="₦"
                         size="large"
                         step="0.01"
+                        style={{ width: '100%' }}
                       />
                     </Form.Item>
                   </Col>
                   
-                  <Col span={12}>
+                  <Col xs={24} sm={12}>
                     <Form.Item
                       label={
                         <Space>
@@ -339,12 +334,13 @@ const handleSubmit = () => {
                         prefix="₦"
                         size="large"
                         step="0.01"
+                        style={{ width: '100%' }}
                       />
                     </Form.Item>
                   </Col>
                 </Row>
 
-                <Divider orientation="left">
+                <Divider orientation="left" orientationMargin={0} style={{ textAlign: 'center' }}>
                   <Space>
                     Head Office Only Fields
                     {user?.role !== 'HO' && (
@@ -354,7 +350,7 @@ const handleSubmit = () => {
                 </Divider>
                 
                 <Row gutter={16}>
-                  <Col span={12}>
+                  <Col xs={24} sm={12}>
                     <Form.Item
                       label={
                         <Space>
@@ -380,14 +376,15 @@ const handleSubmit = () => {
                         disabled={user?.role !== 'HO'}
                         style={{ 
                           backgroundColor: user?.role !== 'HO' ? '#fff2e8' : 'white',
-                          borderColor: user?.role !== 'HO' ? '#ffb366' : '#d9d9d9'
+                          borderColor: user?.role !== 'HO' ? '#ffb366' : '#d9d9d9',
+                          width: '100%'
                         }}
                         value={'0'}
                       />
                     </Form.Item>
                   </Col>
                   
-                  <Col span={12}>
+                  <Col xs={24} sm={12}>
                     <Form.Item
                       label={
                         <Space>
@@ -413,7 +410,8 @@ const handleSubmit = () => {
                         disabled={user?.role !== 'HO'}
                         style={{ 
                           backgroundColor: user?.role !== 'HO' ? '#fff2e8' : 'white',
-                          borderColor: user?.role !== 'HO' ? '#ffb366' : '#d9d9d9'
+                          borderColor: user?.role !== 'HO' ? '#ffb366' : '#d9d9d9',
+                          width: '100%'
                         }}
                         value={'0'}
                       />
@@ -432,7 +430,7 @@ const handleSubmit = () => {
                       </div>
                     }
                     type="info"
-                    showIcon
+                    // showIcon
                     style={{ marginBottom: 16 }}
                   />
                 )}
@@ -457,7 +455,7 @@ const handleSubmit = () => {
             </Card>
           </Col>
 
-          <Col span={8}>
+          <Col xs={24} lg={8}>
             <Card 
               title={<span><CalculatorOutlined /> Live Calculations</span>}
               className="stats-card"
