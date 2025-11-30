@@ -68,3 +68,105 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* Mobile-specific styles for better responsiveness */
+@media (max-width: 768px) {
+  /* Ensure mobile layout doesn't overflow */
+  .ant-layout {
+    overflow-x: hidden;
+  }
+  
+  /* Mobile drawer styles */
+  .ant-drawer-content-wrapper {
+    max-width: 280px;
+  }
+  
+  /* Mobile header adjustments */
+  .ant-layout-header {
+    height: 56px;
+    line-height: 56px;
+  }
+  
+  /* Content area mobile optimization */
+  .ant-layout-content {
+    min-height: calc(100vh - 56px);
+  }
+  
+  /* Menu item mobile styling */
+  .ant-menu-item {
+    height: 48px;
+    line-height: 48px;
+    margin: 0;
+    padding: 0 24px !important;
+  }
+  
+  /* Typography adjustments for mobile */
+  .ant-typography h3 {
+    font-size: 18px;
+  }
+  
+  .ant-typography h4 {
+    font-size: 16px;
+  }
+  
+  /* Button adjustments for mobile */
+  .ant-btn {
+    touch-action: manipulation;
+  }
+
+  /* Form field mobile optimizations */
+  .ant-form-item {
+    margin-bottom: 16px;
+  }
+  
+  .ant-form-item-label {
+    padding: 0 0 4px;
+  }
+  
+  .ant-input-affix-wrapper,
+  .ant-input {
+    padding: 8px 12px;
+    width: 100% !important;
+  }
+  
+  .ant-input-lg {
+    padding: 10px 15px;
+    font-size: 16px;
+  }
+  
+  /* Card padding reduction for mobile */
+  .ant-card-body {
+    padding: 16px;
+  }
+  
+  /* Space component mobile adjustments */
+  .ant-space-item {
+    margin-bottom: 8px;
+  }
+  
+  /* Divider mobile adjustments */
+  .ant-divider {
+    text-align: center !important;
+  }
+  
+  .ant-divider-inner-text {
+    padding: 0 16px;
+  }
+}
+
+/* Tablet-specific adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .ant-layout-sider-collapsed .ant-menu-item-icon {
+    font-size: 16px;
+    vertical-align: middle;
+  }
+}
+
+/* Ensure smooth transitions */
+.ant-layout-sider {
+  transition: all 0.2s ease-in-out;
+}
+
+.ant-drawer {
+  z-index: 1001;
+}

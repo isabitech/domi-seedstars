@@ -164,7 +164,7 @@ const DailyOperations = () => {
         {/* Selected Date Display */}
         <Card size="small">
           <Row gutter={[16, 16]} align="middle">
-            <Col span={16}>
+            <Col xs={24} sm={16}>
               <Space>
                 <CalendarOutlined style={{ color: '#1890ff' }} />
                 <Text strong style={{ fontSize: '16px' }}>
@@ -181,12 +181,12 @@ const DailyOperations = () => {
                 )}
               </Space>
             </Col>
-            <Col span={8} style={{ textAlign: 'right' }}>
+            <Col xs={24} sm={8} style={{ textAlign: window.innerWidth <= 576 ? 'left' : 'right' }}>
               <Statistic
                 title="Days Ago"
                 value={dayjs().diff(dayjs(selectedDate), 'days')}
                 suffix="days"
-                valueStyle={{ fontSize: '14px' }}
+                valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
               />
             </Col>
           </Row>
@@ -242,7 +242,7 @@ const DailyOperations = () => {
               }
             >
               <Row gutter={[16, 16]}>
-                <Col xs={24} sm={12} md={6}>
+                <Col xs={12} sm={6}>
                   <Statistic
                     title="Online CIH"
                     value={operationsData.data.operations.onlineCIH}
@@ -250,26 +250,26 @@ const DailyOperations = () => {
                     prefix="₦"
                     valueStyle={{ 
                       color: operationsData.data.operations.onlineCIH >= 0 ? '#3f8600' : '#cf1322',
-                      fontSize: '18px'
+                      fontSize: window.innerWidth <= 768 ? '14px' : '18px'
                     }}
                   />
                 </Col>
-                <Col xs={24} sm={12} md={6}>
+                <Col xs={12} sm={6}>
                   <Statistic
                     title="TSO"
                     value={operationsData.data.operations.tso}
                     precision={2}
                     prefix="₦"
-                    valueStyle={{ color: '#1890ff', fontSize: '18px' }}
+                    valueStyle={{ color: '#1890ff', fontSize: window.innerWidth <= 768 ? '14px' : '18px' }}
                   />
                 </Col>
-                <Col xs={24} sm={12} md={6}>
+                <Col xs={12} sm={6}>
                   <Statistic
                     title="Branch"
                     value={operationsData.data.operations.branch.name}
                     formatter={(value) => (
                       <div>
-                        <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{value}</div>
+                        <div style={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px', fontWeight: 'bold' }}>{value}</div>
                         <div style={{ fontSize: '12px', color: '#666' }}>
                           {operationsData.data.operations.branch.code}
                         </div>
@@ -277,13 +277,13 @@ const DailyOperations = () => {
                     )}
                   />
                 </Col>
-                <Col xs={24} sm={12} md={6}>
+                <Col xs={12} sm={6}>
                   <Statistic
                     title="Operator"
                     value={operationsData.data.operations.user.name}
                     formatter={(value) => (
                       <div>
-                        <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{value}</div>
+                        <div style={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px', fontWeight: 'bold' }}>{value}</div>
                         <div style={{ fontSize: '12px', color: '#666' }}>
                           {operationsData.data.operations.user.email}
                         </div>
@@ -311,58 +311,58 @@ const DailyOperations = () => {
                   size="small"
                 >
                   <Row gutter={[8, 8]}>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="Previous CIH"
                         value={operationsData.data.operations.cashbook1.pcih}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="Savings"
                         value={operationsData.data.operations.cashbook1.savings}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="Loan Collection"
                         value={operationsData.data.operations.cashbook1.loanCollection}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="Charges Collection"
                         value={operationsData.data.operations.cashbook1.chargesCollection}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="From HO"
                         value={operationsData.data.operations.cashbook1.frmHO}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="From BR"
                         value={operationsData.data.operations.cashbook1.frmBR}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
                   </Row>
@@ -372,7 +372,7 @@ const DailyOperations = () => {
                     value={operationsData.data.operations.cashbook1.cbTotal1}
                     precision={2}
                     prefix="₦"
-                    valueStyle={{ color: '#1890ff', fontSize: '18px', fontWeight: 'bold' }}
+                    valueStyle={{ color: '#1890ff', fontSize: window.innerWidth <= 768 ? '16px' : '18px', fontWeight: 'bold' }}
                   />
                 </Card>
               </Col>
@@ -392,47 +392,47 @@ const DailyOperations = () => {
                   size="small"
                 >
                   <Row gutter={[8, 8]}>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="Disbursement No."
                         value={operationsData.data.operations.cashbook2.disNo}
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="Disbursement Amt"
                         value={operationsData.data.operations.cashbook2.disAmt}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="Savings Withdrawal"
                         value={operationsData.data.operations.cashbook2.savWith}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="DOMI Bank"
                         value={operationsData.data.operations.cashbook2.domiBank}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="POS/Transfer"
                         value={operationsData.data.operations.cashbook2.posT}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
                   </Row>
@@ -442,7 +442,7 @@ const DailyOperations = () => {
                     value={operationsData.data.operations.cashbook2.cbTotal2}
                     precision={2}
                     prefix="₦"
-                    valueStyle={{ color: '#722ed1', fontSize: '18px', fontWeight: 'bold' }}
+                    valueStyle={{ color: '#722ed1', fontSize: window.innerWidth <= 768 ? '16px' : '18px', fontWeight: 'bold' }}
                   />
                 </Card>
               </Col>
@@ -450,7 +450,7 @@ const DailyOperations = () => {
 
             {/* Additional Information Row */}
             <Row gutter={[16, 16]}>
-              <Col xs={24} md={8}>
+              <Col xs={24} sm={12} md={8}>
                 <Card type="inner" title={
                   <Space>
                     <RiseOutlined />
@@ -461,19 +461,20 @@ const DailyOperations = () => {
                     <Statistic
                       title="Prediction No."
                       value={operationsData.data.operations.prediction.predictionNo}
+                      valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                     />
                     <Statistic
                       title="Amount"
                       value={operationsData.data.operations.prediction.predictionAmount}
                       precision={2}
                       prefix="₦"
-                      valueStyle={{ color: '#fa8c16' }}
+                      valueStyle={{ color: '#fa8c16', fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                     />
                   </Space>
                 </Card>
               </Col>
 
-              <Col xs={24} md={8}>
+              <Col xs={24} sm={12} md={8}>
                 <Card type="inner" title={
                   <Space>
                     <BankOutlined />
@@ -481,48 +482,47 @@ const DailyOperations = () => {
                   </Space>
                 } size="small">
                   <Row gutter={[8, 8]}>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="Opening"
                         value={operationsData.data.operations.bankStatement1.opening}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="Received HO"
                         value={operationsData.data.operations.bankStatement1.recHO}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="DOMI"
                         value={operationsData.data.operations.bankStatement1.domi}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="BS1 Total"
                         value={operationsData.data.operations.bankStatement1.bs1Total}
                         precision={2}
                         prefix="₦"
-                        valueStyle={{ color: '#52c41a', fontWeight: 'bold' }}
-                        // size="small"
+                        valueStyle={{ color: '#52c41a', fontWeight: 'bold', fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
                   </Row>
                 </Card>
               </Col>
 
-              <Col xs={24} md={8}>
+              <Col xs={24} sm={12} md={8}>
                 <Card type="inner" title={
                   <Space>
                     <BankOutlined />
@@ -530,41 +530,40 @@ const DailyOperations = () => {
                   </Space>
                 } size="small">
                   <Row gutter={[8, 8]}>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="Withdrawal"
                         value={operationsData.data.operations.bankStatement2.withd}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="To BO"
                         value={operationsData.data.operations.bankStatement2.tbo}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="Expenses"
                         value={operationsData.data.operations.bankStatement2.exAmt}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="BS2 Total"
                         value={operationsData.data.operations.bankStatement2.bs2Total}
                         precision={2}
                         prefix="₦"
-                        valueStyle={{ color: '#f5222d', fontWeight: 'bold' }}
-                        // size="small"
+                        valueStyle={{ color: '#f5222d', fontWeight: 'bold', fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
                   </Row>
@@ -582,41 +581,40 @@ const DailyOperations = () => {
                   </Space>
                 } size="small">
                   <Row gutter={[8, 8]}>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="Previous Total"
                         value={operationsData.data.operations.loanRegister.previousLoanTotal}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '10px' : '12px' }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="Disbursement + Interest"
                         value={operationsData.data.operations.loanRegister.loanDisbursementWithInterest}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="Collection"
                         value={operationsData.data.operations.loanRegister.loanCollection}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="Current Balance"
                         value={operationsData.data.operations.loanRegister.currentLoanBalance}
                         precision={2}
                         prefix="₦"
-                        valueStyle={{ color: '#722ed1', fontWeight: 'bold' }}
-                        // size="small"
+                        valueStyle={{ color: '#722ed1', fontWeight: 'bold', fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
                   </Row>
@@ -631,41 +629,40 @@ const DailyOperations = () => {
                   </Space>
                 } size="small">
                   <Row gutter={[8, 8]}>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="Previous Total"
                         value={operationsData.data.operations.savingsRegister.previousSavingsTotal}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="Savings"
                         value={operationsData.data.operations.savingsRegister.savings}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="Withdrawal"
                         value={operationsData.data.operations.savingsRegister.savingsWithdrawal}
                         precision={2}
                         prefix="₦"
-                        // size="small"
+                        valueStyle={{ fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
-                    <Col span={12}>
+                    <Col xs={12} sm={12}>
                       <Statistic
                         title="Current Balance"
                         value={operationsData.data.operations.savingsRegister.currentSavings}
                         precision={2}
                         prefix="₦"
-                        valueStyle={{ color: '#52c41a', fontWeight: 'bold' }}
-                        // size="small"
+                        valueStyle={{ color: '#52c41a', fontWeight: 'bold', fontSize: window.innerWidth <= 768 ? '18px' : '24px' }}
                       />
                     </Col>
                   </Row>
@@ -675,7 +672,7 @@ const DailyOperations = () => {
 
             {/* Operation Status */}
             <Card>
-              <Descriptions title="Operation Details" bordered column={2} size="small">
+              <Descriptions title="Operation Details" bordered column={window.innerWidth <= 768 ? 1 : 2} size="small">
                 <Descriptions.Item label="Operation ID">
                   <Text code>{operationsData.data.operations._id}</Text>
                 </Descriptions.Item>
@@ -710,13 +707,7 @@ const DailyOperations = () => {
             <Card>
               <div style={{ textAlign: 'center' }}>
                 <Space>
-                  <Button 
-                    onClick={() => console.log('Operations Data:', operationsData)}
-                    type="dashed"
-                  >
-                    Log to Console
-                  </Button>
-                  <Button 
+                  {/* <Button 
                     onClick={() => {
                       const dataStr = JSON.stringify(operationsData, null, 2);
                       navigator.clipboard.writeText(dataStr);
@@ -724,7 +715,7 @@ const DailyOperations = () => {
                     type="default"
                   >
                     Copy to Clipboard
-                  </Button>
+                  </Button> */}
                   <Button 
                     type="primary"
                     icon={<ReloadOutlined />}

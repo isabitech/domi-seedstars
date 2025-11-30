@@ -149,16 +149,27 @@ export const BankStatement1Component: React.FC<BankStatement1Props> = ({
       title: "Description",
       dataIndex: "description",
       key: "description",
-      width: 200,
+      width: window.innerWidth <= 768 ? 150 : 200,
+      render: (text: string) => (
+        <Text style={{ fontSize: window.innerWidth <= 768 ? '12px' : '14px' }}>
+          {window.innerWidth <= 768 ? text.replace('Received from', 'Rec from').replace('Balance', 'Bal') : text}
+        </Text>
+      )
     },
     {
       title: "Amount (₦)",
       dataIndex: "amount",
       key: "amount",
       align: "right" as const,
+      width: window.innerWidth <= 768 ? 100 : 120,
       render: (amount: number) => (
-        <Text strong style={{ color: amount >= 0 ? "#52c41a" : "#ff4d4f" }}>
-          {amount.toLocaleString()}
+        <Text strong style={{ 
+          color: amount >= 0 ? "#52c41a" : "#ff4d4f",
+          fontSize: window.innerWidth <= 768 ? '12px' : '14px'
+        }}>
+          {window.innerWidth <= 768 ? 
+            (amount / 1000).toFixed(0) + 'K' : 
+            amount.toLocaleString()}
         </Text>
       ),
     },
@@ -166,8 +177,11 @@ export const BankStatement1Component: React.FC<BankStatement1Props> = ({
       title: "Source",
       dataIndex: "source",
       key: "source",
+      width: window.innerWidth <= 768 ? 80 : 100,
       render: (source: string) => (
-        <Tag color={source === "Manual" ? "blue" : "green"}>{source}</Tag>
+        <Tag color={source === "Manual" ? "blue" : "green"} style={{ fontSize: window.innerWidth <= 768 ? '10px' : '12px' }}>
+          {window.innerWidth <= 768 ? (source === 'Manual' ? 'Man' : 'CB') : source}
+        </Tag>
       ),
     },
   ];
@@ -212,13 +226,13 @@ export const BankStatement1Component: React.FC<BankStatement1Props> = ({
       title={
         <Space>
           <BankOutlined />
-          <span>Bank Statement 1 (BS1)</span>
+          <span style={{ fontSize: window.innerWidth <= 768 ? '16px' : '18px' }}>Bank Statement 1 (BS1)</span>
         </Space>
       }
-      loading={isLoading}
+      loading={isLoading || getBankStatement1.isLoading}
       extra={
         <Button icon={<ReloadOutlined />} onClick={() => getBankStatement1.refetch()} size="small">
-          Refresh
+          {window.innerWidth <= 768 ? '' : 'Refresh'}
         </Button>
       }
     >
@@ -241,7 +255,7 @@ export const BankStatement1Component: React.FC<BankStatement1Props> = ({
           onValuesChange={handleValuesChange}
         >
           <Row gutter={16}>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 label="Date"
                 name="date"
@@ -257,7 +271,7 @@ export const BankStatement1Component: React.FC<BankStatement1Props> = ({
                 />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 label="Opening Balance (₦)"
                 name="opening"
@@ -278,12 +292,13 @@ export const BankStatement1Component: React.FC<BankStatement1Props> = ({
             </Col>
           </Row>
 
-          <Space>
+          <Space wrap style={{ width: '100%', justifyContent: window.innerWidth <= 768 ? 'center' : 'flex-start' }}>
             <Button
               type="primary"
               htmlType="submit"
               icon={<SaveOutlined />}
               loading={isLoading}
+              size={window.innerWidth <= 768 ? 'large' : 'middle'}
             >
               {statement ? 'Update Statement' : 'Save Statement'}
             </Button>
@@ -291,8 +306,9 @@ export const BankStatement1Component: React.FC<BankStatement1Props> = ({
               icon={<CalculatorOutlined />}
               onClick={handleRecalculate}
               loading={calculating}
+              size={window.innerWidth <= 768 ? 'large' : 'middle'}
             >
-              Recalculate
+              {window.innerWidth <= 768 ? 'Recalc' : 'Recalculate'}
             </Button>
           </Space>
         </Form>
@@ -308,53 +324,57 @@ export const BankStatement1Component: React.FC<BankStatement1Props> = ({
               </Text>
             </div>
 
-            <Table
-              columns={statementColumns}
-              dataSource={statementData}
-              pagination={false}
-              size="small"
-              summary={() => (
-                <Table.Summary>
-                  <Table.Summary.Row style={{ backgroundColor: "#fafafa" }}>
-                    <Table.Summary.Cell index={0}>
-                      <Text strong>Total Bank Statement 1</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={1} align="right">
-                      <Statistic
-                        value={statement.bs1Total}
-                        precision={0}
-                        valueStyle={{
-                          color:
-                            statement.bs1Total >= 0 ? "#3f8600" : "#cf1322",
-                          fontSize: "16px",
-                          fontWeight: "bold",
-                        }}
-                        prefix="₦"
-                      />
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2}>
-                      <Tag icon={<DollarCircleOutlined />} color="gold">
-                        Calculated
-                      </Tag>
-                    </Table.Summary.Cell>
-                  </Table.Summary.Row>
-                </Table.Summary>
-              )}
-            />
+            <div style={{ overflowX: 'auto' }}>
+              <Table
+                columns={statementColumns}
+                dataSource={statementData}
+                pagination={false}
+                size="small"
+                scroll={{ x: window.innerWidth <= 768 ? 400 : undefined }}
+                summary={() => (
+                  <Table.Summary>
+                    <Table.Summary.Row style={{ backgroundColor: "#fafafa" }}>
+                      <Table.Summary.Cell index={0}>
+                        <Text strong style={{ fontSize: window.innerWidth <= 768 ? '12px' : '14px' }}>Total Bank Statement 1</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={1} align="right">
+                        <Statistic
+                          value={statement.bs1Total}
+                          precision={0}
+                          valueStyle={{
+                            color:
+                              statement.bs1Total >= 0 ? "#3f8600" : "#cf1322",
+                            fontSize: window.innerWidth <= 768 ? '14px' : '16px',
+                            fontWeight: "bold",
+                          }}
+                          prefix="₦"
+                        />
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={2}>
+                        <Tag icon={<DollarCircleOutlined />} color="gold">
+                          {window.innerWidth <= 768 ? 'Calc' : 'Calculated'}
+                        </Tag>
+                      </Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </Table.Summary>
+                )}
+              />
+            </div>
 
             <Card
               size="small"
               style={{
                 backgroundColor: "#f6ffed",
                 border: "1px solid #b7eb8f",
+                padding: window.innerWidth <= 768 ? '8px' : '16px'
               }}
             >
               <Space direction="vertical" size="small">
-                <Text strong>Calculation Formula:</Text>
-                <Text code>
+                <Text strong style={{ fontSize: window.innerWidth <= 768 ? '13px' : '14px' }}>Calculation Formula:</Text>
+                <Text code style={{ fontSize: window.innerWidth <= 768 ? '11px' : '12px' }}>
                   BS1 Total = Opening + REC HO + REC BO + DOMI + P.A
                 </Text>
-                <Text type="secondary" style={{ fontSize: "12px" }}>
+                <Text type="secondary" style={{ fontSize: window.innerWidth <= 768 ? '10px' : '12px' }}>
                   • REC HO & REC BO are automatically pulled from Cashbook 1
                   (FRM HO & FRM BR fields)
                   <br />

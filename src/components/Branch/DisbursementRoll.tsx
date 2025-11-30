@@ -141,7 +141,9 @@ const DisbursementRoll = () => {
           style={{
             color: record.type === 'total' ? '#1890ff' : 
                    record.type === 'daily' ? '#52c41a' : '#722ed1',
-            fontSize: record.type === 'total' ? '16px' : '14px'
+            fontSize: window.innerWidth <= 768 ? 
+              (record.type === 'total' ? '14px' : '12px') : 
+              (record.type === 'total' ? '16px' : '14px')
           }}
         >
           {formatCurrency(amount)}
@@ -276,7 +278,10 @@ const DisbursementRoll = () => {
               value={responseData.previousDisbursement}
               formatter={(value) => formatCurrency(Number(value))}
               prefix={<DollarCircleOutlined />}
-              valueStyle={{ color: '#722ed1' }}
+              valueStyle={{ 
+                color: '#722ed1',
+                fontSize: window.innerWidth <= 768 ? '16px' : '24px'
+              }}
             />
           </Card>
         </Col>
@@ -287,7 +292,10 @@ const DisbursementRoll = () => {
               value={responseData.dailyDisbursement}
               formatter={(value) => formatCurrency(Number(value))}
               prefix={<CalendarOutlined />}
-              valueStyle={{ color: '#52c41a' }}
+              valueStyle={{ 
+                color: '#52c41a',
+                fontSize: window.innerWidth <= 768 ? '16px' : '24px'
+              }}
             />
           </Card>
         </Col>
@@ -298,7 +306,10 @@ const DisbursementRoll = () => {
               value={responseData.disbursementRoll}
               formatter={(value) => formatCurrency(Number(value))}
               prefix={<BarChartOutlined />}
-              valueStyle={{ color: '#1890ff' }}
+              valueStyle={{ 
+                color: '#1890ff',
+                fontSize: window.innerWidth <= 768 ? '16px' : '24px'
+              }}
             />
           </Card>
         </Col>
@@ -311,7 +322,8 @@ const DisbursementRoll = () => {
               suffix="%"
               prefix={growthRate >= 0 ? <BarChartOutlined/> : <BarChartOutlined style={{ transform: 'scaleY(-1)' }} />}
               valueStyle={{ 
-                color: growthRate >= 0 ? '#52c41a' : '#ff4d4f' 
+                color: growthRate >= 0 ? '#52c41a' : '#ff4d4f',
+                fontSize: window.innerWidth <= 768 ? '16px' : '24px'
               }}
             />
           </Card>
@@ -371,37 +383,47 @@ const DisbursementRoll = () => {
           </Tag>
         }
       >
-        <Table
-          columns={columns}
-          dataSource={tableData}
-          pagination={false}
-          size="middle"
-          summary={() => (
-            <Table.Summary>
-              <Table.Summary.Row style={{ backgroundColor: '#fafafa' }}>
-                <Table.Summary.Cell index={0}>
-                  <Text strong>Net Monthly Change</Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={1} align="right">
-                  <Text
-                    strong
-                    style={{
-                      color: growthRate >= 0 ? '#52c41a' : '#ff4d4f',
-                      fontSize: '16px'
-                    }}
-                  >
-                    {growthRate >= 0 ? '+' : ''}{formatCurrency(responseData.disbursementRoll - responseData.previousDisbursement)}
-                  </Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={2}>
-                  <Tag color={growthRate >= 0 ? 'green' : 'red'}>
-                    {growthRate >= 0 ? 'INCREASE' : 'DECREASE'}
-                  </Tag>
-                </Table.Summary.Cell>
-              </Table.Summary.Row>
-            </Table.Summary>
-          )}
-        />
+        <div style={{
+          overflow: 'auto',
+          ...(window.innerWidth <= 768 && {
+            maxWidth: '100%',
+            border: '1px solid #f0f0f0',
+            borderRadius: '6px'
+          })
+        }}>
+          <Table
+            columns={columns}
+            dataSource={tableData}
+            pagination={false}
+            size="middle"
+            scroll={window.innerWidth <= 768 ? { x: 600 } : undefined}
+            summary={() => (
+              <Table.Summary>
+                <Table.Summary.Row style={{ backgroundColor: '#fafafa' }}>
+                  <Table.Summary.Cell index={0}>
+                    <Text strong>Net Monthly Change</Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={1} align="right">
+                    <Text
+                      strong
+                      style={{
+                        color: growthRate >= 0 ? '#52c41a' : '#ff4d4f',
+                        fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                      }}
+                    >
+                      {growthRate >= 0 ? '+' : ''}{formatCurrency(responseData.disbursementRoll - responseData.previousDisbursement)}
+                    </Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={2}>
+                    <Tag color={growthRate >= 0 ? 'green' : 'red'}>
+                      {growthRate >= 0 ? 'INCREASE' : 'DECREASE'}
+                    </Tag>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+              </Table.Summary>
+            )}
+          />
+        </div>
         
         <Divider />
         
@@ -410,7 +432,10 @@ const DisbursementRoll = () => {
           <Row gutter={16}>
             <Col span={8}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '24px', color: '#1890ff' }}>
+                <div style={{ 
+                  fontSize: window.innerWidth <= 768 ? '18px' : '24px', 
+                  color: '#1890ff' 
+                }}>
                   ₦{(responseData.disbursementRoll / 1000000).toFixed(2)}M
                 </div>
                 <Text type="secondary">Total Volume (Millions)</Text>
@@ -418,7 +443,10 @@ const DisbursementRoll = () => {
             </Col>
             <Col span={8}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '24px', color: '#52c41a' }}>
+                <div style={{ 
+                  fontSize: window.innerWidth <= 768 ? '18px' : '24px', 
+                  color: '#52c41a' 
+                }}>
                   ₦{(responseData.dailyDisbursement / 1000).toFixed(0)}K
                 </div>
                 <Text type="secondary">Daily Average (Thousands)</Text>
@@ -427,7 +455,7 @@ const DisbursementRoll = () => {
             <Col span={8}>
               <div style={{ textAlign: 'center' }}>
                 <div style={{ 
-                  fontSize: '24px', 
+                  fontSize: window.innerWidth <= 768 ? '18px' : '24px', 
                   color: growthRate >= 0 ? '#52c41a' : '#ff4d4f' 
                 }}>
                   {growthRate >= 0 ? '+' : ''}{growthRate.toFixed(1)}%

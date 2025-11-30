@@ -152,16 +152,29 @@ export const BankStatement2Component: React.FC<BankStatement2Props> = ({
       title: 'Description',
       dataIndex: 'description',
       key: 'description',
-      width: 200,
+      width: window.innerWidth <= 768 ? 150 : 200,
+      render: (text: string) => (
+        <Text style={{ fontSize: window.innerWidth <= 768 ? '12px' : '14px' }}>
+          {window.innerWidth <= 768 ? 
+            text.replace('Transfer to Branch Office', 'Transfer to BO').replace('Expense Amount', 'Expense Amt') : 
+            text}
+        </Text>
+      )
     },
     {
       title: 'Amount (₦)',
       dataIndex: 'amount',
       key: 'amount',
       align: 'right' as const,
+      width: window.innerWidth <= 768 ? 100 : 120,
       render: (amount: number) => (
-        <Text strong style={{ color: amount >= 0 ? '#52c41a' : '#ff4d4f' }}>
-          {amount.toLocaleString()}
+        <Text strong style={{ 
+          color: amount >= 0 ? '#52c41a' : '#ff4d4f',
+          fontSize: window.innerWidth <= 768 ? '12px' : '14px'
+        }}>
+          {window.innerWidth <= 768 ? 
+            (amount / 1000).toFixed(0) + 'K' : 
+            amount.toLocaleString()}
         </Text>
       ),
     },
@@ -169,9 +182,10 @@ export const BankStatement2Component: React.FC<BankStatement2Props> = ({
       title: 'Source/Input',
       dataIndex: 'source',
       key: 'source',
+      width: window.innerWidth <= 768 ? 80 : 100,
       render: (source: string) => (
-        <Tag color={source === 'Manual' ? 'blue' : 'green'}>
-          {source}
+        <Tag color={source === 'Manual' ? 'blue' : 'green'} style={{ fontSize: window.innerWidth <= 768 ? '10px' : '12px' }}>
+          {window.innerWidth <= 768 ? (source === 'Manual' ? 'Man' : 'CB') : source}
         </Tag>
       ),
     },
@@ -203,17 +217,17 @@ export const BankStatement2Component: React.FC<BankStatement2Props> = ({
       title={
         <Space>
           <SwapOutlined />
-          <span>Bank Statement 2 (BS2)</span>
+          <span style={{ fontSize: window.innerWidth <= 768 ? '16px' : '18px' }}>Bank Statement 2 (BS2)</span>
         </Space>
       }
-      loading={isLoading}
+      loading={isLoading || getBankStatement2.isLoading}
       extra={
         <Button 
           icon={<ReloadOutlined />} 
           onClick={() => getBankStatement2.refetch()}
           size="small"
         >
-          Refresh
+          {window.innerWidth <= 768 ? '' : 'Refresh'}
         </Button>
       }
     >
@@ -236,7 +250,7 @@ export const BankStatement2Component: React.FC<BankStatement2Props> = ({
           onValuesChange={handleValuesChange}
         >
           <Row gutter={16}>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 label="Date"
                 name="date"
@@ -250,7 +264,7 @@ export const BankStatement2Component: React.FC<BankStatement2Props> = ({
                 />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 label="Transfer to Branch Office - T.B.O (₦)"
                 name="tbo"
@@ -268,7 +282,7 @@ export const BankStatement2Component: React.FC<BankStatement2Props> = ({
           </Row>
 
           <Row gutter={16}>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 label="Expense Amount - EX AMT (₦)"
                 name="exAmt"
@@ -298,12 +312,13 @@ export const BankStatement2Component: React.FC<BankStatement2Props> = ({
             />
           </Form.Item>
 
-          <Space>
+          <Space wrap style={{ width: '100%', justifyContent: window.innerWidth <= 768 ? 'center' : 'flex-start' }}>
             <Button
               type="primary"
               htmlType="submit"
               icon={<SaveOutlined />}
               loading={isLoading}
+              size={window.innerWidth <= 768 ? 'large' : 'middle'}
             >
               {statement ? 'Update Statement' : 'Save Statement'}
             </Button>
@@ -311,8 +326,9 @@ export const BankStatement2Component: React.FC<BankStatement2Props> = ({
               icon={<CalculatorOutlined />}
               onClick={handleRecalculate}
               loading={calculating}
+              size={window.innerWidth <= 768 ? 'large' : 'middle'}
             >
-              Recalculate
+              {window.innerWidth <= 768 ? 'Recalc' : 'Recalculate'}
             </Button>
           </Space>
         </Form>
@@ -328,46 +344,53 @@ export const BankStatement2Component: React.FC<BankStatement2Props> = ({
               </Text>
             </div>
 
-            <Table
-              columns={statementColumns}
-              dataSource={statementData}
-              pagination={false}
-              size="small"
-              summary={() => (
-                <Table.Summary>
-                  <Table.Summary.Row style={{ backgroundColor: '#fafafa' }}>
-                    <Table.Summary.Cell index={0}>
-                      <Text strong>Total Bank Statement 2</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={1} align="right">
-                      <Statistic
-                        value={statement.bs2Total}
-                        precision={0}
-                        valueStyle={{ 
-                          color: statement.bs2Total >= 0 ? '#3f8600' : '#cf1322',
-                          fontSize: '16px',
-                          fontWeight: 'bold'
-                        }}
-                        prefix="₦"
-                      />
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={2}>
-                      <Tag icon={<DollarCircleOutlined />} color="gold">
-                        Calculated
-                      </Tag>
-                    </Table.Summary.Cell>
-                  </Table.Summary.Row>
-                </Table.Summary>
-              )}
-            />
+            <div style={{ overflowX: 'auto' }}>
+              <Table
+                columns={statementColumns}
+                dataSource={statementData}
+                pagination={false}
+                size="small"
+                scroll={{ x: window.innerWidth <= 768 ? 400 : undefined }}
+                summary={() => (
+                  <Table.Summary>
+                    <Table.Summary.Row style={{ backgroundColor: '#fafafa' }}>
+                      <Table.Summary.Cell index={0}>
+                        <Text strong style={{ fontSize: window.innerWidth <= 768 ? '12px' : '14px' }}>Total Bank Statement 2</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={1} align="right">
+                        <Statistic
+                          value={statement.bs2Total}
+                          precision={0}
+                          valueStyle={{ 
+                            color: statement.bs2Total >= 0 ? '#3f8600' : '#cf1322',
+                            fontSize: window.innerWidth <= 768 ? '14px' : '16px',
+                            fontWeight: 'bold'
+                          }}
+                          prefix="₦"
+                        />
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={2}>
+                        <Tag icon={<DollarCircleOutlined />} color="gold">
+                          {window.innerWidth <= 768 ? 'Calc' : 'Calculated'}
+                        </Tag>
+                      </Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </Table.Summary>
+                )}
+              />
+            </div>
 
-            <Card size="small" style={{ backgroundColor: '#fff7e6', border: '1px solid #ffd591' }}>
+            <Card size="small" style={{ 
+              backgroundColor: '#fff7e6', 
+              border: '1px solid #ffd591',
+              padding: window.innerWidth <= 768 ? '8px' : '16px'
+            }}>
               <Space direction="vertical" size="small">
-                <Text strong>Calculation Formula:</Text>
-                <Text code>
+                <Text strong style={{ fontSize: window.innerWidth <= 768 ? '13px' : '14px' }}>Calculation Formula:</Text>
+                <Text code style={{ fontSize: window.innerWidth <= 768 ? '11px' : '12px' }}>
                   BS2 Total = WITHD + T.B.O + EX AMT
                 </Text>
-                <Text type="secondary" style={{ fontSize: '12px' }}>
+                <Text type="secondary" style={{ fontSize: window.innerWidth <= 768 ? '10px' : '12px' }}>
                   • WITHD is automatically pulled from Cashbook 1 (FRM HO field)
                   <br />
                   • T.B.O (Transfer to Branch Office) is manually inputted by HO

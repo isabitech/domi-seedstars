@@ -127,7 +127,8 @@ const SavingsRegister = () => {
           style={{
             color: record.type === 'credit' ? '#52c41a' : 
                    record.type === 'debit' ? '#ff4d4f' : 
-                   record.type === 'closing' ? '#1890ff' : '#722ed1'
+                   record.type === 'closing' ? '#1890ff' : '#722ed1',
+            fontSize: window.innerWidth <= 768 ? '14px' : '16px'
           }}
         >
           {formatCurrency(amount)}
@@ -237,7 +238,10 @@ const SavingsRegister = () => {
               value={data.previousSavingsTotal}
               formatter={(value) => formatCurrency(Number(value))}
               prefix={<DollarCircleOutlined />}
-              valueStyle={{ color: '#722ed1' }}
+              valueStyle={{ 
+                color: '#722ed1',
+                fontSize: window.innerWidth <= 768 ? '16px' : '24px'
+              }}
             />
           </Card>
         </Col>
@@ -248,7 +252,10 @@ const SavingsRegister = () => {
               value={data.savings}
               formatter={(value) => formatCurrency(Number(value))}
               prefix={<BarChartOutlined />}
-              valueStyle={{ color: '#52c41a' }}
+              valueStyle={{ 
+                color: '#52c41a',
+                fontSize: window.innerWidth <= 768 ? '16px' : '24px'
+              }}
             />
           </Card>
         </Col>
@@ -259,7 +266,10 @@ const SavingsRegister = () => {
               value={data.savingsWithdrawal}
               formatter={(value) => formatCurrency(Number(value))}
               prefix={<BarChartOutlined />}
-              valueStyle={{ color: '#ff4d4f' }}
+              valueStyle={{ 
+                color: '#ff4d4f',
+                fontSize: window.innerWidth <= 768 ? '16px' : '24px'
+              }}
             />
           </Card>
         </Col>
@@ -270,7 +280,10 @@ const SavingsRegister = () => {
               value={data.currentSavings}
               formatter={(value) => formatCurrency(Number(value))}
               prefix={<BoxPlotOutlined />}
-              valueStyle={{ color: '#1890ff' }}
+              valueStyle={{ 
+                color: '#1890ff',
+                fontSize: window.innerWidth <= 768 ? '16px' : '24px'
+              }}
             />
           </Card>
         </Col>
@@ -285,7 +298,7 @@ const SavingsRegister = () => {
               formatter={(value) => formatCurrency(Number(value))}
               valueStyle={{ 
                 color: netChange >= 0 ? '#52c41a' : '#ff4d4f',
-                fontSize: '24px' 
+                fontSize: window.innerWidth <= 768 ? '18px' : '24px'
               }}
               prefix={netChange >= 0 ? '+' : '-'}
               suffix={
@@ -305,7 +318,7 @@ const SavingsRegister = () => {
                 suffix="%"
                 valueStyle={{ 
                   color: growthRate >= 0 ? '#52c41a' : '#ff4d4f',
-                  fontSize: '24px'
+                  fontSize: window.innerWidth <= 768 ? '18px' : '24px'
                 }}
                 prefix={growthRate >= 0 ? '+' : '-'}
               />
@@ -329,37 +342,47 @@ const SavingsRegister = () => {
           </Tag>
         }
       >
-        <Table
-          columns={columns}
-          dataSource={tableData}
-          pagination={false}
-          size="middle"
-          summary={() => (
-            <Table.Summary>
-              <Table.Summary.Row style={{ backgroundColor: '#fafafa' }}>
-                <Table.Summary.Cell index={0}>
-                  <Text strong>Net Change for Day</Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={1} align="right">
-                  <Text
-                    strong
-                    style={{
-                      color: netChange >= 0 ? '#52c41a' : '#ff4d4f',
-                      fontSize: '16px'
-                    }}
-                  >
-                    {netChange >= 0 ? '+' : ''}{formatCurrency(netChange)}
-                  </Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={2}>
-                  <Tag color={netChange >= 0 ? 'green' : 'red'}>
-                    {netChange >= 0 ? 'POSITIVE' : 'NEGATIVE'}
-                  </Tag>
-                </Table.Summary.Cell>
-              </Table.Summary.Row>
-            </Table.Summary>
-          )}
-        />
+        <div style={{
+          overflow: 'auto',
+          ...(window.innerWidth <= 768 && {
+            maxWidth: '100%',
+            border: '1px solid #f0f0f0',
+            borderRadius: '6px'
+          })
+        }}>
+          <Table
+            columns={columns}
+            dataSource={tableData}
+            pagination={false}
+            size="middle"
+            scroll={window.innerWidth <= 768 ? { x: 600 } : undefined}
+            summary={() => (
+              <Table.Summary>
+                <Table.Summary.Row style={{ backgroundColor: '#fafafa' }}>
+                  <Table.Summary.Cell index={0}>
+                    <Text strong>Net Change for Day</Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={1} align="right">
+                    <Text
+                      strong
+                      style={{
+                        color: netChange >= 0 ? '#52c41a' : '#ff4d4f',
+                        fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                      }}
+                    >
+                      {netChange >= 0 ? '+' : ''}{formatCurrency(netChange)}
+                    </Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={2}>
+                    <Tag color={netChange >= 0 ? 'green' : 'red'}>
+                      {netChange >= 0 ? 'POSITIVE' : 'NEGATIVE'}
+                    </Tag>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+              </Table.Summary>
+            )}
+          />
+        </div>
         
         <Divider />
         

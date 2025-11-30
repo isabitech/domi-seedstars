@@ -1,5 +1,6 @@
-import React from 'react';
-import { Layout, Menu, Typography, Button, Space, Avatar } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Layout, Menu, Typography, Button, Space, Avatar, Drawer } from 'antd';
+import type { MenuProps } from 'antd';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { 
   DashboardOutlined,
@@ -11,11 +12,11 @@ import {
   HomeOutlined,
   RiseOutlined,
   DollarOutlined,
-  CalendarOutlined
+  CalendarOutlined,
+  MenuOutlined
 } from '@ant-design/icons';
 import { useGetMe } from '../../hooks/Auth/useGetMe';
 import { useLogout } from '../../hooks/Auth/useLogout';
-import type { MenuProps } from 'antd';
 
 const { Header, Sider, Content } = Layout;
 const { Title, Text } = Typography;
@@ -27,6 +28,35 @@ export const AppLayout: React.FC = () => {
   const location = useLocation();
 
   const user = currentUser?.data
+
+  // State management for mobile responsiveness
+  const [collapsed, setCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileDrawerVisible, setMobileDrawerVisible] = useState(false);
+
+  // Handle responsive behavior
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      
+      // Auto-collapse sidebar on tablet/small desktop screens
+      if (window.innerWidth <= 1024 && window.innerWidth > 768) {
+        setCollapsed(true);
+      } else if (window.innerWidth > 1024) {
+        setCollapsed(false);
+      }
+    };
+
+    // Initial check
+    handleResize();
+
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -199,41 +229,113 @@ export const AppLayout: React.FC = () => {
     return titles[path] || 'Dashboard';
   };
 
+  // Mobile menu handlers
+  const showMobileDrawer = () => {
+    setMobileDrawerVisible(true);
+  };
+
+  const closeMobileDrawer = () => {
+    setMobileDrawerVisible(false);
+  };
+
+  const handleMobileMenuClick = (clickHandler: () => void) => {
+    return () => {
+      clickHandler();
+      closeMobileDrawer();
+    };
+  };
+
+  // Mobile-optimized menu items
+  const getMobileMenuItems = (): MenuProps['items'] => {
+    const items = getMenuItems();
+    return items?.map(item => {
+      if (item && 'onClick' in item) {
+        return {
+          ...item,
+          onClick: item.onClick ? handleMobileMenuClick(item.onClick as () => void) : undefined,
+        };
+      }
+      return item;
+    });
+  };
+
   return (
     <Layout style={{ height: '100vh' }}>
-      <Sider
-        collapsible
-        theme="light"
-        style={{
-          boxShadow: '2px 0 8px rgba(0,0,0,0.1)',
-        }}
+      {/* Desktop/Tablet Sidebar */}
+      {!isMobile && (
+        <Sider
+          collapsible
+          collapsed={collapsed}
+          onCollapse={setCollapsed}
+          theme="light"
+          style={{
+            boxShadow: '2px 0 8px rgba(0,0,0,0.1)',
+          }}
+          breakpoint="lg"
+          collapsedWidth={isMobile ? 0 : 80}
+        >
+          <div style={{ 
+            padding: collapsed ? '8px' : '16px', 
+            textAlign: 'center', 
+            borderBottom: '1px solid #f0f0f0' 
+          }}>
+            {!collapsed ? (
+              <>
+                <Title level={4} style={{ margin: 0, color: '#1890ff' }}>
+                  Dominion
+                </Title>
+                <Text type="secondary" style={{ fontSize: '12px' }}>
+                  Seedstars Nig LTD
+                </Text>
+              </>
+            ) : (
+              <Title level={5} style={{ margin: 0, color: '#1890ff', fontSize: '14px' }}>
+                D
+              </Title>
+            )}
+          </div>
+          
+          <Menu
+            mode="inline"
+            selectedKeys={[getCurrentKey()]}
+            items={getMenuItems()}
+            style={{ border: 'none', marginTop: '16px' }}
+            inlineCollapsed={collapsed}
+          />
+        </Sider>
+      )}
+
+      {/* Mobile Drawer Sidebar */}
+      <Drawer
+        title={
+          <div style={{ textAlign: 'center' }}>
+            <Title level={4} style={{ margin: 0, color: '#1890ff' }}>
+              Dominion
+            </Title>
+            <Text type="secondary" style={{ fontSize: '12px' }}>
+              Seedstars Nig LTD
+            </Text>
+          </div>
+        }
+        placement="left"
+        onClose={closeMobileDrawer}
+        open={mobileDrawerVisible}
+        bodyStyle={{ padding: 0 }}
+        width={280}
       >
-        <div style={{ 
-          padding: '16px', 
-          textAlign: 'center', 
-          borderBottom: '1px solid #f0f0f0' 
-        }}>
-          <Title level={4} style={{ margin: 0, color: '#1890ff' }}>
-            Dominion
-          </Title>
-          <Text type="secondary" style={{ fontSize: '12px' }}>
-            Seedstars Nig LTD
-          </Text>
-        </div>
-        
         <Menu
           mode="inline"
           selectedKeys={[getCurrentKey()]}
-          items={getMenuItems()}
-          style={{ border: 'none', marginTop: '16px' }}
+          items={getMobileMenuItems()}
+          style={{ border: 'none' }}
         />
-      </Sider>
+      </Drawer>
       
       <Layout>
         <Header
           style={{
             background: '#fff',
-            padding: '0 24px',
+            padding: isMobile ? '0 16px' : '0 24px',
             boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
             display: 'flex',
             justifyContent: 'space-between',
@@ -241,35 +343,46 @@ export const AppLayout: React.FC = () => {
             width: '100%',
           }}
         >
-          <div>
-            <Title level={3} style={{ margin: 0 }}>
-              {getPageTitle()}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {isMobile && (
+              <Button
+                type="text"
+                icon={<MenuOutlined />}
+                onClick={showMobileDrawer}
+                style={{ padding: '4px 8px' }}
+              />
+            )}
+            <Title level={isMobile ? 4 : 3} style={{ margin: 0 }}>
+              {isMobile ? 'Dominion' : getPageTitle()}
             </Title>
           </div>
           
-          <Space >
-            <Avatar icon={<UserOutlined />} />
-            <Space direction="vertical" size={0}>
-              <Text strong>{user?.username}</Text>
-              
-            </Space>
-            <span className=' text-black'>
+          <Space size={isMobile ? 'small' : 'middle'}>
+            {!isMobile && <Avatar icon={<UserOutlined />} />}
+            {!isMobile && (
+              <Space direction="vertical" size={0}>
+                <Text strong>{user?.username}</Text>
+              </Space>
+            )}
+            {!isMobile && (
+              <span className="text-black">
                 <p>{user?.role === 'HO' ? 'Head Office' : `Branch: ${user?.branchName || 'Branch User'} `}</p>
-                {/* <p>{user?.branchId && ` • ${user.branchId}`}</p> */}
-            </span>
+              </span>
+            )}
             <Button 
               type="text" 
               icon={<LogoutOutlined />}
               onClick={handleLogout}
+              size={isMobile ? 'small' : 'middle'}
             >
-              Logout
+              {!isMobile && 'Logout'}
             </Button>
           </Space>
         </Header>
         
         <Content
           style={{
-            padding: '24px',
+            padding: isMobile ? '16px' : '24px',
             background: '#f5f5f5',
             overflow: 'auto',
           }}
