@@ -22,6 +22,7 @@ export interface User {
   isFirstLogin: boolean
   status?: 'active' | 'inactive'
   _id?: string
+  branch?: any
 }
 
 

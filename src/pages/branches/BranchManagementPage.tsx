@@ -269,7 +269,7 @@ export const BranchManagementPage: React.FC = () => {
       title: 'Branch',
       dataIndex: 'branchName',
       key: 'branchName',
-      render: (branchName: string, record: User) => {
+      render: (record: User) => {
         if (record.role === 'HO') return <Tag color="purple">N/A</Tag>;
         return record.branch?.name || 'Unassigned';
       }
