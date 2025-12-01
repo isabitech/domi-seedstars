@@ -270,6 +270,10 @@ export const AppLayout: React.FC = () => {
           theme="light"
           style={{
             boxShadow: '2px 0 8px rgba(0,0,0,0.1)',
+            height: '100vh',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
           }}
           breakpoint="lg"
           collapsedWidth={isMobile ? 0 : 80}
@@ -277,7 +281,8 @@ export const AppLayout: React.FC = () => {
           <div style={{ 
             padding: collapsed ? '8px' : '16px', 
             textAlign: 'center', 
-            borderBottom: '1px solid #f0f0f0' 
+            borderBottom: '1px solid #f0f0f0',
+            flexShrink: 0,
           }}>
             {!collapsed ? (
               <>
@@ -295,13 +300,20 @@ export const AppLayout: React.FC = () => {
             )}
           </div>
           
-          <Menu
-            mode="inline"
-            selectedKeys={[getCurrentKey()]}
-            items={getMenuItems()}
-            style={{ border: 'none', marginTop: '16px' }}
-            inlineCollapsed={collapsed}
-          />
+          <div style={{ 
+            flex: 1, 
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            paddingTop: '16px',
+          }}>
+            <Menu
+              mode="inline"
+              selectedKeys={[getCurrentKey()]}
+              items={getMenuItems()}
+              style={{ border: 'none', height: '100%' }}
+              inlineCollapsed={collapsed}
+            />
+          </div>
         </Sider>
       )}
 
@@ -320,14 +332,18 @@ export const AppLayout: React.FC = () => {
         placement="left"
         onClose={closeMobileDrawer}
         open={mobileDrawerVisible}
-        bodyStyle={{ padding: 0 }}
+        bodyStyle={{ 
+          padding: 0,
+          height: '100%',
+          overflowY: 'auto'
+        }}
         width={280}
       >
         <Menu
           mode="inline"
           selectedKeys={[getCurrentKey()]}
           items={getMobileMenuItems()}
-          style={{ border: 'none' }}
+          style={{ border: 'none', height: '100%' }}
         />
       </Drawer>
       

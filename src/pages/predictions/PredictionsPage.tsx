@@ -239,9 +239,6 @@ export const PredictionsPage: React.FC = () => {
                   <DatePicker
                     style={{ width: "100%" }}
                     format="YYYY-MM-DD"
-                    disabledDate={(current) =>
-                      current && current <= dayjs().startOf("day")
-                    }
                     defaultValue={tomorrow}
                   />
                 </Form.Item>
