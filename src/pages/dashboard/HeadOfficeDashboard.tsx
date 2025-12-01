@@ -126,6 +126,9 @@ export const HeadOfficeDashboard: React.FC = () => {
     totalWithdrawals: 0,
     totalOnlineCIH: 0,
     totalTSO: 0,
+    totalFrmHO: 0,
+    totalDisbursementRollNo: 0,
+    totalCollections: 0,
     activeBranches: [],
     totalOperations: 0
   };
@@ -453,12 +456,55 @@ export const HeadOfficeDashboard: React.FC = () => {
           <Col xs={12} sm={6} lg={3}>
             <Card size="small" style={{ textAlign: 'center' }}>
               <Statistic
+                title={<Text style={{ fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>Total Collections</Text>}
+                value={totals.totalCollections}
+                precision={0}
+                prefix="₦"
+                valueStyle={{ 
+                  color: '#52c41a', 
+                  fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                }}
+              />
+            </Card>
+          </Col>
+          
+          <Col xs={12} sm={6} lg={3}>
+            <Card size="small" style={{ textAlign: 'center' }}>
+              <Statistic
                 title={<Text style={{ fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>Loan Collections</Text>}
                 value={totals.totalLoanCollection}
                 precision={0}
                 prefix="₦"
                 valueStyle={{ 
                   color: '#1890ff', 
+                  fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                }}
+              />
+            </Card>
+          </Col>
+          
+          <Col xs={12} sm={6} lg={3}>
+            <Card size="small" style={{ textAlign: 'center' }}>
+              <Statistic
+                title={<Text style={{ fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>Total FRM HO</Text>}
+                value={totals.totalFrmHO}
+                precision={0}
+                prefix="₦"
+                valueStyle={{ 
+                  color: '#13c2c2', 
+                  fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                }}
+              />
+            </Card>
+          </Col>
+          
+          <Col xs={12} sm={6} lg={3}>
+            <Card size="small" style={{ textAlign: 'center' }}>
+              <Statistic
+                title={<Text style={{ fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>Disbursement Roll No</Text>}
+                value={totals.totalDisbursementRollNo}
+                valueStyle={{ 
+                  color: '#fa8c16', 
                   fontSize: window.innerWidth <= 768 ? '14px' : '16px'
                 }}
               />
