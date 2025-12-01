@@ -45,6 +45,5 @@ export const useGetOnlineCIHTSO = (params: OnlineCIHTSOParams = {}) => {
     queryKey: ['metrics', 'online-cih-tso', params],
     queryFn: () => getOnlineCIHTSO(params),
     staleTime: 1 * 60 * 1000, // 1 minute
-    refetchInterval: 2 * 60 * 1000, // Auto-refresh every 2 minutes
   });
 };
