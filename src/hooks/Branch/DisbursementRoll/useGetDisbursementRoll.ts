@@ -23,6 +23,7 @@ export interface DisbursementRoll {
   createdAt: string
   updatedAt: string
   __v: number
+  disNo: number
 }
 
 

@@ -68,9 +68,14 @@ export const CombinedCashbookPage: React.FC = () => {
 
   const createDailyEntry = useCreateEntry();
 
+  const [operationIsCompleted, setOperationIsCompleted] = useState(false);
+
   useEffect(() => {
     if (getDailyEntry.data?.data?.operations) {
       console.log(getDailyEntry.data.data);
+      setOperationIsCompleted(
+        getDailyEntry.data.data.operations.isCompleted
+      );
       const operations = getDailyEntry.data.data.operations;
 
       setCashbook1Data(operations?.cashbook1 || null);
@@ -659,7 +664,7 @@ export const CombinedCashbookPage: React.FC = () => {
                     size="large"
                     onClick={handleFinalSubmit}
                     loading={summaryLoading}
-                    disabled={!storeCB1 || !storeCB2}
+                    disabled={operationIsCompleted}
                     style={{
                       background: "linear-gradient(45deg, #52c41a, #73d13d)",
                       border: "none",
