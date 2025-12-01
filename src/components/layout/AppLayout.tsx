@@ -271,7 +271,7 @@ export const AppLayout: React.FC = () => {
           style={{
             boxShadow: '2px 0 8px rgba(0,0,0,0.1)',
             height: '100vh',
-            overflow: 'hidden',
+            overflowY: 'auto',
             display: 'flex',
             flexDirection: 'column',
           }}
