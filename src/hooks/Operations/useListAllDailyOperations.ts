@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '../../instance/axiosInstance';
 
+
 export interface ListAllDailyOperationsResponse {
   success: boolean
   data: Data
@@ -12,6 +13,7 @@ export interface ListAllDailyOperationsResponse {
 export interface Data {
   operations: Operation[]
   total: number
+  totals: Totals
 }
 
 export interface Operation {
@@ -29,10 +31,11 @@ export interface Operation {
   bankStatement2: BankStatement2
   loanRegister: LoanRegister
   savingsRegister: SavingsRegister
+  disbursementRoll: DisbursementRoll
   createdAt: string
   updatedAt: string
   __v: number
-  submittedAt?: string
+  predictions: Predictions
 }
 
 export interface Branch {
@@ -64,7 +67,6 @@ export interface Cashbook1 {
   createdAt: string
   updatedAt: string
   __v: number
-  submittedAt?: string
 }
 
 export interface Cashbook2 {
@@ -83,7 +85,6 @@ export interface Cashbook2 {
   createdAt: string
   updatedAt: string
   __v: number
-  submittedAt?: string
 }
 
 export interface Prediction {
@@ -150,6 +151,30 @@ export interface SavingsRegister {
   currentSavings: number
   date: string
   branch: string
+  createdAt: string
+  updatedAt: string
+  __v: number
+}
+
+export interface Predictions {
+  predictionNo: number
+  predictionAmount: number
+}
+
+export interface Totals {
+  totalCollections: number
+  totalDisbursementNumber: number
+  totalDisbursementAmount: number
+}
+
+export interface DisbursementRoll {
+  _id: string
+  branch: string
+  month: number
+  year: number
+  previousDisbursement: number
+  dailyDisbursement: number
+  disbursementRoll: number
   createdAt: string
   updatedAt: string
   __v: number

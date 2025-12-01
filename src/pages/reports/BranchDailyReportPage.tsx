@@ -75,6 +75,22 @@ interface BranchDailyReportData {
   cbrSavings: number;
   cbrLoan: number;
   disbursementRoll: number;
+  totalCollections: number;
+  disbursementNumber: number;
+  disbursementAmount: number;
+  disbursementRollNumber: number;
+  totalFrmHO: number;
+  predictions: {
+    predictionNo: number;
+    predictionAmount: number;
+    predictionDate: string;
+  };
+  disbursementRollData: {
+    previousDisbursement: number;
+    dailyDisbursement: number;
+    month: number;
+    year: number;
+  };
 }
 
 const transformOperationToReportData = (operation: Operation): BranchDailyReportData => {
@@ -121,7 +137,23 @@ const transformOperationToReportData = (operation: Operation): BranchDailyReport
     tso: operation.tso,
     cbrSavings: operation.savingsRegister.currentSavings,
     cbrLoan: operation.loanRegister.currentLoanBalance,
-    disbursementRoll: operation.loanRegister.previousLoanTotal + operation.loanRegister.loanDisbursementWithInterest,
+    disbursementRoll: operation.disbursementRoll?.disbursementRoll || 0,
+    totalCollections: operation.cashbook1.savings + operation.cashbook1.loanCollection + operation.cashbook1.chargesCollection,
+    disbursementNumber: operation.cashbook2.disNo,
+    disbursementAmount: operation.cashbook2.disAmt,
+    disbursementRollNumber: operation.disbursementRoll?.disbursementRoll || 0,
+    totalFrmHO: operation.cashbook1.frmHO,
+    predictions: {
+      predictionNo: operation.predictions?.predictionNo || 0,
+      predictionAmount: operation.predictions?.predictionAmount || 0,
+      predictionDate: operation.prediction?.predictionDate || '',
+    },
+    disbursementRollData: {
+      previousDisbursement: operation.disbursementRoll?.previousDisbursement || 0,
+      dailyDisbursement: operation.disbursementRoll?.dailyDisbursement || 0,
+      month: operation.disbursementRoll?.month || 0,
+      year: operation.disbursementRoll?.year || 0,
+    },
   };
 };
 
@@ -150,7 +182,13 @@ export const BranchDailyReportPage: React.FC = () => {
       tso: acc.tso + branch.tso,
       cbrSavings: acc.cbrSavings + branch.cbrSavings,
       cbrLoan: acc.cbrLoan + branch.cbrLoan,
-      disbursementRoll: acc.disbursementRoll + branch.disbursementRoll
+      disbursementRoll: acc.disbursementRoll + branch.disbursementRoll,
+      totalCollections: acc.totalCollections + branch.totalCollections,
+      disbursementNumber: acc.disbursementNumber + branch.disbursementNumber,
+      disbursementAmount: acc.disbursementAmount + branch.disbursementAmount,
+      disbursementRollNumber: acc.disbursementRollNumber + branch.disbursementRollNumber,
+      totalFrmHO: acc.totalFrmHO + branch.totalFrmHO,
+      totalPredictionAmount: acc.totalPredictionAmount + branch.predictions.predictionAmount
     }), {
       cbTotal1: 0,
       cbTotal2: 0,
@@ -160,7 +198,13 @@ export const BranchDailyReportPage: React.FC = () => {
       tso: 0,
       cbrSavings: 0,
       cbrLoan: 0,
-      disbursementRoll: 0
+      disbursementRoll: 0,
+      totalCollections: 0,
+      disbursementNumber: 0,
+      disbursementAmount: 0,
+      disbursementRollNumber: 0,
+      totalFrmHO: 0,
+      totalPredictionAmount: 0
     });
   }, [reportData]);
 
@@ -215,7 +259,22 @@ export const BranchDailyReportPage: React.FC = () => {
         // Current Branch Register
         'CBR (Savings)': row.cbrSavings,
         'CBR (Loan)': row.cbrLoan,
-        'Disbursement Roll': row.disbursementRoll
+        'Disbursement Roll': row.disbursementRoll,
+        // New Fields
+        'Total Collections': row.totalCollections,
+        'Disbursement Number': row.disbursementNumber,
+        'Disbursement Amount': row.disbursementAmount,
+        'Disbursement Roll Number': row.disbursementRollNumber,
+        'Total FRM HO': row.totalFrmHO,
+        // Predictions
+        'Prediction No': row.predictions.predictionNo,
+        'Prediction Amount': row.predictions.predictionAmount,
+        'Prediction Date': row.predictions.predictionDate,
+        // Disbursement Roll Data
+        'Previous Disbursement': row.disbursementRollData.previousDisbursement,
+        'Daily Disbursement': row.disbursementRollData.dailyDisbursement,
+        'Month': row.disbursementRollData.month,
+        'Year': row.disbursementRollData.year
       };
     });
 
@@ -258,7 +317,19 @@ export const BranchDailyReportPage: React.FC = () => {
       { wch: 12 }, // TSO
       { wch: 15 }, // CBR (Savings)
       { wch: 15 }, // CBR (Loan)
-      { wch: 18 }  // Disbursement Roll
+      { wch: 18 }, // Disbursement Roll
+      { wch: 18 }, // Total Collections
+      { wch: 18 }, // Disbursement Number
+      { wch: 18 }, // Disbursement Amount
+      { wch: 20 }, // Disbursement Roll Number
+      { wch: 15 }, // Total FRM HO
+      { wch: 15 }, // Prediction No
+      { wch: 18 }, // Prediction Amount
+      { wch: 15 }, // Prediction Date
+      { wch: 18 }, // Previous Disbursement
+      { wch: 18 }, // Daily Disbursement
+      { wch: 10 }, // Month
+      { wch: 10 }  // Year
     ];
 
     ws['!cols'] = colWidths;
@@ -326,7 +397,23 @@ export const BranchDailyReportPage: React.FC = () => {
       tso: 0,
       cbrSavings: 0,
       cbrLoan: 0,
-      disbursementRoll: 0
+      disbursementRoll: 0,
+      totalCollections: 0,
+      disbursementNumber: 0,
+      disbursementAmount: 0,
+      disbursementRollNumber: 0,
+      totalFrmHO: 0,
+      predictions: {
+        predictionNo: 0,
+        predictionAmount: 0,
+        predictionDate: ''
+      },
+      disbursementRollData: {
+        previousDisbursement: 0,
+        dailyDisbursement: 0,
+        month: 0,
+        year: 0
+      }
     };
 
     // Sum all numeric fields
@@ -366,6 +453,14 @@ export const BranchDailyReportPage: React.FC = () => {
       grandTotal.cbrSavings += branch.cbrSavings;
       grandTotal.cbrLoan += branch.cbrLoan;
       grandTotal.disbursementRoll += branch.disbursementRoll;
+      grandTotal.totalCollections += branch.totalCollections;
+      grandTotal.disbursementNumber += branch.disbursementNumber;
+      grandTotal.disbursementAmount += branch.disbursementAmount;
+      grandTotal.disbursementRollNumber += branch.disbursementRollNumber;
+      grandTotal.totalFrmHO += branch.totalFrmHO;
+      grandTotal.predictions.predictionAmount += branch.predictions.predictionAmount;
+      grandTotal.disbursementRollData.previousDisbursement += branch.disbursementRollData.previousDisbursement;
+      grandTotal.disbursementRollData.dailyDisbursement += branch.disbursementRollData.dailyDisbursement;
     });
 
     return grandTotal;
@@ -589,17 +684,125 @@ export const BranchDailyReportPage: React.FC = () => {
           render: (value: number) => (
             <Tag color="magenta">{calculations.formatCurrency(value)}</Tag>
           )
+        },
+        {
+          title: 'Disbursement Roll',
+          dataIndex: 'disbursementRoll',
+          key: 'disbursementRoll',
+          render: (value: number, record: BranchDailyReportData) => renderCurrency(value, record, '#faad14')
         }
       ]
     },
-    // Disbursement Roll
+    // Disbursement Roll Data
     {
-      title: 'Disbursement Roll',
-      dataIndex: 'disbursementRoll',
-      key: 'disbursementRoll',
-      render: (value: number) => (
-        <Tag color="gold">{calculations.formatCurrency(value)}</Tag>
-      )
+      title: 'Disbursement Roll Data',
+      children: [
+        {
+          title: 'Previous Disbursement',
+          dataIndex: ['disbursementRollData', 'previousDisbursement'],
+          key: 'previousDisbursement',
+          render: (value: number, record: BranchDailyReportData) => renderCurrency(value, record, '#722ed1')
+        },
+        {
+          title: 'Daily Disbursement',
+          dataIndex: ['disbursementRollData', 'dailyDisbursement'],
+          key: 'dailyDisbursement',
+          render: (value: number, record: BranchDailyReportData) => renderCurrency(value, record, '#13c2c2')
+        },
+        {
+          title: 'Month/Year',
+          key: 'monthYear',
+          render: (_, record: BranchDailyReportData) => {
+            if (record.branchId === 'grand-total') {
+              return (
+                <Text style={{ 
+                  color: '#999',
+                  fontSize: window.innerWidth <= 768 ? '11px' : '13px'
+                }}>
+                  -
+                </Text>
+              );
+            }
+            const { month, year } = record.disbursementRollData;
+            if (!month || !year) {
+              return (
+                <Text style={{ 
+                  color: '#999',
+                  fontSize: window.innerWidth <= 768 ? '11px' : '13px'
+                }}>
+                  -
+                </Text>
+              );
+            }
+            return (
+              <Text style={{ 
+                fontSize: window.innerWidth <= 768 ? '11px' : '12px',
+                color: '#666'
+              }}>
+                {String(month).padStart(2, '0')}/{year}
+              </Text>
+            );
+          }
+        }
+      ]
+    },
+    // Predictions Data
+    {
+      title: 'Predictions',
+      children: [
+        {
+          title: 'Prediction No',
+          dataIndex: ['predictions', 'predictionNo'],
+          key: 'predictionNo',
+          render: (value: number, record: BranchDailyReportData) => {
+            if (record.branchId === 'grand-total') {
+              return (
+                <Text strong style={{ 
+                  color: '#eb2f96', 
+                  fontSize: window.innerWidth <= 768 ? '11px' : '13px'
+                }}>
+                  -
+                </Text>
+              );
+            }
+            return (
+              <Tag color="volcano">{value}</Tag>
+            );
+          }
+        },
+        {
+          title: 'Prediction Amount',
+          dataIndex: ['predictions', 'predictionAmount'],
+          key: 'predictionAmount',
+          render: (value: number, record: BranchDailyReportData) => renderCurrency(value, record, '#eb2f96')
+        },
+        {
+          title: 'Prediction Date',
+          dataIndex: ['predictions', 'predictionDate'],
+          key: 'predictionDate',
+          width: 120,
+          render: (value: string, record: BranchDailyReportData) => {
+            if (record.branchId === 'grand-total' || !value) {
+              return (
+                <Text style={{ 
+                  color: '#999',
+                  fontSize: window.innerWidth <= 768 ? '11px' : '13px'
+                }}>
+                  -
+                </Text>
+              );
+            }
+            return (
+              <Text style={{ 
+                fontSize: window.innerWidth <= 768 ? '11px' : '12px',
+                color: '#666'
+              }}>
+                {dayjs(value).format('MMM DD, YYYY')}
+              </Text>
+            );
+          }
+        }
+      ]
     }
   ];
 
@@ -665,64 +868,121 @@ export const BranchDailyReportPage: React.FC = () => {
 
         {/* Summary Cards */}
         {!isLoading && !error && (
-          <Row gutter={[16, 16]}>
-            <Col xs={24} sm={12} lg={6}>
-              <Card>
-                <Statistic
-                  title="Total Online CIH"
-                  value={totals.onlineCIH}
-                  precision={2}
-                  prefix="₦"
-                  valueStyle={{ 
-                    color: '#52c41a',
-                    fontSize: window.innerWidth <= 768 ? '16px' : '20px'
-                  }}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} lg={6}>
-              <Card>
-                <Statistic
-                  title="Total TSO"
-                  value={totals.tso}
-                  precision={2}
-                  prefix="₦"
-                  valueStyle={{ 
-                    color: '#1890ff',
-                    fontSize: window.innerWidth <= 768 ? '16px' : '20px'
-                  }}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} lg={6}>
-              <Card>
-                <Statistic
-                  title="Total CBR (Savings)"
-                  value={totals.cbrSavings}
-                  precision={2}
-                  prefix="₦"
-                  valueStyle={{ 
-                    color: '#722ed1',
-                    fontSize: window.innerWidth <= 768 ? '16px' : '20px'
-                  }}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} lg={6}>
-              <Card>
-                <Statistic
-                  title="Total CBR (Loan)"
-                  value={totals.cbrLoan}
-                  precision={2}
-                  prefix="₦"
-                  valueStyle={{ 
-                    color: '#fa8c16',
-                    fontSize: window.innerWidth <= 768 ? '16px' : '20px'
-                  }}
-                />
-              </Card>
-            </Col>
-          </Row>
+          <>
+            <Row gutter={[16, 16]}>
+              <Col xs={24} sm={12} lg={6}>
+                <Card>
+                  <Statistic
+                    title="Total Collections"
+                    value={totals.totalCollections}
+                    precision={2}
+                    prefix="₦"
+                    valueStyle={{ 
+                      color: '#52c41a',
+                      fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                    }}
+                  />
+                </Card>
+              </Col>
+              <Col xs={24} sm={12} lg={6}>
+                <Card>
+                  <Statistic
+                    title="Total Disbursement Number"
+                    value={totals.disbursementNumber}
+                    valueStyle={{ 
+                      color: '#1890ff',
+                      fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                    }}
+                  />
+                </Card>
+              </Col>
+              <Col xs={24} sm={12} lg={6}>
+                <Card>
+                  <Statistic
+                    title="Total Disbursement Amount"
+                    value={totals.disbursementAmount}
+                    precision={2}
+                    prefix="₦"
+                    valueStyle={{ 
+                      color: '#722ed1',
+                      fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                    }}
+                  />
+                </Card>
+              </Col>
+              <Col xs={24} sm={12} lg={6}>
+                <Card>
+                  <Statistic
+                    title="Total Disbursement Roll No"
+                    value={totals.disbursementRollNumber}
+                    valueStyle={{ 
+                      color: '#fa8c16',
+                      fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                    }}
+                  />
+                </Card>
+              </Col>
+            </Row>
+            
+            <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+              <Col xs={24} sm={12} lg={6}>
+                <Card>
+                  <Statistic
+                    title="Total FRM HO"
+                    value={totals.totalFrmHO}
+                    precision={2}
+                    prefix="₦"
+                    valueStyle={{ 
+                      color: '#13c2c2',
+                      fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                    }}
+                  />
+                </Card>
+              </Col>
+              <Col xs={24} sm={12} lg={6}>
+                <Card>
+                  <Statistic
+                    title="Total Online CIH"
+                    value={totals.onlineCIH}
+                    precision={2}
+                    prefix="₦"
+                    valueStyle={{ 
+                      color: '#52c41a',
+                      fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                    }}
+                  />
+                </Card>
+              </Col>
+              <Col xs={24} sm={12} lg={6}>
+                <Card>
+                  <Statistic
+                    title="Total TSO"
+                    value={totals.tso}
+                    precision={2}
+                    prefix="₦"
+                    valueStyle={{ 
+                      color: '#1890ff',
+                      fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                    }}
+                  />
+                </Card>
+              </Col>
+              <Col xs={24} sm={12} lg={6}>
+                <Card>
+                  <Statistic
+                    title="Total Predictions"
+                    value={totals.totalPredictionAmount}
+                    precision={2}
+                    prefix="₦"
+                    valueStyle={{ 
+                      color: '#eb2f96',
+                      fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                    }}
+                  />
+                </Card>
+              </Col>
+            </Row>
+          </>
         )}
 
         <Divider />
@@ -761,7 +1021,7 @@ export const BranchDailyReportPage: React.FC = () => {
                   columns={columns}
                   dataSource={[...reportData, grandTotal]}
                   rowKey="branchId"
-                  scroll={{ x: window.innerWidth <= 768 ? 2200 : 2000 }}
+                  scroll={{ x: window.innerWidth <= 768 ? 3800 : 3400 }}
                   pagination={false}
                   size="small"
                   bordered
@@ -782,6 +1042,22 @@ export const BranchDailyReportPage: React.FC = () => {
           <Card title="Daily Totals Summary" size="small">
             <Row gutter={[16, 8]}>
               <Col xs={12} sm={8} lg={4}>
+                <Text strong>Total Collections: </Text>
+                <Tag color="green">{calculations.formatCurrency(totals.totalCollections)}</Tag>
+              </Col>
+              <Col xs={12} sm={8} lg={4}>
+                <Text strong>Total Disbursement No: </Text>
+                <Tag color="blue">{totals.disbursementNumber.toLocaleString()}</Tag>
+              </Col>
+              <Col xs={12} sm={8} lg={4}>
+                <Text strong>Total Disbursement Amt: </Text>
+                <Tag color="purple">{calculations.formatCurrency(totals.disbursementAmount)}</Tag>
+              </Col>
+              <Col xs={12} sm={8} lg={4}>
+                <Text strong>Total FRM HO: </Text>
+                <Tag color="cyan">{calculations.formatCurrency(totals.totalFrmHO)}</Tag>
+              </Col>
+              <Col xs={12} sm={8} lg={4}>
                 <Text strong>CB Total 1: </Text>
                 <Tag color="green">{calculations.formatCurrency(totals.cbTotal1)}</Tag>
               </Col>
@@ -790,20 +1066,12 @@ export const BranchDailyReportPage: React.FC = () => {
                 <Tag color="orange">{calculations.formatCurrency(totals.cbTotal2)}</Tag>
               </Col>
               <Col xs={12} sm={8} lg={4}>
-                <Text strong>Online CIH: </Text>
-                <Tag color="purple">{calculations.formatCurrency(totals.onlineCIH)}</Tag>
-              </Col>
-              <Col xs={12} sm={8} lg={4}>
-                <Text strong>BS1 Total: </Text>
-                <Tag color="blue">{calculations.formatCurrency(totals.bs1Total)}</Tag>
-              </Col>
-              <Col xs={12} sm={8} lg={4}>
-                <Text strong>BS2 Total: </Text>
-                <Tag color="red">{calculations.formatCurrency(totals.bs2Total)}</Tag>
-              </Col>
-              <Col xs={12} sm={8} lg={4}>
                 <Text strong>TSO Total: </Text>
                 <Tag color="cyan">{calculations.formatCurrency(totals.tso)}</Tag>
+              </Col>
+              <Col xs={12} sm={8} lg={4}>
+                <Text strong>Predictions Total: </Text>
+                <Tag color="magenta">{calculations.formatCurrency(totals.totalPredictionAmount)}</Tag>
               </Col>
             </Row>
           </Card>
