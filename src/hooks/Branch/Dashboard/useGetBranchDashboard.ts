@@ -132,14 +132,24 @@ export interface CurrentRegisters {
 }
 
 
-const getBranchDashboard = async ():Promise<BranchDashboardResponse> => {
-  const { data } = await axiosInstance.get(`/dashboard/branch`);
+const getBranchDashboard = async (params?: { startDate?: string; endDate?: string }): Promise<BranchDashboardResponse> => {
+  const queryParams = new URLSearchParams();
+  
+  if (params?.startDate) {
+    queryParams.append('startDate', params.startDate);
+  }
+  if (params?.endDate) {
+    queryParams.append('endDate', params.endDate);
+  }
+  
+  const url = `/dashboard/branch${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+  const { data } = await axiosInstance.get(url);
   return data;
 }
 
 
-export const useGetBranchDashboard = () => useQuery({
-    queryKey: ['branch', 'dashboard'],
-    queryFn: getBranchDashboard,
+export const useGetBranchDashboard = (params?: { startDate?: string; endDate?: string }) => useQuery({
+    queryKey: ['branch', 'dashboard', params?.startDate, params?.endDate],
+    queryFn: () => getBranchDashboard(params),
     staleTime: 2 * 60 * 1000, // 2 minutes
 })

@@ -9,9 +9,11 @@ export interface UpdateHOFieldsRequest {
   frmHO?: number;
   frmBR?: number;
   tbo?: number;
+  pcih?: number;
   previousDisbursement?: number;
   previousLoanTotal?: number;
   previousSavingsTotal?: number;
+  date: string;
   
 }
 

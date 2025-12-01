@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   Form, 
   Input, 
@@ -23,7 +23,6 @@ import { useUpdateEntry } from '../hooks/Branch/Cashbook/useUpdateEntry';
 import type { User } from '../hooks/Auth/useGetMe';
 import type { Cashbook1 } from '../hooks/Branch/Cashbook/get-daily-ops-types';
 import { useGetOnlineCIHTSO } from '../hooks/Metrics/useGetOnlineCIH-TSO';
-import { YESTERDAY_DATE } from '../lib/utils';
 
 const { Title, Text } = Typography;
 
@@ -55,6 +54,13 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
   
   const currentDate = date || new Date().toISOString().split('T')[0];
   
+  // Calculate the date for PCIH (previous day) - memoized to prevent dependency issues
+  const previousDate = useMemo(() => {
+    const pcihDate = new Date(currentDate);
+    pcihDate.setDate(pcihDate.getDate() - 1);
+    return pcihDate.toISOString().split('T')[0];
+  }, [currentDate]);
+  
   // Get existing entry for today
   // const { 
   //   data: existingEntry, 
@@ -64,7 +70,7 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
 
   // Mutation hooks
 
-  const getPCIH = useGetOnlineCIHTSO({ date: YESTERDAY_DATE });
+  const getPCIH = useGetOnlineCIHTSO({ date: previousDate });
 
 
 
@@ -95,18 +101,22 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
     }
   }, [form]);
 
-  useEffect(() =>{
-    if ( getPCIH.data){
+  useEffect(() => {
+    if (getPCIH.data) {
       // console.log("pcih", getPCIH.data);
-      setPcihValue(getPCIH.data.data?.raw?.find(
+      const newPcihValue = getPCIH.data.data?.raw?.find(
         metric => user?.branchId && metric.branch.id === user.branchId
-      )?.onlineCIH || 0);
-    };
-    if(pcihValue){
+      )?.onlineCIH || 0;
+      setPcihValue(newPcihValue);
+    }
+  }, [getPCIH.data, user?.branchId]);
+
+  useEffect(() => {
+    if (pcihValue !== 0) {
       form.setFieldsValue({ pcih: pcihValue });
       handleValuesChange();
     }
-  }, [getPCIH.data, pcihValue , form, user, handleValuesChange]);
+  }, [pcihValue, form, handleValuesChange]);
 
   // Load existing data when available
   useEffect(() => {

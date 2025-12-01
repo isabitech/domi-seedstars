@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Card, 
   Row, 
@@ -12,8 +12,10 @@ import {
   Spin,
   Table,
   Tag,
-  Divider
+  Divider,
+  DatePicker
 } from 'antd';
+import dayjs from 'dayjs';
 import { 
   DollarOutlined, 
   BankOutlined, 
@@ -22,7 +24,8 @@ import {
   RiseOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
-  LineChartOutlined
+  LineChartOutlined,
+  CalendarOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useGetBranchDashboard } from '../../hooks/Branch/Dashboard/useGetBranchDashboard';
@@ -34,8 +37,28 @@ const { Title, Text } = Typography;
 export const BranchDashboard: React.FC = () => {
   const navigate = useNavigate();
   const date = new Date().toLocaleDateString();
+  
+  // Date range state
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
+    dayjs().subtract(30, 'days'), // Default to last 30 days
+    dayjs()
+  ]);
+  const [startDate, setStartDate] = useState<string>(dayjs().subtract(30, 'days').format('YYYY-MM-DD'));
+  const [endDate, setEndDate] = useState<string>(dayjs().format('YYYY-MM-DD'));
 
-  const { data: dashboardData, isLoading, error } = useGetBranchDashboard();
+  const { data: dashboardData, isLoading, error } = useGetBranchDashboard({
+    startDate,
+    endDate
+  });
+
+  // Handle date range change
+  const handleDateRangeChange = (dates: [dayjs.Dayjs, dayjs.Dayjs] | null) => {
+    if (dates) {
+      setDateRange(dates);
+      setStartDate(dates[0].format('YYYY-MM-DD'));
+      setEndDate(dates[1].format('YYYY-MM-DD'));
+    }
+  };
 
   useEffect(() => {
     if (dashboardData) {
@@ -119,12 +142,34 @@ export const BranchDashboard: React.FC = () => {
     <div className="page-container">
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         <div>
-          <Title level={3}>
-            <CalculatorOutlined /> Branch Dashboard
-          </Title>
-          <Text type="secondary">
-            Daily operations overview for {date}
-          </Text>
+          <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
+            <Col>
+              <Title level={3}>
+                <CalculatorOutlined /> Branch Dashboard
+              </Title>
+              <Text type="secondary">
+                Daily operations overview for {date}
+              </Text>
+            </Col>
+            <Col>
+              <Space>
+                <CalendarOutlined />
+                <Text strong>Date Range:</Text>
+                <DatePicker.RangePicker
+                  value={dateRange}
+                  onChange={handleDateRangeChange}
+                  format="YYYY-MM-DD"
+                  allowClear={false}
+                  disabledDate={(current) => {
+                    // Disable future dates
+                    return current && current > dayjs().endOf('day');
+                  }}
+                  style={{ width: 280 }}
+                  placeholder={['Start Date', 'End Date']}
+                />
+              </Space>
+            </Col>
+          </Row>
         </div>
 
         {/* Today's Operations Status */}
@@ -150,6 +195,25 @@ export const BranchDashboard: React.FC = () => {
 
         {/* Key Metrics Row */}
         <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} lg={6}>
+            <Card className="stats-card">
+              <Statistic
+                title="Total Daily Collection"
+                value={
+                  (todayOps?.cashbook1?.savings || 0) + 
+                  (todayOps?.cashbook1?.loanCollection || 0) + 
+                  (todayOps?.cashbook1?.chargesCollection || 0)
+                }
+                precision={2}
+                prefix="₦"
+                valueStyle={{ 
+                  color: '#fa8c16',
+                  fontSize: window.innerWidth <= 768 ? '18px' : '24px'
+                }}
+              />
+            </Card>
+          </Col>
+
           <Col xs={24} sm={12} lg={6}>
             <Card className="stats-card">
               <Statistic
@@ -194,7 +258,10 @@ export const BranchDashboard: React.FC = () => {
               />
             </Card>
           </Col>
+        </Row>
 
+        {/* Second Row for Additional Metrics */}
+        <Row gutter={[16, 16]}>
           <Col xs={24} sm={12} lg={6}>
             <Card className="stats-card">
               <Statistic
@@ -263,6 +330,23 @@ export const BranchDashboard: React.FC = () => {
                     </Col>
                     <Col span={8}>
                       <Statistic
+                        title="Daily Collection"
+                        value={
+                          (todayOps.cashbook1.savings || 0) + 
+                          (todayOps.cashbook1.loanCollection || 0) + 
+                          (todayOps.cashbook1.chargesCollection || 0)
+                        }
+                        precision={2}
+                        prefix="₦"
+                        valueStyle={{ 
+                          color: '#fa8c16', 
+                          fontWeight: 'bold',
+                          fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                        }}
+                      />
+                    </Col>
+                    <Col span={8}>
+                      <Statistic
                         title="From HO"
                         value={todayOps.cashbook1.frmHO}
                         precision={2}
@@ -270,6 +354,7 @@ export const BranchDashboard: React.FC = () => {
                         valueStyle={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}
                       />
                     </Col>
+                    
                     <Col span={8}>
                       <Statistic
                         title="CB Total 1"
