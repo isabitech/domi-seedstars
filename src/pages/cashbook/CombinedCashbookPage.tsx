@@ -11,9 +11,11 @@ import {
   Alert,
   Spin,
   notification,
+  DatePicker,
 } from "antd";
 import { toast } from 'sonner';
-import { CheckCircleOutlined, DollarOutlined } from "@ant-design/icons";
+import dayjs from 'dayjs';
+import { CheckCircleOutlined, DollarOutlined, CalendarOutlined } from "@ant-design/icons";
 import { Cashbook1Component } from "../../components/Cashbook1";
 import { Cashbook2Component } from "../../components/Cashbook2";
 import { calculations } from "../../utils/calculations";
@@ -34,6 +36,7 @@ const { Title, Text } = Typography;
 
 export const CombinedCashbookPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [selectedDate, setSelectedDate] = useState(dayjs());
   const [cashbook1Data, setCashbook1Data] = useState<Cashbook1 | null>(null);
   const [cashbook2Data, setCashbook2Data] = useState<Cashbook2 | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
@@ -56,13 +59,14 @@ export const CombinedCashbookPage: React.FC = () => {
     cashbook2: storeCB2,
     setCashbook1,
     setCashbook2,
+    clearCashbookData,
   } = useCashbookStore();
 
   const { data: currentUser } = useGetMe();
 
   const user = currentUser?.data;
 
-  const currentDate = new Date().toISOString().split("T")[0];
+  const currentDate = selectedDate.format('YYYY-MM-DD');
 
   const getDailyEntry = useGetEntry(user?.branchId || "", currentDate);
 
@@ -70,9 +74,27 @@ export const CombinedCashbookPage: React.FC = () => {
 
   const [operationIsCompleted, setOperationIsCompleted] = useState(false);
 
+  // Handle date change
+  const handleDateChange = (date: dayjs.Dayjs | null) => {
+    if (date) {
+      setSelectedDate(date);
+      // Reset form data when date changes
+      setCashbook1Data(null);
+      setCashbook2Data(null);
+      setTodaysSummary(null);
+      setCurrentStep(0);
+      setOperationIsCompleted(false);
+      
+      // Clear Zustand store
+      clearCashbookData();
+      
+      toast.info(`Date changed to ${date.format('YYYY-MM-DD')}. Data will be loaded for this date.`);
+    }
+  };
+
   useEffect(() => {
     if (getDailyEntry.data?.data?.operations) {
-      console.log(getDailyEntry.data.data);
+      // console.log(getDailyEntry.data.data);
       setOperationIsCompleted(
         getDailyEntry.data.data.operations.isCompleted
       );
@@ -110,8 +132,19 @@ export const CombinedCashbookPage: React.FC = () => {
       // Always start at step 0 when component mounts, regardless of existing data
       // User should manually navigate through the steps
       setCurrentStep(0);
+    } else if (getDailyEntry.data?.data?.operations === null) {
+      // Clear all state when operations is null (no data for selected date)
+      console.log('No operations data found for selected date, clearing state');
+      setOperationIsCompleted(false);
+      setCashbook1Data(null);
+      setCashbook2Data(null);
+      setTodaysSummary(null);
+      setCurrentStep(0);
+      
+      // Clear Zustand store
+      clearCashbookData();
     }
-  }, [getDailyEntry.data]);
+  }, [getDailyEntry.data, selectedDate, clearCashbookData]);
   useEffect(() => {
     if (currentUser) {
       console.log("current User", currentUser);
@@ -288,14 +321,59 @@ export const CombinedCashbookPage: React.FC = () => {
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
         {/* Header */}
         <div>
-          <Title level={2}>
-            Daily Cashbook Entry - {new Date(currentDate).toLocaleDateString()}
-          </Title>
+          <Row justify="space-between" align="middle" style={{ marginBottom: 8 }}>
+            <Col>
+              <Title level={2}>
+                Daily Cashbook Entry - {selectedDate.format('MMMM D, YYYY')}
+              </Title>
+            </Col>
+            <Col>
+              <Space>
+                <CalendarOutlined />
+                <DatePicker
+                  value={selectedDate}
+                  onChange={handleDateChange}
+                  format="YYYY-MM-DD"
+                  placeholder="Select date"
+                  allowClear={false}
+                  disabledDate={(current) => {
+                    // Disable future dates (can't enter operations for future)
+                    return current && current > dayjs().endOf('day');
+                  }}
+                  style={{ width: 140 }}
+                />
+              </Space>
+            </Col>
+          </Row>
           <Text type="secondary">
-            Complete both Cashbook 1 and Cashbook 2 entries for today's
-            operations
+            {selectedDate.isSame(dayjs(), 'day') 
+              ? "Complete both Cashbook 1 and Cashbook 2 entries for today's operations"
+              : `Complete both Cashbook 1 and Cashbook 2 entries for ${selectedDate.format('MMMM D, YYYY')} operations`
+            }
           </Text>
         </div>
+
+        {/* Date Alert for Previous Days */}
+        {!selectedDate.isSame(dayjs(), 'day') && (
+          <Alert
+            message={`Entering Operations for Previous Date`}
+            description={`You are entering operations for ${selectedDate.format('MMMM D, YYYY')}. Please ensure all data is accurate for this specific date.`}
+            type="warning"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+        )}
+
+        {/* Operations Completed Alert */}
+        {operationIsCompleted && (
+          <Alert
+            message={`Operations Already Completed`}
+            description={`Operations for ${selectedDate.format('MMMM D, YYYY')} have already been completed and submitted.`}
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+        )}
 
         {/* Progress Steps */}
         <Card>

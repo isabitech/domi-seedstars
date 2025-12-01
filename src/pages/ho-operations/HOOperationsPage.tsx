@@ -30,6 +30,7 @@ import { calculations } from '../../utils/calculations';
 import { useUpdateHOFields } from '../../hooks/Operations/useUpdateHOFields';
 import { useListBranches } from '../../hooks/Branches/useListBranches';
 import { useListAllDailyOperations } from '../../hooks/Operations/useListAllDailyOperations';
+import { CURRENT_DATE } from '../../lib/utils';
 
 
 const { Title, Text } = Typography;
@@ -41,6 +42,7 @@ interface BranchHOData {
   cashbook1: {
     frmHO: number;
     frmBR: number;
+    pcih: number;
   };
   disbursementRoll: {
     prevDis: number;
@@ -77,6 +79,8 @@ export const HOOperationsPage: React.FC = () => {
 
   // Initialize branch data
   useEffect(() => {
+    const selectedDateString = selectedDate.format('YYYY-MM-DD');
+    
     const loadData = async () => {
       if (!branchesResponse?.data?.branches) return;
       
@@ -98,6 +102,7 @@ export const HOOperationsPage: React.FC = () => {
           // Extract cashbook1 data if available
           const frmHO = branchOperation?.cashbook1?.frmHO || 0;
           const frmBR = branchOperation?.cashbook1?.frmBR || 0;
+          const pcih = branchOperation?.cashbook1?.pcih || 0;
           
           return {
             branchId: branch._id,
@@ -106,6 +111,7 @@ export const HOOperationsPage: React.FC = () => {
             cashbook1: {
               frmHO: frmHO,
               frmBR: frmBR,
+              pcih: pcih,
             },
             disbursementRoll: {
               prevDis: branch.previousDisbursement || 0,
@@ -124,6 +130,7 @@ export const HOOperationsPage: React.FC = () => {
         initialData.forEach(branch => {
           formValues[`${branch.branchId}_frmHO`] = branch.cashbook1.frmHO;
           formValues[`${branch.branchId}_frmBR`] = branch.cashbook1.frmBR;
+          formValues[`${branch.branchId}_pcih`] = branch.cashbook1.pcih;
           formValues[`${branch.branchId}_prevDis`] = branch.disbursementRoll.prevDis;
           formValues[`${branch.branchId}_prevTotalSav`] = branch.currentBranchRegister.prevTotalSav;
           formValues[`${branch.branchId}_prevTotalLoan`] = branch.currentBranchRegister.prevTotalLoan;
@@ -139,7 +146,7 @@ export const HOOperationsPage: React.FC = () => {
     };
     
     loadData();
-  }, [selectedDate.format('YYYY-MM-DD'), branchesResponse?.data?.branches, getAllOperationsData?.data?.data?.operations, form, refetchBranches]);
+  }, [selectedDate, branchesResponse?.data?.branches, getAllOperationsData?.data?.data?.operations, form]);
 
   const handleCellUpdate = async (branchId: string, field: string, value: number) => {
     try {
@@ -150,7 +157,10 @@ export const HOOperationsPage: React.FC = () => {
         apiData.frmHO = value;
       } else if (field === 'frmBR') {
         apiData.frmBR = value;
-      } else if (field === 'prevDis') {
+      } else if (field === 'pcih') {
+        apiData.pcih = value;
+      } 
+      else if (field === 'prevDis') {
         apiData.previousDisbursement = value;
       } else if (field === 'prevTotalSav') {
         apiData.previousSavingsTotal = value;
@@ -166,6 +176,7 @@ export const HOOperationsPage: React.FC = () => {
         field1: branchId === 'br-001' ? value : undefined,
         field2: branchId === 'br-002' ? value : undefined,
         field3: branchId === 'br-003' ? value : undefined,
+        date: CURRENT_DATE,
       });
 
       // Update local state
@@ -177,7 +188,11 @@ export const HOOperationsPage: React.FC = () => {
             updatedBranch.cashbook1.frmHO = value;
           } else if (field === 'frmBR') {
             updatedBranch.cashbook1.frmBR = value;
-          } else if (field === 'prevDis') {
+          } 
+          else if (field === 'pcih') {
+            updatedBranch.cashbook1.pcih = value;
+          }
+          else if (field === 'prevDis') {
             updatedBranch.disbursementRoll.prevDis = value;
           } else if (field === 'prevTotalSav') {
             updatedBranch.currentBranchRegister.prevTotalSav = value;
@@ -204,6 +219,7 @@ export const HOOperationsPage: React.FC = () => {
     modalForm.setFieldsValue({
       frmHO: branch.cashbook1.frmHO,
       frmBR: branch.cashbook1.frmBR,
+      pcih: branch.cashbook1.pcih,
       prevDis: branch.disbursementRoll.prevDis,
       prevTotalSav: branch.currentBranchRegister.prevTotalSav,
       prevTotalLoan: branch.currentBranchRegister.prevTotalLoan,
@@ -217,6 +233,7 @@ export const HOOperationsPage: React.FC = () => {
     prevDis: number;
     prevTotalSav: number;
     prevTotalLoan: number;
+    pcih: number;
   }) => {
 
     if (selectedBranch) {
@@ -227,6 +244,7 @@ export const HOOperationsPage: React.FC = () => {
           branchId: selectedBranch.branchId,
           frmHO: values.frmHO || 0,
           frmBR: values.frmBR || 0,
+          pcih: values.pcih || 0,
           previousDisbursement: values.prevDis || 0,
           previousSavingsTotal: values.prevTotalSav || 0,
           previousLoanTotal: values.prevTotalLoan || 0,
@@ -234,6 +252,7 @@ export const HOOperationsPage: React.FC = () => {
           field1: selectedBranch.branchId === 'br-001' ? values.frmHO : undefined,
           field2: selectedBranch.branchId === 'br-002' ? values.frmHO : undefined,
           field3: selectedBranch.branchId === 'br-003' ? values.frmHO : undefined,
+          date: CURRENT_DATE,
         });
 
         // Update local state
@@ -244,6 +263,7 @@ export const HOOperationsPage: React.FC = () => {
                 cashbook1: {
                   frmHO: values.frmHO || 0,
                   frmBR: values.frmBR || 0,
+                  pcih: values.pcih || 0,
                 },
                 disbursementRoll: {
                   prevDis: values.prevDis || 0,
@@ -285,12 +305,14 @@ export const HOOperationsPage: React.FC = () => {
   const totals = branchData.reduce((acc, branch) => ({
     totalFrmHO: acc.totalFrmHO + branch.cashbook1.frmHO,
     totalFrmBR: acc.totalFrmBR + branch.cashbook1.frmBR,
+    totalPCIH: acc.totalPCIH + branch.cashbook1.pcih,
     totalPrevDis: acc.totalPrevDis + branch.disbursementRoll.prevDis,
     totalPrevSav: acc.totalPrevSav + branch.currentBranchRegister.prevTotalSav,
     totalPrevLoan: acc.totalPrevLoan + branch.currentBranchRegister.prevTotalLoan,
   }), {
     totalFrmHO: 0,
     totalFrmBR: 0,
+    totalPCIH: 0,
     totalPrevDis: 0,
     totalPrevSav: 0,
     totalPrevLoan: 0,
@@ -428,6 +450,18 @@ export const HOOperationsPage: React.FC = () => {
           value={record.cashbook1.frmBR}
           branchId={record.branchId}
           field="frmBR"
+        />
+      ),
+    },
+    {
+      title: 'Previous Cash In Hand (₦)',
+      key: 'pcih',
+      width: 150,
+      render: (_, record) => (
+        <EditableCell
+          value={record.cashbook1.pcih}
+          branchId={record.branchId}
+          field="pcih"
         />
       ),
     },
@@ -574,6 +608,11 @@ export const HOOperationsPage: React.FC = () => {
             </Card>
           </Col>
           <Col xs={24} sm={12} lg={8} xl={4.8}>
+          </Col>
+        </Row>
+
+        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+          <Col xs={24} sm={12} lg={8} xl={4}>
             <Card>
               <Statistic
                 title="Total Prev Loan"
@@ -669,6 +708,20 @@ export const HOOperationsPage: React.FC = () => {
                 </Col>
               </Row>
 
+              <Form.Item
+                label="Previous Cash in Hand (PCIH) (₦)"
+                name="pcih"
+                rules={[{ required: true, message: 'Please enter Previous Cash in Hand' }]}
+                help="This is typically yesterday's Online CIH value"
+              >
+                <Input
+                  type="number"
+                  placeholder="0.00"
+                  step="0.01"
+                  prefix="₦"
+                />
+              </Form.Item>
+
               <Row gutter={16}>
                 <Col xs={24} sm={12}>
                   <Form.Item
@@ -700,18 +753,18 @@ export const HOOperationsPage: React.FC = () => {
                 </Col>
               </Row>
 
-              <Form.Item
-                label="Previous Total Loan (₦)"
-                name="prevTotalLoan"
-                rules={[{ required: true, message: 'Please enter Previous Total Loan' }]}
-              >
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  step="0.01"
-                  prefix="₦"
-                />
-              </Form.Item>
+                  <Form.Item
+                    label="Previous Total Loan (₦)"
+                    name="prevTotalLoan"
+                    rules={[{ required: true, message: 'Please enter Previous Total Loan' }]}
+                  >
+                    <Input
+                      type="number"
+                      placeholder="0.00"
+                      step="0.01"
+                      prefix="₦"
+                    />
+                  </Form.Item>
 
               <Form.Item>
                 <Space style={{ float: 'right' }}>
@@ -748,6 +801,9 @@ export const HOOperationsPage: React.FC = () => {
                 
                 <Text strong><BankOutlined /> Fund from Branch (FRM BR)</Text>
                 <Text type="secondary">Amount transferred between branches.</Text>
+                
+                <Text strong><DollarOutlined /> Previous Cash in Hand (PCIH)</Text>
+                <Text type="secondary">Yesterday's Online CIH value carried forward to today's operations.</Text>
                 
                 <Text strong><FileTextOutlined /> Previous Disbursement</Text>
                 <Text type="secondary">Total disbursement amount from previous period for roll calculation.</Text>
