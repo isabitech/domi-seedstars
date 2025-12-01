@@ -1021,7 +1021,7 @@ const DailyOperations = () => {
                     Copy to Clipboard
                   </Button> */}
                     {!operationsData.data.operations.isCompleted &&
-                      selectedDate === CURRENT_DATE && (
+                       (
                         <Button
                           type="primary"
                           onClick={() => handleSubmitOperations()}
