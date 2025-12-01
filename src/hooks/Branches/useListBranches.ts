@@ -66,6 +66,7 @@ export interface Branch {
   previousLoanTotal: number
   previousSavingsTotal: number
   previousDisbursement: number
+  previousDisbursementRollNo: number
   loanMultiplier: number
   isActive: boolean
   createdAt: string
