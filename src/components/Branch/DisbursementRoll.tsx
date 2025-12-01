@@ -108,6 +108,13 @@ const DisbursementRoll = () => {
       icon: <CalendarOutlined style={{ color: '#52c41a' }} />
     },
     {
+      key: 'total-dis-no',
+      description: 'Total Disbursement Roll Number',
+      amount: data.disNo,
+      type: 'number',
+      icon: <TransactionOutlined style={{ color: '#fa8c16' }} />
+    },
+    {
       key: 'total',
       description: 'Total Disbursement Roll',
       amount: data.disbursementRoll,
@@ -139,14 +146,15 @@ const DisbursementRoll = () => {
         <Text
           strong={record.type === 'total'}
           style={{
-            color: record.type === 'total' ? '#1890ff' : 
+            color: record.key === 'total-dis-no' ? '#fa8c16' :
+                   record.type === 'total' ? '#1890ff' : 
                    record.type === 'daily' ? '#52c41a' : '#722ed1',
             fontSize: window.innerWidth <= 768 ? 
               (record.type === 'total' ? '14px' : '12px') : 
               (record.type === 'total' ? '16px' : '14px')
           }}
         >
-          {formatCurrency(amount)}
+          {record.key === 'total-dis-no' ? amount.toLocaleString() : formatCurrency(amount)}
         </Text>
       )
     },
@@ -158,12 +166,14 @@ const DisbursementRoll = () => {
         const colors = {
           previous: 'purple',
           daily: 'green',
-          total: 'blue'
+          total: 'blue',
+          number: 'orange'
         };
         const labels = {
           previous: 'PREVIOUS',
           daily: 'DAILY AVG',
-          total: 'TOTAL'
+          total: 'TOTAL',
+          number: 'COUNT'
         };
         return (
           <Tag color={colors[type as keyof typeof colors]}>
@@ -271,7 +281,7 @@ const DisbursementRoll = () => {
 
       {/* Key Metrics */}
       <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={12} lg={8}>
           <Card>
             <Statistic
               title="Previous Month"
@@ -285,7 +295,7 @@ const DisbursementRoll = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={12} lg={8}>
           <Card>
             <Statistic
               title="Daily Average"
@@ -299,7 +309,23 @@ const DisbursementRoll = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={12} lg={8}>
+          <Card>
+            <Statistic
+              title="Total Disbursement Roll Number"
+              value={responseData.disNo}
+              prefix={<TransactionOutlined />}
+              valueStyle={{ 
+                color: '#fa8c16',
+                fontSize: window.innerWidth <= 768 ? '16px' : '24px'
+              }}
+            />
+          </Card>
+        </Col>
+      </Row>
+      
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={12} lg={12}>
           <Card>
             <Statistic
               title="Total Disbursement"
@@ -313,7 +339,7 @@ const DisbursementRoll = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={12} lg={12}>
           <Card>
             <Statistic
               title="Growth Rate"

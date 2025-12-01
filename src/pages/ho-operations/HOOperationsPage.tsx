@@ -513,7 +513,7 @@ export const HOOperationsPage: React.FC = () => {
                 onClick={handleRefresh}
               >
                 Refresh
-              </Button>
+              </Button> 
             </Space>
           </Col>
         </Row>
