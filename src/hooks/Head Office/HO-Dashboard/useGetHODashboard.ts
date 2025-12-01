@@ -7,16 +7,7 @@ interface HODashboardParams {
   branchId?: string;
 }
 
-// export interface GetHODashboardResponse {
-//   success: boolean
-//   data: GetHODashboardData
-//   message: string
-//   timestamp: string
-// }
 
-// export interface GetHODashboardData {
-//   dashboardData: DashboardData
-// }
 
 export interface GetHODashboardResponse {
   success: boolean

@@ -699,7 +699,7 @@ export const HeadOfficeDashboard: React.FC = () => {
                           .slice(0, 5)
                           .map(branch => (
                             <Tag key={branch._id} color="orange" icon={<ClockCircleOutlined />}>
-                              {branch.branchCode}
+                              {branch.branchCode} {branch.branchName}
                             </Tag>
                           ))}
                         {dashboard.todayStatus.filter(s => !s.isCompleted).length > 5 && (
