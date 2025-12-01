@@ -7,23 +7,40 @@ interface HODashboardParams {
   branchId?: string;
 }
 
+// export interface GetHODashboardResponse {
+//   success: boolean
+//   data: GetHODashboardData
+//   message: string
+//   timestamp: string
+// }
+
+// export interface GetHODashboardData {
+//   dashboardData: DashboardData
+// }
+
 export interface GetHODashboardResponse {
   success: boolean
-  data: GetHODashboardData
+  data: Data
   message: string
   timestamp: string
 }
 
-export interface GetHODashboardData {
+export interface Data {
   dashboardData: DashboardData
 }
 
 export interface DashboardData {
-  branches: any[]
+  branches: Branch[]
   consolidatedSummary: ConsolidatedSummary
-  branchPerformance: any[]
+  branchPerformance: BranchPerformance[]
   todayStatus: TodayStatu[]
-  trendData: any[]
+  trendData: TrendDaum[]
+}
+
+export interface Branch {
+  _id: string
+  name: string
+  code: string
 }
 
 export interface ConsolidatedSummary {
@@ -34,8 +51,21 @@ export interface ConsolidatedSummary {
   totalWithdrawals: number
   totalOnlineCIH: number
   totalTSO: number
-  activeBranches: any[]
+  activeBranches: string[]
   totalOperations: number
+}
+
+export interface BranchPerformance {
+  _id: string
+  branchName: string
+  branchCode: string
+  totalSavings: number
+  totalLoanCollection: number
+  totalDisbursements: number
+  avgOnlineCIH: number
+  totalTSO: number
+  operationDays: number
+  lastOperation: string
 }
 
 export interface TodayStatu {
@@ -46,6 +76,15 @@ export interface TodayStatu {
   branchName: string
   branchCode: string
 }
+
+export interface TrendDaum {
+  date: string
+  totalSavings: number
+  totalDisbursements: number
+  totalTSO: number
+  operatingBranches: number
+}
+
 
 
 const getHODashboard = async (params?: HODashboardParams): Promise<GetHODashboardResponse> => {

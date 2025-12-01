@@ -1027,7 +1027,7 @@ const DailyOperations = () => {
                           onClick={() => handleSubmitOperations()}
                           loading={submitTodayOperations.isPending}
                         >
-                          Submit Todays Operations
+                          Submit {selectedDate === CURRENT_DATE ? "Today's" : `${dayjs(selectedDate).format("MMM DD, YYYY")}`} Operations
                         </Button>
                       )}
                   </Space>

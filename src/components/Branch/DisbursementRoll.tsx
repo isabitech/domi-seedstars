@@ -101,6 +101,13 @@ const DisbursementRoll = () => {
       icon: <DollarCircleOutlined style={{ color: '#722ed1' }} />
     },
     {
+      key: 'previous-roll-no',
+      description: 'Previous Disbursement Roll No',
+      amount: data.previousDisbursementRollNo,
+      type: 'number',
+      icon: <FileTextOutlined style={{ color: '#eb2f96' }} />
+    },
+    {
       key: 'daily',
       description: 'Daily Disbursement Average',
       amount: data.dailyDisbursement,
@@ -147,6 +154,7 @@ const DisbursementRoll = () => {
           strong={record.type === 'total'}
           style={{
             color: record.key === 'total-dis-no' ? '#fa8c16' :
+                   record.key === 'previous-roll-no' ? '#eb2f96' :
                    record.type === 'total' ? '#1890ff' : 
                    record.type === 'daily' ? '#52c41a' : '#722ed1',
             fontSize: window.innerWidth <= 768 ? 
@@ -154,7 +162,7 @@ const DisbursementRoll = () => {
               (record.type === 'total' ? '16px' : '14px')
           }}
         >
-          {record.key === 'total-dis-no' ? amount.toLocaleString() : formatCurrency(amount)}
+          {record.key === 'total-dis-no' || record.key === 'previous-roll-no' ? amount.toLocaleString() : formatCurrency(amount)}
         </Text>
       )
     },
@@ -281,7 +289,7 @@ const DisbursementRoll = () => {
 
       {/* Key Metrics */}
       <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} lg={8}>
+        <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
               title="Previous Month"
@@ -295,7 +303,20 @@ const DisbursementRoll = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={8}>
+        <Col xs={24} sm={12} lg={6}>
+          <Card>
+            <Statistic
+              title="Previous Roll No"
+              value={responseData.previousDisbursementRollNo}
+              prefix={<FileTextOutlined />}
+              valueStyle={{ 
+                color: '#eb2f96',
+                fontSize: window.innerWidth <= 768 ? '16px' : '24px'
+              }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
               title="Daily Average"
@@ -309,7 +330,7 @@ const DisbursementRoll = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={8}>
+        <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
               title="Total Disbursement Roll Number"

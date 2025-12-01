@@ -14,6 +14,8 @@ export interface UpdateHOFieldsRequest {
   previousLoanTotal?: number;
   previousSavingsTotal?: number;
   date: string;
+  previousDisbursementRollNo?: number;
+  
   
 }
 

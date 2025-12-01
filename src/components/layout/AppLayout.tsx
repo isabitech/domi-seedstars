@@ -270,7 +270,7 @@ export const AppLayout: React.FC = () => {
           theme="light"
           style={{
             boxShadow: '2px 0 8px rgba(0,0,0,0.1)',
-            height: '100vh',
+            minHeight: '100vh',
             overflowY: 'auto',
             display: 'flex',
             flexDirection: 'column',
@@ -305,6 +305,7 @@ export const AppLayout: React.FC = () => {
             overflowY: 'auto',
             overflowX: 'hidden',
             paddingTop: '16px',
+            marginBottom: '50px'
           }}>
             <Menu
               mode="inline"
