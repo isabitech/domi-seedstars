@@ -34,6 +34,7 @@ export interface Branch {
   code: string
 }
 
+
 export interface ConsolidatedSummary {
   totalSavings: number
   totalLoanCollection: number
@@ -42,9 +43,13 @@ export interface ConsolidatedSummary {
   totalWithdrawals: number
   totalOnlineCIH: number
   totalTSO: number
+  totalFrmHO: number
+  totalDisbursementRollNo: number
+  totalCollections: number
   activeBranches: string[]
   totalOperations: number
 }
+
 
 export interface BranchPerformance {
   _id: string

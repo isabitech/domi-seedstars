@@ -547,6 +547,23 @@ export const BranchDailyReportPage: React.FC = () => {
           render: (value: number) => calculations.formatCurrency(value)
         },
         {
+          title: 'Total Collections',
+          dataIndex: ['cashbook1', 'collectionTotal'],
+          key: 'collectionTotal',
+          render: (value: number, record: BranchDailyReportData) => {
+            const totalCollections = record.cashbook1.savings + record.cashbook1.loanCollection + record.cashbook1.charges;
+            return (
+              <Text style={{ 
+                color: '#52c41a', 
+                fontWeight: 'bold',
+                fontSize: window.innerWidth <= 768 ? '12px' : '14px'
+              }}>
+                {calculations.formatCurrency(totalCollections)}
+              </Text>
+            );
+          }
+        },
+        {
           title: 'FRM HO',
           dataIndex: ['cashbook1', 'frmHO'],
           key: 'frmHO',
@@ -684,12 +701,6 @@ export const BranchDailyReportPage: React.FC = () => {
           render: (value: number) => (
             <Tag color="magenta">{calculations.formatCurrency(value)}</Tag>
           )
-        },
-        {
-          title: 'Disbursement Roll',
-          dataIndex: 'disbursementRoll',
-          key: 'disbursementRoll',
-          render: (value: number, record: BranchDailyReportData) => renderCurrency(value, record, '#faad14')
         }
       ]
     },
@@ -698,51 +709,32 @@ export const BranchDailyReportPage: React.FC = () => {
       title: 'Disbursement Roll Data',
       children: [
         {
-          title: 'Previous Disbursement',
-          dataIndex: ['disbursementRollData', 'previousDisbursement'],
-          key: 'previousDisbursement',
-          render: (value: number, record: BranchDailyReportData) => renderCurrency(value, record, '#722ed1')
-        },
-        {
-          title: 'Daily Disbursement',
-          dataIndex: ['disbursementRollData', 'dailyDisbursement'],
-          key: 'dailyDisbursement',
-          render: (value: number, record: BranchDailyReportData) => renderCurrency(value, record, '#13c2c2')
-        },
-        {
-          title: 'Month/Year',
-          key: 'monthYear',
-          render: (_, record: BranchDailyReportData) => {
+          title: 'Disbursement Roll No',
+          dataIndex: 'disbursementRollNumber',
+          key: 'disbursementRollNumber',
+          render: (value: number, record: BranchDailyReportData) => {
             if (record.branchId === 'grand-total') {
               return (
-                <Text style={{ 
-                  color: '#999',
+                <Text strong style={{ 
+                  color: '#fa8c16', 
                   fontSize: window.innerWidth <= 768 ? '11px' : '13px'
                 }}>
-                  -
-                </Text>
-              );
-            }
-            const { month, year } = record.disbursementRollData;
-            if (!month || !year) {
-              return (
-                <Text style={{ 
-                  color: '#999',
-                  fontSize: window.innerWidth <= 768 ? '11px' : '13px'
-                }}>
-                  -
+                  {value.toLocaleString()}
                 </Text>
               );
             }
             return (
-              <Text style={{ 
-                fontSize: window.innerWidth <= 768 ? '11px' : '12px',
-                color: '#666'
-              }}>
-                {String(month).padStart(2, '0')}/{year}
-              </Text>
+              <span style={{ fontSize: window.innerWidth <= 768 ? '12px' : '14px' }}>
+                {value.toLocaleString()}
+              </span>
             );
           }
+        },
+        {
+          title: 'Disbursement Roll',
+          dataIndex: 'disbursementRoll',
+          key: 'disbursementRoll',
+          render: (value: number, record: BranchDailyReportData) => renderCurrency(value, record, '#faad14')
         }
       ]
     },
