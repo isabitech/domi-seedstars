@@ -18,6 +18,7 @@ export interface DisbursementRoll {
   month: number
   year: number
   previousDisbursement: number
+  previousDisbursementRollNo: number
   dailyDisbursement: number
   disbursementRoll: number
   createdAt: string
