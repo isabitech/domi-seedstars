@@ -139,9 +139,9 @@ const transformOperationToReportData = (operation: Operation): BranchDailyReport
     cbrLoan: operation.loanRegister.currentLoanBalance,
     disbursementRoll: operation.disbursementRoll?.disbursementRoll || 0,
     totalCollections: operation.cashbook1.savings + operation.cashbook1.loanCollection + operation.cashbook1.chargesCollection,
-    disbursementNumber: operation.cashbook2.disNo,
+    disbursementNumber: operation.disbursementRoll?.disNo || 0,
     disbursementAmount: operation.cashbook2.disAmt,
-    disbursementRollNumber: operation.disbursementRoll?.disbursementRoll || 0,
+    disbursementRollNumber: (operation.disbursementRoll?.previousDisbursementRollNo || 0) + (operation.disbursementRoll?.disNo || 0),
     totalFrmHO: operation.cashbook1.frmHO,
     predictions: {
       predictionNo: operation.predictions?.predictionNo || 0,
@@ -188,7 +188,8 @@ export const BranchDailyReportPage: React.FC = () => {
       disbursementAmount: acc.disbursementAmount + branch.disbursementAmount,
       disbursementRollNumber: acc.disbursementRollNumber + branch.disbursementRollNumber,
       totalFrmHO: acc.totalFrmHO + branch.totalFrmHO,
-      totalPredictionAmount: acc.totalPredictionAmount + branch.predictions.predictionAmount
+      totalPredictionAmount: acc.totalPredictionAmount + branch.predictions.predictionAmount,
+      totalPredictionNo: acc.totalPredictionNo + branch.predictions.predictionNo,
     }), {
       cbTotal1: 0,
       cbTotal2: 0,
@@ -204,7 +205,8 @@ export const BranchDailyReportPage: React.FC = () => {
       disbursementAmount: 0,
       disbursementRollNumber: 0,
       totalFrmHO: 0,
-      totalPredictionAmount: 0
+      totalPredictionAmount: 0,
+      totalPredictionNo: 0,
     });
   }, [reportData]);
 
@@ -865,7 +867,7 @@ export const BranchDailyReportPage: React.FC = () => {
               <Col xs={24} sm={12} lg={6}>
                 <Card>
                   <Statistic
-                    title="Total Collections"
+                    title="Total Daily Collections"
                     value={totals.totalCollections}
                     precision={2}
                     prefix="₦"
@@ -879,7 +881,7 @@ export const BranchDailyReportPage: React.FC = () => {
               <Col xs={24} sm={12} lg={6}>
                 <Card>
                   <Statistic
-                    title="Total Disbursement Number"
+                    title=" Total Daily Disbursement Number"
                     value={totals.disbursementNumber}
                     valueStyle={{ 
                       color: '#1890ff',
@@ -891,7 +893,7 @@ export const BranchDailyReportPage: React.FC = () => {
               <Col xs={24} sm={12} lg={6}>
                 <Card>
                   <Statistic
-                    title="Total Disbursement Amount"
+                    title="Total Daily Disbursement Amount"
                     value={totals.disbursementAmount}
                     precision={2}
                     prefix="₦"
@@ -905,8 +907,21 @@ export const BranchDailyReportPage: React.FC = () => {
               <Col xs={24} sm={12} lg={6}>
                 <Card>
                   <Statistic
-                    title="Total Disbursement Roll No"
+                    title="Current Total Disbursement Roll Number"
                     value={totals.disbursementRollNumber}
+                    valueStyle={{ 
+                      color: '#fa8c16',
+                      fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                    }}
+                  />
+                </Card>
+              </Col>
+              <Col xs={24} sm={12} lg={6}>
+                <Card>
+                  <Statistic
+                    title="Current Total Disbursement Roll Amount"
+                    value={totals.disbursementRoll}
+                    prefix="₦"
                     valueStyle={{ 
                       color: '#fa8c16',
                       fontSize: window.innerWidth <= 768 ? '16px' : '20px'
@@ -920,7 +935,7 @@ export const BranchDailyReportPage: React.FC = () => {
               <Col xs={24} sm={12} lg={6}>
                 <Card>
                   <Statistic
-                    title="Total FRM HO"
+                    title="Total Daily FRM HO"
                     value={totals.totalFrmHO}
                     precision={2}
                     prefix="₦"
@@ -934,7 +949,7 @@ export const BranchDailyReportPage: React.FC = () => {
               <Col xs={24} sm={12} lg={6}>
                 <Card>
                   <Statistic
-                    title="Total Online CIH"
+                    title="Total Daily Online CIH"
                     value={totals.onlineCIH}
                     precision={2}
                     prefix="₦"
@@ -948,7 +963,7 @@ export const BranchDailyReportPage: React.FC = () => {
               <Col xs={24} sm={12} lg={6}>
                 <Card>
                   <Statistic
-                    title="Total TSO"
+                    title="Total Daily TSO"
                     value={totals.tso}
                     precision={2}
                     prefix="₦"
@@ -962,10 +977,22 @@ export const BranchDailyReportPage: React.FC = () => {
               <Col xs={24} sm={12} lg={6}>
                 <Card>
                   <Statistic
-                    title="Total Predictions"
+                    title="Total Daily Prediction Amount"
                     value={totals.totalPredictionAmount}
                     precision={2}
                     prefix="₦"
+                    valueStyle={{ 
+                      color: '#eb2f96',
+                      fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                    }}
+                  />
+                </Card>
+              </Col>
+              <Col xs={24} sm={12} lg={6}>
+                <Card>
+                  <Statistic
+                    title="Total Daily Prediction Number"
+                    value={totals.totalPredictionNo}
                     valueStyle={{ 
                       color: '#eb2f96',
                       fontSize: window.innerWidth <= 768 ? '16px' : '20px'
@@ -1038,7 +1065,7 @@ export const BranchDailyReportPage: React.FC = () => {
                 <Tag color="green">{calculations.formatCurrency(totals.totalCollections)}</Tag>
               </Col>
               <Col xs={12} sm={8} lg={4}>
-                <Text strong>Total Disbursement No: </Text>
+                <Text strong>Daily Disbursement No: </Text>
                 <Tag color="blue">{totals.disbursementNumber.toLocaleString()}</Tag>
               </Col>
               <Col xs={12} sm={8} lg={4}>
