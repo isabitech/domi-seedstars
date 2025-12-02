@@ -178,6 +178,9 @@ export interface DisbursementRoll {
   createdAt: string
   updatedAt: string
   __v: number
+  previousDisbursementRollNo?: number
+  disNo?: number
+  disAmt?: number
 }
 
 const listAllDailyOperations = async (date: string) :Promise<ListAllDailyOperationsResponse> => {

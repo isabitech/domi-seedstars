@@ -115,9 +115,16 @@ const DisbursementRoll = () => {
       icon: <CalendarOutlined style={{ color: '#52c41a' }} />
     },
     {
-      key: 'total-dis-no',
-      description: 'Total Disbursement Roll Number',
+      key: 'daily-number',
+      description: 'Daily Average Number',
       amount: data.disNo,
+      type: 'number',
+      icon: <TransactionOutlined style={{ color: '#fa541c' }} />
+    },
+    {
+      key: 'total-dis-no',
+      description: 'Total Disbursement Number',
+      amount: data.disNo + data.previousDisbursementRollNo,
       type: 'number',
       icon: <TransactionOutlined style={{ color: '#fa8c16' }} />
     },
@@ -162,7 +169,7 @@ const DisbursementRoll = () => {
               (record.type === 'total' ? '16px' : '14px')
           }}
         >
-          {record.key === 'total-dis-no' || record.key === 'previous-roll-no' ? amount.toLocaleString() : formatCurrency(amount)}
+          {record.key === 'total-dis-no' || record.key === 'previous-roll-no' || record.key === 'daily-number' ? amount.toLocaleString() : formatCurrency(amount)}
         </Text>
       )
     },
@@ -333,8 +340,21 @@ const DisbursementRoll = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Total Disbursement Roll Number"
+              title="Daily Average Number"
               value={responseData.disNo}
+              prefix={<TransactionOutlined />}
+              valueStyle={{ 
+                color: '#fa541c',
+                fontSize: window.innerWidth <= 768 ? '16px' : '24px'
+              }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card>
+            <Statistic
+              title="Total Disbursement Number"
+              value={responseData.disNo + responseData.previousDisbursementRollNo}
               prefix={<TransactionOutlined />}
               valueStyle={{ 
                 color: '#fa8c16',

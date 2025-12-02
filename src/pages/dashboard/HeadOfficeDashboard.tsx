@@ -158,7 +158,7 @@ export const HeadOfficeDashboard: React.FC = () => {
       key: 'status',
       width: 100,
       render: (_: unknown, record: any) => {
-        const todayBranch = dashboard?.todayStatus?.find(t => t._id === record._id);
+        const todayBranch = dashboard?.todayStatus?.find(t => t.branchCode === record.branchCode);
         const isCompleted = todayBranch?.isCompleted;
         return (
           <Badge 
