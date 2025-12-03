@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import axiosInstance from '../../instance/axiosInstance';
+import { storeTokenToStorage, storeUserInfoToStorage } from '../../utils/helpers';
 
 export interface LoginRequest {
   email: string;
@@ -29,13 +30,14 @@ const loginUser = async (credentials: LoginRequest): Promise<LoginResponse> => {
 export const useLogin = () => {
   return useMutation({
     mutationFn: loginUser,
-    onSuccess: (data) => {
-      // Store token in localStorage or your preferred storage
-      localStorage.setItem('token', data.data.token);
-      localStorage.setItem('user', JSON.stringify(data.data.user));
-      
-      // Set default authorization header
-      axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${data.data.token}`;
+    onSuccess: async (data) => {
+      try {
+        // Store token and user in encrypted session storage
+        await storeTokenToStorage(data.data.token);
+        await storeUserInfoToStorage(data.data.user);
+      } catch (error) {
+        console.error('Error storing user data:', error);
+      }
     },
     onError: (error) => {
       console.error('Login error:', error);

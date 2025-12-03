@@ -15,6 +15,7 @@ import {
   Progress,
   Button
 } from 'antd';
+import { toast } from 'sonner';
 import {
   BankOutlined,
   ArrowUpOutlined,
@@ -41,8 +42,13 @@ const LoanRegister = () => {
   useEffect(() => {
     if (branchLoanRegister.data) {
       console.log('Loan Register Data:', branchLoanRegister.data);
+      
+      // Check if operations is null and show warning toast
+      if (branchLoanRegister.data.operations === null) {
+        toast.warning(`Operations not found for ${dayjs(selectedDate).format('DD MMMM YYYY')}`);
+      }
     }
-  }, [branchLoanRegister.data]);
+  }, [branchLoanRegister.data, selectedDate]);
 
   const handleDateChange = (date: dayjs.Dayjs | null) => {
     if (date) {
@@ -193,23 +199,30 @@ const LoanRegister = () => {
 
   const data = branchLoanRegister.data;
   
-  if (!data) {
+  if (!data || data.operations === null || !data.loanRegister) {
     return (
       <Card>
         <Alert
-          message="No Data Available"
-          description={`No loan register data found for ${dayjs(selectedDate).format('DD MMMM YYYY')}.`}
-          type="info"
+          message="No Operations Data Available"
+          description={`No loan register data found for ${dayjs(selectedDate).format('DD MMMM YYYY')}. Please ensure operations have been completed for this date.`}
+          type="warning"
           showIcon
+          action={
+            <Button size="small" onClick={handleRefresh}>
+              Retry
+            </Button>
+          }
         />
       </Card>
     );
   }
 
-  const netChange = calculateNetChange(data);
-  const collectionRate = calculateCollectionRate(data.loanCollection, data.previousLoanTotal);
-  const portfolioGrowth = calculatePortfolioGrowth(data.currentLoanBalance, data.previousLoanTotal);
-  const tableData = getTableData(data);
+  const loanData = data.loanRegister;
+
+  const netChange = calculateNetChange(loanData);
+  const collectionRate = calculateCollectionRate(loanData.loanCollection, loanData.previousLoanTotal);
+  const portfolioGrowth = calculatePortfolioGrowth(loanData.currentLoanBalance, loanData.previousLoanTotal);
+  const tableData = getTableData(loanData);
 
   return (
     <Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -243,7 +256,7 @@ const LoanRegister = () => {
           <Card>
             <Statistic
               title="Previous Total Loan "
-              value={data.previousLoanTotal}
+              value={loanData.previousLoanTotal}
               formatter={(value) => formatCurrency(Number(value))}
               prefix={<></>}
               valueStyle={{ 
@@ -257,7 +270,7 @@ const LoanRegister = () => {
           <Card>
             <Statistic
               title="Loan Disubursements (With Interest)"
-              value={data.loanDisbursementWithInterest}
+              value={loanData.loanDisbursementWithInterest}
               formatter={(value) => formatCurrency(Number(value))}
               prefix={<ArrowUpOutlined />}
               valueStyle={{ 
@@ -271,7 +284,7 @@ const LoanRegister = () => {
           <Card>
             <Statistic
               title="Loan Collections"
-              value={data.loanCollection}
+              value={loanData.loanCollection}
               formatter={(value) => formatCurrency(Number(value))}
               prefix={<ArrowDownOutlined />}
               valueStyle={{ 
@@ -285,7 +298,7 @@ const LoanRegister = () => {
           <Card>
             <Statistic
               title="Current Loan Balance"
-              value={data.currentLoanBalance}
+              value={loanData.currentLoanBalance}
               formatter={(value) => formatCurrency(Number(value))}
               prefix={<BankOutlined />}
               valueStyle={{ 
@@ -433,7 +446,7 @@ const LoanRegister = () => {
                       fontSize: window.innerWidth <= 768 ? '18px' : '24px', 
                       color: '#52c41a' 
                     }}>
-                      {((data.loanCollection / (data.loanDisbursementWithInterest || 1)) * 100).toFixed(1)}%
+                      {((loanData.loanCollection / (loanData.loanDisbursementWithInterest || 1)) * 100).toFixed(1)}%
                     </div>
                     <Text type="secondary">Collection vs Disbursement</Text>
                   </div>
@@ -444,7 +457,7 @@ const LoanRegister = () => {
                       fontSize: window.innerWidth <= 768 ? '18px' : '24px', 
                       color: '#1890ff' 
                     }}>
-                      ₦{(data.currentLoanBalance / 1000000).toFixed(2)}M
+                      ₦{(loanData.currentLoanBalance / 1000000).toFixed(2)}M
                     </div>
                     <Text type="secondary">Portfolio Size (Millions)</Text>
                   </div>
@@ -469,12 +482,12 @@ const LoanRegister = () => {
         <Row justify="space-between">
           <Col>
             <Text type="secondary">
-              Last Updated: {dayjs(data.updatedAt).format('DD/MM/YYYY HH:mm')}
+              Last Updated: {dayjs(loanData.updatedAt).format('DD/MM/YYYY HH:mm')}
             </Text>
           </Col>
           <Col>
             <Text type="secondary">
-              Record ID: {data._id.slice(-8)}
+              Record ID: {loanData._id ? loanData._id.slice(-8) : 'N/A'}
             </Text>
           </Col>
         </Row>

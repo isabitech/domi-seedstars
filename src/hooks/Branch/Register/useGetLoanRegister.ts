@@ -14,10 +14,29 @@ export interface LoanRegister {
   __v: number
 }
 
-const getLoanRegister = async (date:string, branchId: string) :Promise<LoanRegister> => {
-    const response = await axiosInstance.get(`operations/daily?date=${date}&branchId=${branchId}`);
-    return response.data.data.operations.loanRegister;
-}
+const getLoanRegister = async (
+  date: string, 
+  branchId: string
+): Promise<{ operations: any; loanRegister?: LoanRegister }> => {
+  const response = await axiosInstance.get(
+    `operations/daily?date=${date}&branchId=${branchId}`
+  );
+  
+  // Return the full response structure to handle both null and valid operations
+  if (response.data.data.operations === null) {
+    console.log("operations is null for date:", date);
+    return { operations: null };
+  } else if (response.data.data.operations.loanRegister) {
+    console.log("loan register is available");
+    return { 
+      operations: response.data.data.operations,
+      loanRegister: response.data.data.operations.loanRegister 
+    };
+  } else {
+    console.log("operations exists but no loan register");
+    return { operations: response.data.data.operations };
+  }
+};
 
 
 export const useGetLoanRegister = (date:string, branchId: string) => useQuery({

@@ -15,7 +15,7 @@ import {
 } from "antd";
 import { toast } from 'sonner';
 import dayjs from 'dayjs';
-import { CheckCircleOutlined, DollarOutlined, CalendarOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, DollarOutlined, CalendarOutlined, ReloadOutlined } from "@ant-design/icons";
 import { Cashbook1Component } from "../../components/Cashbook1";
 import { Cashbook2Component } from "../../components/Cashbook2";
 import { calculations } from "../../utils/calculations";
@@ -91,6 +91,11 @@ export const CombinedCashbookPage: React.FC = () => {
       toast.info(`Date changed to ${date.format('YYYY-MM-DD')}. Data will be loaded for this date.`);
     }
   };
+
+  const handleRefresh = () => {
+    toast.info('Refreshing cashbook data...');
+    getDailyEntry.refetch();
+  }
 
   useEffect(() => {
     if (getDailyEntry.data?.data?.operations) {
@@ -329,19 +334,14 @@ export const CombinedCashbookPage: React.FC = () => {
             </Col>
             <Col>
               <Space>
-                <CalendarOutlined />
-                <DatePicker
-                  value={selectedDate}
-                  onChange={handleDateChange}
-                  format="YYYY-MM-DD"
-                  placeholder="Select date"
-                  allowClear={false}
-                  disabledDate={(current) => {
-                    // Disable future dates (can't enter operations for future)
-                    return current && current > dayjs().endOf('day');
-                  }}
-                  style={{ width: 140 }}
-                />
+                <Button 
+                  icon={<ReloadOutlined />} 
+                  onClick={handleRefresh}
+                  loading={getDailyEntry.isLoading}
+                  type="default"
+                >
+                  Refresh
+                </Button>
               </Space>
             </Col>
           </Row>

@@ -231,17 +231,9 @@ const handleSubmit = () => {
                       label={
                         <Space>
                           Previous Cash in Hand (PCIH)
-                          <Tooltip title={user?.role === 'BR' 
-                            ? "This value is automatically set from yesterday's Online CIH and cannot be edited" 
-                            : "The amount of cash carried over from the previous day"
-                          }>
-                            <InfoCircleOutlined style={{ 
-                              color: user?.role === 'BR' ? '#fa8c16' : '#1890ff' 
-                            }} />
+                          <Tooltip title="The amount of cash carried over from the previous day">
+                            <InfoCircleOutlined style={{ color: '#1890ff' }} />
                           </Tooltip>
-                          {user?.role === 'BR' && (
-                            <Tag color="orange">Auto-filled</Tag>
-                          )}
                         </Space>
                       }
                       name="pcih"
@@ -252,16 +244,11 @@ const handleSubmit = () => {
                     >
                       <Input
                         type="number"
-                        placeholder={user?.role === 'BR' ? 'Auto-filled from yesterday\'s Online CIH' : '0.00'}
+                        placeholder="0.00"
                         prefix="₦"
                         size="large"
                         step="0.01"
-                        disabled={user?.role === 'BR'} // Disable for branches
-                        style={{ 
-                          backgroundColor: user?.role === 'BR' ? '#fff2e8' : 'white',
-                          borderColor: user?.role === 'BR' ? '#ffb366' : '#d9d9d9',
-                          width: '100%'
-                        }}
+                        style={{ width: '100%' }}
                       />
                     </Form.Item>
                   </Col>
@@ -352,10 +339,7 @@ const handleSubmit = () => {
 
                 <Divider orientation="left" orientationMargin={0} style={{ textAlign: 'center' }}>
                   <Space>
-                    Head Office Only Fields
-                    {user?.role !== 'HO' && (
-                      <Tag color="orange">View Only</Tag>
-                    )}
+                    Additional Funds
                   </Space>
                 </Divider>
                 
@@ -365,13 +349,8 @@ const handleSubmit = () => {
                       label={
                         <Space>
                           Fund from HO (FRM HO)
-                          <Tooltip title={user?.role !== 'HO' 
-                            ? 'Only Head Office can edit this field' 
-                            : 'Amount received from Head Office'
-                          }>
-                            <InfoCircleOutlined style={{ 
-                              color: user?.role !== 'HO' ? '#fa8c16' : '#1890ff' 
-                            }} />
+                          <Tooltip title="Amount received from Head Office">
+                            <InfoCircleOutlined style={{ color: '#1890ff' }} />
                           </Tooltip>
                         </Space>
                       }
@@ -379,17 +358,12 @@ const handleSubmit = () => {
                     >
                       <Input
                         type="number"
-                        placeholder={user?.role !== 'HO' ? 'HO will fill this' : '0.00'}
+                        placeholder="0.00"
                         prefix="₦"
                         size="large"
                         step="0.01"
-                        disabled={user?.role !== 'HO'}
-                        style={{ 
-                          backgroundColor: user?.role !== 'HO' ? '#fff2e8' : 'white',
-                          borderColor: user?.role !== 'HO' ? '#ffb366' : '#d9d9d9',
-                          width: '100%'
-                        }}
-                        value={'0'}
+                        style={{ width: '100%' }}
+                        defaultValue={'0'}
                       />
                     </Form.Item>
                   </Col>
@@ -399,13 +373,8 @@ const handleSubmit = () => {
                       label={
                         <Space>
                           Fund from Branch (FRM BR)
-                          <Tooltip title={user?.role !== 'HO' 
-                            ? 'Only Head Office can edit this field' 
-                            : 'Amount received from other branches'
-                          }>
-                            <InfoCircleOutlined style={{ 
-                              color: user?.role !== 'HO' ? '#fa8c16' : '#1890ff' 
-                            }} />
+                          <Tooltip title="Amount received from other branches">
+                            <InfoCircleOutlined style={{ color: '#1890ff' }} />
                           </Tooltip>
                         </Space>
                       }
@@ -413,37 +382,16 @@ const handleSubmit = () => {
                     >
                       <Input
                         type="number"
-                        placeholder={user?.role !== 'HO' ? 'HO will fill this' : '0.00'}
+                        placeholder="0.00"
                         prefix="₦"
                         size="large"
                         step="0.01"
-                        disabled={user?.role !== 'HO'}
-                        style={{ 
-                          backgroundColor: user?.role !== 'HO' ? '#fff2e8' : 'white',
-                          borderColor: user?.role !== 'HO' ? '#ffb366' : '#d9d9d9',
-                          width: '100%'
-                        }}
-                        value={'0'}
+                        style={{ width: '100%' }}
+                        defaultValue={'0'}
                       />
                     </Form.Item>
                   </Col>
                 </Row>
-
-                {user?.role !== 'HO' && (
-                  <Alert
-                    message="Branch User Guidelines"
-                    description={
-                      <div>
-                        <p>• <strong>PCIH (Previous Cash in Hand):</strong> Automatically filled from yesterday's Online CIH - cannot be edited</p>
-                        <p>• <strong>FRM HO and FRM BR:</strong> Can only be edited by Head Office users</p>
-                        <p>• <strong>Disbursement Roll, Loan & Savings Registers:</strong> View-only, calculated automatically</p>
-                      </div>
-                    }
-                    type="info"
-                    // showIcon
-                    style={{ marginBottom: 16 }}
-                  />
-                )}
 
                 {!readonly && (
                   <Form.Item>

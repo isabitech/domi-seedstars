@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '../../instance/axiosInstance';
+import { ACCESS_TOKEN_KEYWORD } from '../../utils/constants';
 
 
 export interface GetMeResponse {
@@ -40,6 +41,6 @@ export const useGetMe = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
     retry: false,
-    enabled: !!localStorage.getItem('token'),
+    enabled: !!sessionStorage.getItem(ACCESS_TOKEN_KEYWORD),
   });
 };
