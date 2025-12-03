@@ -25,16 +25,17 @@ export class Encryption {
     const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoded);
     return {
       data: this.arrayBufferToBase64(encrypted),
-      iv: this.arrayBufferToBase64(iv),
+      iv: this.arrayBufferToBase64(iv.buffer),
     };
   }
 
   static async decrypt(base64Data: string, base64Iv: string): Promise<string> {
     const key = await this.getKey();
     const encrypted = this.base64ToArrayBuffer(base64Data);
-    const iv = new Uint8Array(this.base64ToArrayBuffer(base64Iv));
+    const ivBuffer = this.base64ToArrayBuffer(base64Iv);
+    const iv = new Uint8Array(ivBuffer);
 
-    const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, encrypted);
+    const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: ivBuffer }, key, encrypted);
     return this.decoder.decode(decrypted);
   }
 
