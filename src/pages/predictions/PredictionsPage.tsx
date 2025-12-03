@@ -22,6 +22,7 @@ import {
   CalendarOutlined,
   UserOutlined,
   DollarOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import {
@@ -55,6 +56,11 @@ export const PredictionsPage: React.FC = () => {
   const createPredictionEntry = useCreatePrediction();
 
   const getPrediction = useGetEntry(user?.branchId || "", TOMMOROW_DATE);
+
+  const handleRefresh = () => {
+    toast.info('Refreshing prediction data...');
+    getPrediction.refetch();
+  }
 
   useEffect(()=>{
     if(getPrediction?.data?.data?.operations?.prediction){
@@ -199,14 +205,24 @@ export const PredictionsPage: React.FC = () => {
       padding: window.innerWidth <= 768 ? "16px" : "24px" 
     }}>
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        <div>
-          <Title level={2} style={{ fontSize: window.innerWidth <= 768 ? '20px' : '28px' }}>
-            <RiseOutlined /> Tomorrow's Disbursement Predictions
-          </Title>
-          <Text type="secondary" style={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}>
-            Plan and predict tomorrow's loan disbursements for{" "}
-            {tomorrow.format("dddd, DD MMMM YYYY")}
-          </Text>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+          <div>
+            <Title level={2} style={{ fontSize: window.innerWidth <= 768 ? '20px' : '28px' }}>
+              <RiseOutlined /> Tomorrow's Disbursement Predictions
+            </Title>
+            <Text type="secondary" style={{ fontSize: window.innerWidth <= 768 ? '14px' : '16px' }}>
+              Plan and predict tomorrow's loan disbursements for{" "}
+              {tomorrow.format("dddd, DD MMMM YYYY")}
+            </Text>
+          </div>
+          <Button 
+            icon={<ReloadOutlined />} 
+            onClick={handleRefresh}
+            loading={getPrediction.isLoading}
+            type="default"
+          >
+            Refresh
+          </Button>
         </div>
 
         {/* Remove the error alert and update the loading states */}

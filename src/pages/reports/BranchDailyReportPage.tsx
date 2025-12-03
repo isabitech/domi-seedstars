@@ -19,13 +19,15 @@ import {
   BankOutlined, 
   DownloadOutlined,
   CalendarOutlined,
-  DollarOutlined
+  DollarOutlined,
+  ReloadOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { calculations } from '../../utils/calculations';
 import { useListAllDailyOperations, type Operation } from '../../hooks/Operations/useListAllDailyOperations';
 import * as XLSX from 'xlsx';
 import dayjs from 'dayjs';
+import { toast } from 'sonner';
 import './BranchDailyReportPage.css';
 
 const { Title, Text } = Typography;
@@ -165,6 +167,15 @@ export const BranchDailyReportPage: React.FC = () => {
     selectedDate.format('YYYY-MM-DD')
   );
 
+  const handleRefresh = async () => {
+    toast.info('Refreshing daily report data...');
+    try {
+      await refetch();
+      toast.success(`Daily report data for ${selectedDate.format('YYYY-MM-DD')} loaded successfully`);
+    } catch (error) {
+      toast.error('Failed to refresh daily report data');
+    }
+  }
   // Transform API data to report format
   const reportData = useMemo(() => {
     if (!operationsData?.data?.operations) return [];
@@ -821,6 +832,14 @@ export const BranchDailyReportPage: React.FC = () => {
                 format="YYYY-MM-DD"
                 suffixIcon={<CalendarOutlined />}
               />
+              <Button 
+                icon={<ReloadOutlined />} 
+                onClick={handleRefresh}
+                loading={isLoading}
+                type="default"
+              >
+                Refresh
+              </Button>
               <Button 
                 type="primary"
                 icon={<DownloadOutlined />}

@@ -156,14 +156,14 @@ export const HOOperationsPage: React.FC = () => {
       // Prepare the API request data
       const apiData: Record<string, number> = {};
       
-      if (field === 'frmHO') {
-        apiData.frmHO = value;
-      } else if (field === 'frmBR') {
-        apiData.frmBR = value;
-      } else if (field === 'pcih') {
-        apiData.pcih = value;
-      } 
-      else if (field === 'prevDis') {
+      // if (field === 'frmHO') {
+      //   apiData.frmHO = value;
+      // } else if (field === 'frmBR') {
+      //   apiData.frmBR = value;
+      // } else if (field === 'pcih') {
+      //   apiData.pcih = value;
+      // } else 
+      if (field === 'prevDis') {
         apiData.previousDisbursement = value;
       } else if (field === 'prevDisbursementRollNo') {
         apiData.previousDisbursementRollNo = value;
@@ -189,15 +189,14 @@ export const HOOperationsPage: React.FC = () => {
         if (branch.branchId === branchId) {
           const updatedBranch = { ...branch, lastUpdated: dayjs().toISOString() };
           
-          if (field === 'frmHO') {
-            updatedBranch.cashbook1.frmHO = value;
-          } else if (field === 'frmBR') {
-            updatedBranch.cashbook1.frmBR = value;
-          } 
-          else if (field === 'pcih') {
-            updatedBranch.cashbook1.pcih = value;
-          }
-          else if (field === 'prevDis') {
+          // if (field === 'frmHO') {
+          //   updatedBranch.cashbook1.frmHO = value;
+          // } else if (field === 'frmBR') {
+          //   updatedBranch.cashbook1.frmBR = value;
+          // } else if (field === 'pcih') {
+          //   updatedBranch.cashbook1.pcih = value;
+          // } else 
+          if (field === 'prevDis') {
             updatedBranch.disbursementRoll.prevDis = value;
           } else if (field === 'prevDisbursementRollNo') {
             updatedBranch.disbursementRoll.prevDisbursementRollNo = value;
@@ -224,9 +223,9 @@ export const HOOperationsPage: React.FC = () => {
   const handleBranchClick = (branch: BranchHOData) => {
     setSelectedBranch(branch);
     modalForm.setFieldsValue({
-      frmHO: branch.cashbook1.frmHO,
-      frmBR: branch.cashbook1.frmBR,
-      pcih: branch.cashbook1.pcih,
+      // frmHO: branch.cashbook1.frmHO,
+      // frmBR: branch.cashbook1.frmBR,
+      // pcih: branch.cashbook1.pcih,
       prevDis: branch.disbursementRoll.prevDis,
       prevDisbursementRollNo: branch.disbursementRoll.prevDisbursementRollNo,
       prevTotalSav: branch.currentBranchRegister.prevTotalSav,
@@ -251,9 +250,9 @@ export const HOOperationsPage: React.FC = () => {
         // Call the API with all the updated values
         await updateHOFieldsMutation.mutateAsync({
           branchId: selectedBranch.branchId,
-          frmHO: values.frmHO || 0,
-          frmBR: values.frmBR || 0,
-          pcih: values.pcih || 0,
+          // frmHO: values.frmHO || 0,
+          // frmBR: values.frmBR || 0,
+          // pcih: values.pcih || 0,
           previousDisbursement: values.prevDis || 0,
           previousDisbursementRollNo: values.prevDisbursementRollNo || 0,
           previousSavingsTotal: values.prevTotalSav || 0,
@@ -270,10 +269,16 @@ export const HOOperationsPage: React.FC = () => {
           branch.branchId === selectedBranch.branchId 
             ? {
                 ...branch,
+                // cashbook1: {
+                //   // frmHO: values.frmHO || 0,
+                //   // frmBR: values.frmBR || 0,
+                //   // pcih: values.pcih || 0,
+                // },
+                // Keep the existing values to avoid breaking the interface
                 cashbook1: {
-                  frmHO: values.frmHO || 0,
-                  frmBR: values.frmBR || 0,
-                  pcih: values.pcih || 0,
+                  frmHO: branch.cashbook1.frmHO,
+                  frmBR: branch.cashbook1.frmBR,
+                  pcih: branch.cashbook1.pcih,
                 },
                 disbursementRoll: {
                   prevDis: values.prevDis || 0,
@@ -314,17 +319,17 @@ export const HOOperationsPage: React.FC = () => {
   };
 
   const totals = branchData.reduce((acc, branch) => ({
-    totalFrmHO: acc.totalFrmHO + branch.cashbook1.frmHO,
-    totalFrmBR: acc.totalFrmBR + branch.cashbook1.frmBR,
-    totalPCIH: acc.totalPCIH + branch.cashbook1.pcih,
+    // totalFrmHO: acc.totalFrmHO + branch.cashbook1.frmHO,
+    // totalFrmBR: acc.totalFrmBR + branch.cashbook1.frmBR,
+    // totalPCIH: acc.totalPCIH + branch.cashbook1.pcih,
     totalPrevDis: acc.totalPrevDis + branch.disbursementRoll.prevDis,
     totalPrevDisRollNo: acc.totalPrevDisRollNo + branch.disbursementRoll.prevDisbursementRollNo,
     totalPrevSav: acc.totalPrevSav + branch.currentBranchRegister.prevTotalSav,
     totalPrevLoan: acc.totalPrevLoan + branch.currentBranchRegister.prevTotalLoan,
   }), {
-    totalFrmHO: 0,
-    totalFrmBR: 0,
-    totalPCIH: 0,
+    // totalFrmHO: 0,
+    // totalFrmBR: 0,
+    // totalPCIH: 0,
     totalPrevDis: 0,
     totalPrevDisRollNo: 0,
     totalPrevSav: 0,
@@ -442,42 +447,42 @@ export const HOOperationsPage: React.FC = () => {
         </div>
       ),
     },
-    {
-      title: 'Fund from HO (₦)',
-      key: 'frmHO',
-      width: 150,
-      render: (_, record) => (
-        <EditableCell
-          value={record.cashbook1.frmHO}
-          branchId={record.branchId}
-          field="frmHO"
-        />
-      ),
-    },
-    {
-      title: 'Fund from Branch (₦)',
-      key: 'frmBR',
-      width: 150,
-      render: (_, record) => (
-        <EditableCell
-          value={record.cashbook1.frmBR}
-          branchId={record.branchId}
-          field="frmBR"
-        />
-      ),
-    },
-    {
-      title: 'Previous Cash In Hand (₦)',
-      key: 'pcih',
-      width: 150,
-      render: (_, record) => (
-        <EditableCell
-          value={record.cashbook1.pcih}
-          branchId={record.branchId}
-          field="pcih"
-        />
-      ),
-    },
+    // {
+    //   title: 'Fund from HO (₦)',
+    //   key: 'frmHO',
+    //   width: 150,
+    //   render: (_, record) => (
+    //     <EditableCell
+    //       value={record.cashbook1.frmHO}
+    //       branchId={record.branchId}
+    //       field="frmHO"
+    //     />
+    //   ),
+    // },
+    // {
+    //   title: 'Fund from Branch (₦)',
+    //   key: 'frmBR',
+    //   width: 150,
+    //   render: (_, record) => (
+    //     <EditableCell
+    //       value={record.cashbook1.frmBR}
+    //       branchId={record.branchId}
+    //       field="frmBR"
+    //     />
+    //   ),
+    // },
+    // {
+    //   title: 'Previous Cash In Hand (₦)',
+    //   key: 'pcih',
+    //   width: 150,
+    //   render: (_, record) => (
+    //     <EditableCell
+    //       value={record.cashbook1.pcih}
+    //       branchId={record.branchId}
+    //       field="pcih"
+    //     />
+    //   ),
+    // },
     {
       title: 'Previous Disbursement (₦)',
       key: 'prevDis',
@@ -588,7 +593,7 @@ export const HOOperationsPage: React.FC = () => {
 
         {/* Overview Statistics */}
         <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} lg={8} xl={4.8}>
+          {/* <Col xs={24} sm={12} lg={8} xl={4.8}>
             <Card>
               <Statistic
                 title="Total Fund from HO"
@@ -609,7 +614,7 @@ export const HOOperationsPage: React.FC = () => {
                 valueStyle={{ color: '#52c41a' }}
               />
             </Card>
-          </Col>
+          </Col> */}
           <Col xs={24} sm={12} lg={8} xl={4.8}>
             <Card>
               <Statistic
@@ -709,7 +714,7 @@ export const HOOperationsPage: React.FC = () => {
               onFinish={handleModalSave}
               layout="vertical"
             >
-              <Row gutter={16}>
+              {/* <Row gutter={16}>
                 <Col xs={24} sm={12}>
                   <Form.Item
                     label="Fund from HO (₦)"
@@ -752,8 +757,9 @@ export const HOOperationsPage: React.FC = () => {
                   step="0.01"
                   prefix="₦"
                 />
-              </Form.Item>
+              </Form.Item> */}
 
+              <>
               <Row gutter={16}>
                 <Col xs={24} sm={12}>
                   <Form.Item
@@ -836,6 +842,7 @@ export const HOOperationsPage: React.FC = () => {
                   </Button>
                 </Space>
               </Form.Item>
+              </>
             </Form>
           )}
         </Modal>

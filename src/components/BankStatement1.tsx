@@ -27,6 +27,7 @@ import {  calculateBankStatement1,
 } from "../services/bankStatement";
 import { useGetMe } from "../hooks/Auth/useGetMe";
 import { useGetBS1, type BankStatement1 } from "../hooks/BankStatements/useGetBS1";
+import { toast } from "sonner";
 
 const { Title, Text } = Typography;
 
@@ -108,7 +109,8 @@ export const BankStatement1Component: React.FC<BankStatement1Props> = ({
          // Refetch data to get updated statement
          await getBankStatement1.refetch();
          // Keep form editable after successful submission
-      } catch (err) {
+      } catch (err : any) {
+        toast.error(`${err?.response?.data?.message || 'Submission failed'}`);
         setError("Failed to submit bank statement");
         console.error("Error submitting statement:", err);
       } finally {

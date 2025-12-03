@@ -78,6 +78,17 @@ export const ReportsComponent: React.FC = () => {
   const currentRegisters: CurrentRegister[] = reportData?.currentRegisters || [];
   const branches = branchesData?.data?.branches || [];
 
+  const handleRefresh = async () => {
+    toast.info('Refreshing consolidated report data...');
+    try {
+      await refetchReport();
+      const periodText = dateRange[0].format('MMM DD') + ' - ' + dateRange[1].format('MMM DD, YYYY');
+      toast.success(`Consolidated report data for ${periodText} loaded successfully`);
+    } catch (error) {
+      toast.error('Failed to refresh consolidated report data');
+    }
+  };
+
   const handleExport = async (format: 'excel' | 'pdf') => {
     setExportLoading(true);
     try {
@@ -371,7 +382,7 @@ export const ReportsComponent: React.FC = () => {
             <Col>
               <Button 
                 icon={<ReloadOutlined />}
-                onClick={() => refetchReport()}
+                onClick={handleRefresh}
                 loading={consolidatedLoading}
               >
                 Refresh Data

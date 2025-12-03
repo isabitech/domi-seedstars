@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axiosInstance from '../../instance/axiosInstance';
+import { ACCESS_TOKEN_KEYWORD, USER_INFORMATION } from '../../utils/constants';
 
 export interface LogoutResponse {
   success: boolean;
@@ -17,12 +18,9 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: logoutUser,
     onSuccess: () => {
-      // Clear local storage
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      
-      // Clear authorization header
-      delete axiosInstance.defaults.headers.common['Authorization'];
+      // Clear session storage
+      sessionStorage.removeItem(ACCESS_TOKEN_KEYWORD);
+      sessionStorage.removeItem(USER_INFORMATION);
       
       // Clear all queries
       queryClient.clear();

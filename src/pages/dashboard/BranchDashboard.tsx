@@ -25,7 +25,8 @@ import {
   CheckCircleOutlined,
   ClockCircleOutlined,
   LineChartOutlined,
-  CalendarOutlined
+  CalendarOutlined,
+  ReloadOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useGetBranchDashboard } from '../../hooks/Branch/Dashboard/useGetBranchDashboard';
@@ -46,7 +47,7 @@ export const BranchDashboard: React.FC = () => {
   const [startDate, setStartDate] = useState<string>(dayjs().subtract(30, 'days').format('YYYY-MM-DD'));
   const [endDate, setEndDate] = useState<string>(dayjs().format('YYYY-MM-DD'));
 
-  const { data: dashboardData, isLoading, error } = useGetBranchDashboard({
+  const { data: dashboardData, isLoading, error, refetch } = useGetBranchDashboard({
     startDate,
     endDate
   });
@@ -59,6 +60,11 @@ export const BranchDashboard: React.FC = () => {
       setEndDate(dates[1].format('YYYY-MM-DD'));
     }
   };
+
+  const handleRefresh = () => {
+    toast.info('Refreshing dashboard data...');
+    refetch();
+  }
 
   useEffect(() => {
     if (dashboardData) {
@@ -85,7 +91,7 @@ export const BranchDashboard: React.FC = () => {
           type="error"
           showIcon
           action={
-            <Button size="small" onClick={() => window.location.reload()}>
+            <Button size="small" onClick={handleRefresh}>
               Retry
             </Button>
           }
@@ -167,6 +173,14 @@ export const BranchDashboard: React.FC = () => {
                   style={{ width: 280 }}
                   placeholder={['Start Date', 'End Date']}
                 />
+                <Button 
+                  icon={<ReloadOutlined />} 
+                  onClick={handleRefresh}
+                  loading={isLoading}
+                  type="default"
+                >
+                  Refresh
+                </Button>
               </Space>
             </Col>
           </Row>

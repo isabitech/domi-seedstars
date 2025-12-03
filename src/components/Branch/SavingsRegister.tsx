@@ -15,6 +15,7 @@ import {
   Progress,
   Button
 } from 'antd';
+import { toast } from 'sonner';
 import {
   CalendarOutlined,
   ReloadOutlined,
@@ -39,8 +40,13 @@ const SavingsRegister = () => {
   useEffect(() => {
     if (branchSavingsRegister.data) {
       console.log('Savings Register Data:', branchSavingsRegister.data);
+      
+      // Check if operations is null and show warning toast
+      if (branchSavingsRegister.data?.operations === null) {
+        toast.warning(`Operations not found for ${dayjs(selectedDate).format('DD MMMM YYYY')}`);
+      }
     }
-  }, [branchSavingsRegister.data]);
+  }, [branchSavingsRegister.data, selectedDate]);
 
   const handleDateChange = (date: dayjs.Dayjs | null) => {
     if (date) {
@@ -186,22 +192,29 @@ const SavingsRegister = () => {
 
   const data = branchSavingsRegister.data;
   
-  if (!data) {
+  if (!data || data.operations === null || !data.savingsRegister) {
     return (
       <Card>
         <Alert
-          message="No Data Available"
-          description={`No savings register data found for ${dayjs(selectedDate).format('DD MMMM YYYY')}.`}
-          type="info"
+          message="No Operations Data Available"
+          description={`No savings register data found for ${dayjs(selectedDate).format('DD MMMM YYYY')}. Please ensure operations have been completed for this date.`}
+          type="warning"
           showIcon
+          action={
+            <Button size="small" onClick={handleRefresh}>
+              Retry
+            </Button>
+          }
         />
       </Card>
     );
   }
 
-  const netChange = calculateNetChange(data);
-  const growthRate = calculateGrowthRate(data.currentSavings, data.previousSavingsTotal);
-  const tableData = getTableData(data);
+  const savingsData = data.savingsRegister;
+
+  const netChange = calculateNetChange(savingsData);
+  const growthRate = calculateGrowthRate(savingsData.currentSavings, savingsData.previousSavingsTotal);
+  const tableData = getTableData(savingsData);
 
   return (
     <Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -235,7 +248,7 @@ const SavingsRegister = () => {
           <Card>
             <Statistic
               title="Previous Balance"
-              value={data.previousSavingsTotal}
+              value={savingsData.previousSavingsTotal}
               formatter={(value) => formatCurrency(Number(value))}
               prefix={<DollarCircleOutlined />}
               valueStyle={{ 
@@ -249,7 +262,7 @@ const SavingsRegister = () => {
           <Card>
             <Statistic
               title="New Savings Deposits"
-              value={data.savings}
+              value={savingsData.savings}
               formatter={(value) => formatCurrency(Number(value))}
               prefix={<BarChartOutlined />}
               valueStyle={{ 
@@ -263,7 +276,7 @@ const SavingsRegister = () => {
           <Card>
             <Statistic
               title="Savings Withdrawals"
-              value={data.savingsWithdrawal}
+              value={savingsData.savingsWithdrawal}
               formatter={(value) => formatCurrency(Number(value))}
               prefix={<BarChartOutlined />}
               valueStyle={{ 
@@ -277,7 +290,7 @@ const SavingsRegister = () => {
           <Card>
             <Statistic
               title="Current Balance"
-              value={data.currentSavings}
+              value={savingsData.currentSavings}
               formatter={(value) => formatCurrency(Number(value))}
               prefix={<BoxPlotOutlined />}
               valueStyle={{ 
@@ -390,12 +403,12 @@ const SavingsRegister = () => {
         <Row justify="space-between">
           <Col>
             <Text type="secondary">
-              Last Updated: {dayjs(data.updatedAt).format('DD/MM/YYYY HH:mm')}
+              Last Updated: {dayjs(savingsData.updatedAt).format('DD/MM/YYYY HH:mm')}
             </Text>
           </Col>
           <Col>
             <Text type="secondary">
-              Record ID: {data._id.slice(-8)}
+              Record ID: {savingsData._id.slice(-8)}
             </Text>
           </Col>
         </Row>
