@@ -8,7 +8,7 @@ import {
   Row, 
   Col, 
   Statistic, 
-  Alert,
+  // Alert,
   Typography,
   Divider,
   // message,
@@ -22,7 +22,7 @@ import { useCreateEntry } from '../hooks/Branch/Cashbook/useCreateEntry';
 import { useUpdateEntry } from '../hooks/Branch/Cashbook/useUpdateEntry';
 import type { User } from '../hooks/Auth/useGetMe';
 import type { Cashbook1 } from '../hooks/Branch/Cashbook/get-daily-ops-types';
-import { useGetOnlineCIHTSO } from '../hooks/Metrics/useGetOnlineCIH-TSO';
+// import { useGetOnlineCIHTSO } from '../hooks/Metrics/useGetOnlineCIH-TSO';
 
 const { Title, Text } = Typography;
 
@@ -49,7 +49,7 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
     total: 0,
     cbTotal1: 0
   });
-  const [pcihValue, setPcihValue] = useState<number>(0);
+  // const [pcihValue, setPcihValue] = useState<number>(0);
   
   
   const currentDate = date || new Date().toISOString().split('T')[0];
@@ -70,7 +70,7 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
 
   // Mutation hooks
 
-  const getPCIH = useGetOnlineCIHTSO({ date: previousDate });
+  // const getPCIH = useGetOnlineCIHTSO({ date: previousDate });
 
 
 
@@ -101,22 +101,22 @@ export const Cashbook1Component: React.FC<Cashbook1FormProps> = ({
     }
   }, [form]);
 
-  useEffect(() => {
-    if (getPCIH.data) {
-      // console.log("pcih", getPCIH.data);
-      const newPcihValue = getPCIH.data.data?.raw?.find(
-        metric => user?.branchId && metric.branch.id === user.branchId
-      )?.onlineCIH || 0;
-      setPcihValue(newPcihValue);
-    }
-  }, [getPCIH.data, user?.branchId]);
+  // useEffect(() => {
+  //   if (getPCIH.data) {
+  //     // console.log("pcih", getPCIH.data);
+  //     const newPcihValue = getPCIH.data.data?.raw?.find(
+  //       metric => user?.branchId && metric.branch.id === user.branchId
+  //     )?.onlineCIH || 0;
+  //     setPcihValue(newPcihValue);
+  //   }
+  // }, [getPCIH.data, user?.branchId]);
 
-  useEffect(() => {
-    if (pcihValue !== 0) {
-      form.setFieldsValue({ pcih: pcihValue });
-      handleValuesChange();
-    }
-  }, [pcihValue, form, handleValuesChange]);
+  // useEffect(() => {
+  //   if (pcihValue !== 0) {
+  //     form.setFieldsValue({ pcih: pcihValue });
+  //     handleValuesChange();
+  //   }
+  // }, [pcihValue, form, handleValuesChange]);
 
   // Load existing data when available
   useEffect(() => {
