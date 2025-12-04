@@ -12,7 +12,8 @@ import {
   Tag,
   Divider,
   Alert,
-  Spin
+  Spin,
+  Tooltip
 } from 'antd';
 import { 
   FileTextOutlined, 
@@ -201,6 +202,7 @@ export const BranchDailyReportPage: React.FC = () => {
       totalFrmHO: acc.totalFrmHO + branch.totalFrmHO,
       totalPredictionAmount: acc.totalPredictionAmount + branch.predictions.predictionAmount,
       totalPredictionNo: acc.totalPredictionNo + branch.predictions.predictionNo,
+      totalExpenses: acc.totalExpenses + branch.bankStatement2.exAmt,
     }), {
       cbTotal1: 0,
       cbTotal2: 0,
@@ -218,6 +220,7 @@ export const BranchDailyReportPage: React.FC = () => {
       totalFrmHO: 0,
       totalPredictionAmount: 0,
       totalPredictionNo: 0,
+      totalExpenses: 0,
     });
   }, [reportData]);
 
@@ -269,6 +272,7 @@ export const BranchDailyReportPage: React.FC = () => {
         'EX Purpose': row.bankStatement2.exPurpose,
         'BS2 Total': row.bankStatement2.bs2Total,
         'TSO': row.tso,
+        'Expenses': row.bankStatement2.exAmt,
         // Current Branch Register
         'CBR (Savings)': row.cbrSavings,
         'CBR (Loan)': row.cbrLoan,
@@ -692,6 +696,36 @@ export const BranchDailyReportPage: React.FC = () => {
           render: (value: number) => (
             <Tag color="cyan">{calculations.formatCurrency(value)}</Tag>
           )
+        },
+        {
+          title: 'Expenses',
+          dataIndex: ['bankStatement2', 'exAmt'],
+          key: 'expenses',
+          render: (value: number, record: BranchDailyReportData) => {
+            const purpose = record.bankStatement2.exPurpose;
+            const expenseTag = <Tag color="volcano">{calculations.formatCurrency(value)}</Tag>;
+            
+            if (record.branchId === 'grand-total' || !purpose || purpose.trim() === '') {
+              return expenseTag;
+            }
+            
+            return (
+              <Tooltip 
+                title={
+                  <div>
+                    <strong>Expense Purpose:</strong><br />
+                    {purpose}
+                  </div>
+                }
+                placement="topLeft"
+                overlayStyle={{ maxWidth: 300 }}
+              >
+                <div style={{ cursor: 'pointer' }}>
+                  {expenseTag}
+                </div>
+              </Tooltip>
+            );
+          }
         }
       ]
     },
@@ -948,6 +982,20 @@ export const BranchDailyReportPage: React.FC = () => {
                   />
                 </Card>
               </Col>
+              <Col xs={24} sm={12} lg={6}>
+                <Card>
+                  <Statistic
+                    title="Total Daily Expenses"
+                    value={totals.totalExpenses}
+                    precision={2}
+                    prefix="₦"
+                    valueStyle={{ 
+                      color: '#ff4d4f',
+                      fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                    }}
+                  />
+                </Card>
+              </Col>
             </Row>
             
             <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
@@ -1110,6 +1158,10 @@ export const BranchDailyReportPage: React.FC = () => {
               <Col xs={12} sm={8} lg={4}>
                 <Text strong>Predictions Total: </Text>
                 <Tag color="magenta">{calculations.formatCurrency(totals.totalPredictionAmount)}</Tag>
+              </Col>
+              <Col xs={12} sm={8} lg={4}>
+                <Text strong>Total Expenses: </Text>
+                <Tag color="volcano">{calculations.formatCurrency(totals.totalExpenses)}</Tag>
               </Col>
             </Row>
           </Card>
