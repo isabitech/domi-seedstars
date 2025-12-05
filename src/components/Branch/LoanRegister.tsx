@@ -202,6 +202,15 @@ const LoanRegister = () => {
   if (!data || data.operations === null || !data.loanRegister) {
     return (
       <Card>
+         <Space>
+            <CalendarOutlined />
+            <DatePicker
+              value={dayjs(selectedDate)}
+              onChange={handleDateChange}
+              format="DD/MM/YYYY"
+              disabledDate={(current) => current && current > dayjs().endOf('day')}
+            />
+          </Space>
         <Alert
           message="No Operations Data Available"
           description={`No loan register data found for ${dayjs(selectedDate).format('DD MMMM YYYY')}. Please ensure operations have been completed for this date.`}

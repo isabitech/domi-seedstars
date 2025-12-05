@@ -701,29 +701,34 @@ export const BranchDailyReportPage: React.FC = () => {
           title: 'Expenses',
           dataIndex: ['bankStatement2', 'exAmt'],
           key: 'expenses',
-          render: (value: number, record: BranchDailyReportData) => {
-            const purpose = record.bankStatement2.exPurpose;
-            const expenseTag = <Tag color="volcano">{calculations.formatCurrency(value)}</Tag>;
-            
+          render: (value: number) => (
+            <Tag color="volcano">{calculations.formatCurrency(value)}</Tag>
+          )
+        },
+        {
+          title: 'Expenses Purpose',
+          dataIndex: ['bankStatement2', 'exPurpose'],
+          key: 'expensesPurpose',
+          width: 200,
+          render: (purpose: string, record: BranchDailyReportData) => {
             if (record.branchId === 'grand-total' || !purpose || purpose.trim() === '') {
-              return expenseTag;
+              return (
+                <Text style={{ 
+                  color: '#999',
+                  fontSize: window.innerWidth <= 768 ? '11px' : '12px'
+                }}>
+                  -
+                </Text>
+              );
             }
             
             return (
-              <Tooltip 
-                title={
-                  <div>
-                    <strong>Expense Purpose:</strong><br />
-                    {purpose}
-                  </div>
-                }
-                placement="topLeft"
-                overlayStyle={{ maxWidth: 300 }}
-              >
-                <div style={{ cursor: 'pointer' }}>
-                  {expenseTag}
-                </div>
-              </Tooltip>
+              <Text style={{ 
+                fontSize: window.innerWidth <= 768 ? '11px' : '12px',
+                color: '#333'
+              }}>
+                {purpose}
+              </Text>
             );
           }
         }
