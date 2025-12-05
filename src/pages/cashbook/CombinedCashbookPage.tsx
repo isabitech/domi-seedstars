@@ -334,11 +334,27 @@ export const CombinedCashbookPage: React.FC = () => {
             </Col>
             <Col>
               <Space>
+                <div>
+                  <Text strong style={{ display: 'block', marginBottom: 4 }}>
+                    Select Date:
+                  </Text>
+                  <DatePicker
+                    value={selectedDate}
+                    onChange={handleDateChange}
+                    format="YYYY-MM-DD"
+                    suffixIcon={<CalendarOutlined />}
+                    size="large"
+                    style={{ minWidth: 200 }}
+                    placeholder="Select date"
+                    disabledDate={(current) => current && current > dayjs().endOf('day')}
+                  />
+                </div>
                 <Button 
                   icon={<ReloadOutlined />} 
                   onClick={handleRefresh}
                   loading={getDailyEntry.isLoading}
                   type="default"
+                  size="large"
                 >
                   Refresh
                 </Button>

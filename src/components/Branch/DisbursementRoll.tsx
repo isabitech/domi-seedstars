@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Card,
   Table,
@@ -22,7 +22,6 @@ import {
   CalendarOutlined,
   ReloadOutlined,
   DollarCircleOutlined,
-  
   InfoCircleOutlined,
   BarChartOutlined,
   TransactionOutlined

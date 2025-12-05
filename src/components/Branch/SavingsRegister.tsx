@@ -219,28 +219,42 @@ const SavingsRegister = () => {
   return (
     <Space direction="vertical" size="large" style={{ width: '100%' }}>
       {/* Header Controls */}
-      <Row justify="space-between" align="middle">
-        <Col>
-          <Space>
-            <CalendarOutlined />
-            <DatePicker
-              value={dayjs(selectedDate)}
-              onChange={handleDateChange}
-              format="DD/MM/YYYY"
-              disabledDate={(current) => current && current > dayjs().endOf('day')}
-            />
-          </Space>
-        </Col>
-        <Col>
-          <Button 
-            icon={<ReloadOutlined />} 
-            onClick={handleRefresh}
-            loading={branchSavingsRegister.isFetching}
-          >
-            Refresh
-          </Button>
-        </Col>
-      </Row>
+      <Card size="small">
+        <Row justify="space-between" align="middle">
+          <Col>
+            <Space size="large">
+              <div>
+                <Text strong style={{ display: 'block', marginBottom: 4 }}>
+                  Select Date:
+                </Text>
+                <Space>
+                  <CalendarOutlined style={{ color: '#1890ff' }} />
+                  <DatePicker
+                    value={dayjs(selectedDate)}
+                    onChange={handleDateChange}
+                    format="DD/MM/YYYY"
+                    disabledDate={(current) => current && current > dayjs().endOf('day')}
+                    size="large"
+                    style={{ minWidth: 200 }}
+                    placeholder="Select date"
+                  />
+                </Space>
+              </div>
+            </Space>
+          </Col>
+          <Col>
+            <Button 
+              icon={<ReloadOutlined />} 
+              onClick={handleRefresh}
+              loading={branchSavingsRegister.isFetching}
+              type="primary"
+              size="large"
+            >
+              Refresh Data
+            </Button>
+          </Col>
+        </Row>
+      </Card>
 
       {/* Key Metrics */}
       <Row gutter={[16, 16]}>
