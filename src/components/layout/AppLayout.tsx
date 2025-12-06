@@ -13,7 +13,8 @@ import {
   RiseOutlined,
   DollarOutlined,
   CalendarOutlined,
-  MenuOutlined
+  MenuOutlined,
+  SafetyOutlined
 } from '@ant-design/icons';
 import { useGetMe } from '../../hooks/Auth/useGetMe';
 import { useLogout } from '../../hooks/Auth/useLogout';
@@ -85,6 +86,8 @@ export const AppLayout: React.FC = () => {
     if (path.includes('/reports/daily')) return 'daily-report';
     if (path.includes('/reports')) return 'reports';
     if (path.includes('/ho-operations')) return 'ho-operations';
+    if (path.includes('/ho-efcc')) return 'ho-efcc';
+    if (path.includes('/branch-efcc')) return 'branch-efcc';
     if (path.includes('/settings')) return 'settings';
     return 'dashboard';
   };
@@ -134,6 +137,12 @@ export const AppLayout: React.FC = () => {
           icon: <FileTextOutlined />,
           label: 'Reports Overview',
           onClick: () => navigate('/app/reports'),
+        },
+        {
+          key: 'ho-efcc',
+          icon: <SafetyOutlined />,
+          label: 'EFCC Dashboard',
+          onClick: () => navigate('/app/ho-efcc'),
         },
         
         // {
@@ -201,6 +210,12 @@ export const AppLayout: React.FC = () => {
           label: 'Disbursement Roll',
           onClick: () => navigate('/app/branch-disbursement-roll'),
         },
+        {
+          key: 'branch-efcc',
+          icon: <SafetyOutlined />,
+          label: 'Branch EFCC',
+          onClick: () => navigate('/app/branch-efcc'),
+        },
       ];
     }
   };
@@ -221,6 +236,8 @@ export const AppLayout: React.FC = () => {
       '/app/branch-savings-register': 'Savings Register',
       '/app/branch-loan-register': 'Loan Register',
       '/app/branch-disbursement-roll': 'Disbursement Roll',
+      '/app/branch-efcc': 'Branch EFCC',
+      '/app/ho-efcc': 'EFCC Dashboard',
       '/app/reports': 'Reports & Analytics',
       '/app/reports/daily': 'Branch Daily Report',
       // '/app/settings': 'System Settings',

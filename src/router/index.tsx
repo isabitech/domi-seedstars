@@ -20,6 +20,8 @@ import DailyOperations from '../components/Branch/DailyOperations';
 import { SavingsRegisterPage } from '../pages/registers/SavingsRegisterPage';
 import { LoanRegisterPage } from '../pages/registers/LoanRegisterPage';
 import { DisbursementRollPage } from '../pages/disbursement-roll/DisbursementRollPage';
+import BranchEFCCPage from '../pages/efcc/BranchEFCCPage';
+import HOEFCCPage from '../pages/efcc/HOEFCCPage';
 
 export const router = createBrowserRouter([
   {
@@ -100,6 +102,14 @@ export const router = createBrowserRouter([
       {
         path: 'branch-disbursement-roll',
         element: <DisbursementRollPage />,
+      },
+      {
+        path: 'branch-efcc',
+        element: <BranchEFCCPage />,
+      },
+      {
+        path: 'ho-efcc',
+        element: <HOEFCCPage />,
       },
       {
         path: 'branches',
