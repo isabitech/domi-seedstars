@@ -230,132 +230,65 @@ export const BranchDailyReportPage: React.FC = () => {
     }
   };
 
+  // Export only columns mapped to the UI table
   const handleExportReport = () => {
     if (!reportData.length) return;
 
+    // Define the columns to export based on the UI table
+    const exportColumns = [
+      { title: 'Branch', key: 'branchName', getValue: (row) => row.branchId === 'grand-total' ? '🏆 Grand Total' : row.branchName },
+      // Cashbook 1
+      { title: 'PCIH', key: 'pcih', getValue: (row) => row.cashbook1.pcih },
+      { title: 'Savings', key: 'savings', getValue: (row) => row.cashbook1.savings },
+      { title: 'Loan Collection', key: 'loanCollection', getValue: (row) => row.cashbook1.loanCollection },
+      { title: 'Charges', key: 'charges', getValue: (row) => row.cashbook1.charges },
+      { title: 'Total Collections', key: 'collectionTotal', getValue: (row) => row.cashbook1.savings + row.cashbook1.loanCollection + row.cashbook1.charges },
+      { title: 'FRM HO', key: 'frmHO', getValue: (row) => row.cashbook1.frmHO },
+      { title: 'FRM BR', key: 'frmBR', getValue: (row) => row.cashbook1.frmBR },
+      { title: 'CB Total 1', key: 'cbTotal1', getValue: (row) => row.cashbook1.cbTotal1 },
+      // Cashbook 2
+      { title: 'DIS NO', key: 'disNo', getValue: (row) => row.cashbook2.disNo },
+      { title: 'DIS AMT', key: 'disAmt', getValue: (row) => row.cashbook2.disAmt },
+      { title: 'DIS WIT INT', key: 'disWithInt', getValue: (row) => row.cashbook2.disWithInt },
+      { title: 'SAV WITH', key: 'savWith', getValue: (row) => row.cashbook2.savWith },
+      { title: 'DOMI BANK', key: 'domiBank', getValue: (row) => row.cashbook2.domiBank },
+      { title: 'POS/T', key: 'posT', getValue: (row) => row.cashbook2.posT },
+      { title: 'CB Total 2', key: 'cbTotal2', getValue: (row) => row.cashbook2.cbTotal2 },
+      // Online CIH
+      { title: 'Online CIH', key: 'onlineCIH', getValue: (row) => row.onlineCIH },
+      // Bank Statement
+      { title: 'BS1 Total', key: 'bs1Total', getValue: (row) => row.bankStatement1.bs1Total },
+      { title: 'BS2 Total', key: 'bs2Total', getValue: (row) => row.bankStatement2.bs2Total },
+      { title: 'TSO', key: 'tso', getValue: (row) => row.tso },
+      { title: 'Expenses', key: 'exAmt', getValue: (row) => row.bankStatement2.exAmt },
+      { title: 'Expenses Purpose', key: 'exPurpose', getValue: (row) => row.bankStatement2.exPurpose },
+      // Current Branch Register
+      { title: 'CBR (Savings)', key: 'cbrSavings', getValue: (row) => row.cbrSavings },
+      { title: 'CBR (Loan)', key: 'cbrLoan', getValue: (row) => row.cbrLoan },
+      // Disbursement Roll Data
+      { title: 'Disbursement Roll No', key: 'disbursementRollNumber', getValue: (row) => row.disbursementRollNumber },
+      { title: 'Disbursement Roll', key: 'disbursementRoll', getValue: (row) => row.disbursementRoll },
+      // Predictions
+      { title: 'Prediction No', key: 'predictionNo', getValue: (row) => row.predictions.predictionNo },
+      { title: 'Prediction Amount', key: 'predictionAmount', getValue: (row) => row.predictions.predictionAmount },
+      { title: 'Prediction Date', key: 'predictionDate', getValue: (row) => row.predictions.predictionDate },
+    ];
+
     // Prepare data for Excel export
-    const exportData = [...reportData, grandTotal].map((row, index) => {
-      const isGrandTotal = row.branchId === 'grand-total';
-      return {
-        'Branch': isGrandTotal ? '🏆 Grand Total' : row.branchName,
-        'Date': row.date,
-        // Cashbook 1 Data
-        'PCIH': row.cashbook1.pcih,
-        'Savings': row.cashbook1.savings,
-        'Loan Collection': row.cashbook1.loanCollection,
-        'Charges': row.cashbook1.charges,
-        'Collection Total': row.cashbook1.collectionTotal,
-        'FRM HO': row.cashbook1.frmHO,
-        'FRM BR': row.cashbook1.frmBR,
-        'CB Total 1': row.cashbook1.cbTotal1,
-        // Cashbook 2 Data
-        'DIS NO': row.cashbook2.disNo,
-        'DIS AMT': row.cashbook2.disAmt,
-        'DIS WIT INT': row.cashbook2.disWithInt,
-        'SAV WITH': row.cashbook2.savWith,
-        'DOMI BANK': row.cashbook2.domiBank,
-        'POS/T': row.cashbook2.posT,
-        'CB Total 2': row.cashbook2.cbTotal2,
-        // Online CIH
-        'Online CIH': row.onlineCIH,
-        // Bank Statement Data
-        'Opening': row.bankStatement1.opening,
-        'REC HO': row.bankStatement1.recHO,
-        'REC BO': row.bankStatement1.recBO,
-        'DOMI': row.bankStatement1.domi,
-        'PA': row.bankStatement1.pa,
-        'BS1 Total': row.bankStatement1.bs1Total,
-        'WITHD': row.bankStatement2.withd,
-        'TBO': row.bankStatement2.tbo,
-        'TBO To Branch': row.bankStatement2.tboToBranch,
-        'EX AMT': row.bankStatement2.exAmt,
-        'EX Purpose': row.bankStatement2.exPurpose,
-        'BS2 Total': row.bankStatement2.bs2Total,
-        'TSO': row.tso,
-        'Expenses': row.bankStatement2.exAmt,
-        // Current Branch Register
-        'CBR (Savings)': row.cbrSavings,
-        'CBR (Loan)': row.cbrLoan,
-        'Disbursement Roll': row.disbursementRoll,
-        // New Fields
-        'Total Collections': row.totalCollections,
-        'Disbursement Number': row.disbursementNumber,
-        'Disbursement Amount': row.disbursementAmount,
-        'Disbursement Roll Number': row.disbursementRollNumber,
-        'Total FRM HO': row.totalFrmHO,
-        // Predictions
-        'Prediction No': row.predictions.predictionNo,
-        'Prediction Amount': row.predictions.predictionAmount,
-        'Prediction Date': row.predictions.predictionDate,
-        // Disbursement Roll Data
-        'Previous Disbursement': row.disbursementRollData.previousDisbursement,
-        'Daily Disbursement': row.disbursementRollData.dailyDisbursement,
-        'Month': row.disbursementRollData.month,
-        'Year': row.disbursementRollData.year
-      };
+    const exportData = [...reportData, grandTotal].map((row) => {
+      const rowData = {};
+      exportColumns.forEach(col => {
+        rowData[col.title] = col.getValue(row);
+      });
+      return rowData;
     });
 
     // Create workbook and worksheet
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(exportData);
 
-    // Set column widths
-    const colWidths = [
-      { wch: 15 }, // Branch
-      { wch: 12 }, // Date
-      { wch: 12 }, // PCIH
-      { wch: 12 }, // Savings
-      { wch: 15 }, // Loan Collection
-      { wch: 12 }, // Charges
-      { wch: 15 }, // Collection Total
-      { wch: 12 }, // FRM HO
-      { wch: 12 }, // FRM BR
-      { wch: 12 }, // CB Total 1
-      { wch: 10 }, // DIS NO
-      { wch: 12 }, // DIS AMT
-      { wch: 12 }, // DIS WIT INT
-      { wch: 12 }, // SAV WITH
-      { wch: 12 }, // DOMI BANK
-      { wch: 10 }, // POS/T
-      { wch: 12 }, // CB Total 2
-      { wch: 12 }, // Online CIH
-      { wch: 12 }, // Opening
-      { wch: 12 }, // REC HO
-      { wch: 12 }, // REC BO
-      { wch: 12 }, // DOMI
-      { wch: 10 }, // PA
-      { wch: 12 }, // BS1 Total
-      { wch: 12 }, // WITHD
-      { wch: 10 }, // TBO
-      { wch: 15 }, // TBO To Branch
-      { wch: 12 }, // EX AMT
-      { wch: 20 }, // EX Purpose
-      { wch: 12 }, // BS2 Total
-      { wch: 12 }, // TSO
-      { wch: 15 }, // CBR (Savings)
-      { wch: 15 }, // CBR (Loan)
-      { wch: 18 }, // Disbursement Roll
-      { wch: 18 }, // Total Collections
-      { wch: 18 }, // Disbursement Number
-      { wch: 18 }, // Disbursement Amount
-      { wch: 20 }, // Disbursement Roll Number
-      { wch: 15 }, // Total FRM HO
-      { wch: 15 }, // Prediction No
-      { wch: 18 }, // Prediction Amount
-      { wch: 15 }, // Prediction Date
-      { wch: 18 }, // Previous Disbursement
-      { wch: 18 }, // Daily Disbursement
-      { wch: 10 }, // Month
-      { wch: 10 }  // Year
-    ];
-
-    ws['!cols'] = colWidths;
-
-    // Style the grand total row
-    if (exportData.length > 1) {
-      const grandTotalRowIndex = exportData.length; // 1-based index for Excel
-      // You can add more styling here if needed
-    }
+    // Set column widths (optional, can be adjusted)
+    ws['!cols'] = exportColumns.map(() => ({ wch: 15 }));
 
     // Add worksheet to workbook
     XLSX.utils.book_append_sheet(wb, ws, 'Branch Daily Report');
