@@ -95,8 +95,10 @@ const BranchAmountNeedTomorrowPage: React.FC = () => {
 
       if (isFirstRecord) {
         await createMutation.mutateAsync(payload);
+        toast.success('Amount Need Tomorrow record created successfully!');
       } else {
         await updateMutation.mutateAsync(payload);
+        toast.success('Amount Need Tomorrow record updated successfully!');
       }
 
       setFormData(payload);
@@ -237,7 +239,6 @@ const BranchAmountNeedTomorrowPage: React.FC = () => {
                       tooltip="Amount needed for loan disbursements tomorrow"
                       rules={[
                         { required: true, message: 'Please enter loan amount' },
-                        { type: 'number', min: 0, message: 'Amount must be positive' }
                       ]}
                     >
                       <Input
@@ -256,7 +257,7 @@ const BranchAmountNeedTomorrowPage: React.FC = () => {
                       tooltip="Amount needed for savings withdrawals tomorrow"
                       rules={[
                         { required: true, message: 'Please enter savings withdrawal amount' },
-                        { type: 'number', min: 0, message: 'Amount must be positive' }
+                        // { type: 'number', min: 0, message: 'Amount must be positive' }
                       ]}
                     >
                       <Input
@@ -275,7 +276,7 @@ const BranchAmountNeedTomorrowPage: React.FC = () => {
                       tooltip="Amount needed for branch expenses tomorrow"
                       rules={[
                         { required: true, message: 'Please enter expenses amount' },
-                        { type: 'number', min: 0, message: 'Amount must be positive' }
+                        // { type: 'number', min: 0, message: 'Amount must be positive' }
                       ]}
                     >
                       <Input

@@ -1,29 +1,36 @@
 import { useQuery } from '@tanstack/react-query';
 import axiosInstance from "../../instance/axiosInstance";
 
-export interface AmountNeedTomorrowBranchSummary {
-  _id: string;
-  branch: string;
-  branchName: string;
-  branchCode: string;
-  date: string;
-  loanAmount: number;
-  savingsWithdrawalAmount: number;
-  expensesAmount: number;
-  total: number;
-  notes?: string;
-  submittedByUser: {
-    username: string;
-    email: string;
-  };
-  createdAt: string;
-  updatedAt: string;
-}
 
 export interface AmountNeedTomorrowHOSummary {
-  data: AmountNeedTomorrowBranchSummary[];
-  count: number;
+  success: boolean
+  data: AmountNeedTomorrowBranchSummary[]
+  count: number
 }
+
+export interface AmountNeedTomorrowBranchSummary {
+  _id: string
+  branch: string
+  date: string
+  loanAmount: number
+  savingsWithdrawalAmount: number
+  expensesAmount: number
+  total: number
+  notes: string
+  submittedBy: string
+  createdAt: string
+  updatedAt: string
+  __v: number
+  branchName: string
+  branchCode: string
+  submittedByUser: SubmittedByUser
+}
+
+export interface SubmittedByUser {
+  username: string
+  email: string
+}
+
 
 const getAmountNeedTomorrowHOSummary = async (date?: string): Promise<AmountNeedTomorrowHOSummary> => {
     const params = date ? `?date=${date}` : '';
