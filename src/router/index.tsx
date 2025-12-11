@@ -22,6 +22,8 @@ import { LoanRegisterPage } from '../pages/registers/LoanRegisterPage';
 import { DisbursementRollPage } from '../pages/disbursement-roll/DisbursementRollPage';
 import BranchEFCCPage from '../pages/efcc/BranchEFCCPage';
 import HOEFCCPage from '../pages/efcc/HOEFCCPage';
+import BranchAmountNeedTomorrowPage from '../pages/amount-need-tomorrow/BranchAmountNeedTomorrowPage';
+import HOAmountNeedTomorrowPage from '../pages/amount-need-tomorrow/HOAmountNeedTomorrowPage';
 
 export const router = createBrowserRouter([
   {
@@ -108,8 +110,16 @@ export const router = createBrowserRouter([
         element: <BranchEFCCPage />,
       },
       {
+        path: 'branch-amount-need-tomorrow',
+        element: <BranchAmountNeedTomorrowPage />,
+      },
+      {
         path: 'ho-efcc',
         element: <HOEFCCPage />,
+      },
+      {
+        path: 'ho-amount-need-tomorrow',
+        element: <HOAmountNeedTomorrowPage />,
       },
       {
         path: 'branches',
