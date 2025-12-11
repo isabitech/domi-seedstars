@@ -94,6 +94,14 @@ interface BranchDailyReportData {
     month: number;
     year: number;
   };
+  amountNeedTomorrow: {
+    loanAmount: number;
+    savingsWithdrawalAmount: number;
+    expensesAmount: number;
+    total: number;
+    notes: string;
+    date: string | null;
+  };
 }
 
 const transformOperationToReportData = (operation: Operation): BranchDailyReportData => {
@@ -157,6 +165,14 @@ const transformOperationToReportData = (operation: Operation): BranchDailyReport
       month: operation.disbursementRoll?.month || 0,
       year: operation.disbursementRoll?.year || 0,
     },
+    amountNeedTomorrow: {
+      loanAmount: operation.amountNeedTomorrow?.loanAmount || 0,
+      savingsWithdrawalAmount: operation.amountNeedTomorrow?.savingsWithdrawalAmount || 0,
+      expensesAmount: operation.amountNeedTomorrow?.expensesAmount || 0,
+      total: operation.amountNeedTomorrow?.total || 0,
+      notes: operation.amountNeedTomorrow?.notes || '',
+      date: operation.amountNeedTomorrow?.date || null,
+    },
   };
 };
 
@@ -203,6 +219,7 @@ export const BranchDailyReportPage: React.FC = () => {
       totalPredictionAmount: acc.totalPredictionAmount + branch.predictions.predictionAmount,
       totalPredictionNo: acc.totalPredictionNo + branch.predictions.predictionNo,
       totalExpenses: acc.totalExpenses + branch.bankStatement2.exAmt,
+      totalAmountNeedTomorrow: acc.totalAmountNeedTomorrow + branch.amountNeedTomorrow.total,
     }), {
       cbTotal1: 0,
       cbTotal2: 0,
@@ -221,6 +238,7 @@ export const BranchDailyReportPage: React.FC = () => {
       totalPredictionAmount: 0,
       totalPredictionNo: 0,
       totalExpenses: 0,
+      totalAmountNeedTomorrow: 0,
     });
   }, [reportData]);
 
@@ -272,6 +290,12 @@ export const BranchDailyReportPage: React.FC = () => {
       { title: 'Prediction No', key: 'predictionNo', getValue: (row) => row.predictions.predictionNo },
       { title: 'Prediction Amount', key: 'predictionAmount', getValue: (row) => row.predictions.predictionAmount },
       { title: 'Prediction Date', key: 'predictionDate', getValue: (row) => row.predictions.predictionDate },
+      // Amount Need Tomorrow
+      { title: 'ANT Loan Amount', key: 'antLoanAmount', getValue: (row) => row.amountNeedTomorrow.loanAmount },
+      { title: 'ANT Savings Withdrawal', key: 'antSavingsWithdrawal', getValue: (row) => row.amountNeedTomorrow.savingsWithdrawalAmount },
+      { title: 'ANT Expenses', key: 'antExpenses', getValue: (row) => row.amountNeedTomorrow.expensesAmount },
+      { title: 'ANT Total', key: 'antTotal', getValue: (row) => row.amountNeedTomorrow.total },
+      { title: 'ANT Notes', key: 'antNotes', getValue: (row) => row.amountNeedTomorrow.notes },
     ];
 
     // Prepare data for Excel export
@@ -363,6 +387,14 @@ export const BranchDailyReportPage: React.FC = () => {
         dailyDisbursement: 0,
         month: 0,
         year: 0
+      },
+      amountNeedTomorrow: {
+        loanAmount: 0,
+        savingsWithdrawalAmount: 0,
+        expensesAmount: 0,
+        total: 0,
+        notes: '',
+        date: null
       }
     };
 
@@ -411,6 +443,10 @@ export const BranchDailyReportPage: React.FC = () => {
       grandTotal.predictions.predictionAmount += branch.predictions.predictionAmount;
       grandTotal.disbursementRollData.previousDisbursement += branch.disbursementRollData.previousDisbursement;
       grandTotal.disbursementRollData.dailyDisbursement += branch.disbursementRollData.dailyDisbursement;
+      grandTotal.amountNeedTomorrow.loanAmount += branch.amountNeedTomorrow.loanAmount;
+      grandTotal.amountNeedTomorrow.savingsWithdrawalAmount += branch.amountNeedTomorrow.savingsWithdrawalAmount;
+      grandTotal.amountNeedTomorrow.expensesAmount += branch.amountNeedTomorrow.expensesAmount;
+      grandTotal.amountNeedTomorrow.total += branch.amountNeedTomorrow.total;
     });
 
     return grandTotal;
@@ -780,6 +816,74 @@ export const BranchDailyReportPage: React.FC = () => {
           }
         }
       ]
+    },
+    // Amount Need Tomorrow Data
+    {
+      title: 'Amount Need Tomorrow',
+      children: [
+        {
+          title: 'ANT Loan Amount',
+          dataIndex: ['amountNeedTomorrow', 'loanAmount'],
+          key: 'antLoanAmount',
+          render: (value: number, record: BranchDailyReportData) => renderCurrency(value, record, '#1890ff')
+        },
+        {
+          title: 'ANT Savings Withdrawal',
+          dataIndex: ['amountNeedTomorrow', 'savingsWithdrawalAmount'],
+          key: 'antSavingsWithdrawal',
+          render: (value: number, record: BranchDailyReportData) => renderCurrency(value, record, '#52c41a')
+        },
+        {
+          title: 'ANT Expenses',
+          dataIndex: ['amountNeedTomorrow', 'expensesAmount'],
+          key: 'antExpenses',
+          render: (value: number, record: BranchDailyReportData) => renderCurrency(value, record, '#fa8c16')
+        },
+        {
+          title: 'ANT Total',
+          dataIndex: ['amountNeedTomorrow', 'total'],
+          key: 'antTotal',
+          render: (value: number, record: BranchDailyReportData) => (
+            <Text
+              strong
+              style={{
+                color: record.branchId === 'grand-total' ? '#f5222d' : '#f5222d',
+                fontWeight: 'bold',
+                fontSize: window.innerWidth <= 768 ? '12px' : '14px'
+              }}
+            >
+              {calculations.formatCurrency(value)}
+            </Text>
+          )
+        },
+        {
+          title: 'ANT Notes',
+          dataIndex: ['amountNeedTomorrow', 'notes'],
+          key: 'antNotes',
+          width: 200,
+          render: (notes: string, record: BranchDailyReportData) => {
+            if (record.branchId === 'grand-total' || !notes || notes.trim() === '') {
+              return (
+                <Text style={{
+                  color: '#999',
+                  fontSize: window.innerWidth <= 768 ? '11px' : '12px'
+                }}>
+                  -
+                </Text>
+              );
+            }
+            
+            return (
+              <Text style={{
+                fontSize: window.innerWidth <= 768 ? '11px' : '12px',
+                color: '#333'
+              }}>
+                {notes}
+              </Text>
+            );
+          }
+        }
+      ]
     }
   ];
 
@@ -1005,6 +1109,20 @@ export const BranchDailyReportPage: React.FC = () => {
                   />
                 </Card>
               </Col>
+              <Col xs={24} sm={12} lg={6}>
+                <Card>
+                  <Statistic
+                    title="Total Amount Need Tomorrow"
+                    value={totals.totalAmountNeedTomorrow}
+                    precision={2}
+                    prefix="₦"
+                    valueStyle={{ 
+                      color: '#f5222d',
+                      fontSize: window.innerWidth <= 768 ? '16px' : '20px'
+                    }}
+                  />
+                </Card>
+              </Col>
             </Row>
           </>
         )}
@@ -1100,6 +1218,10 @@ export const BranchDailyReportPage: React.FC = () => {
               <Col xs={12} sm={8} lg={4}>
                 <Text strong>Total Expenses: </Text>
                 <Tag color="volcano">{calculations.formatCurrency(totals.totalExpenses)}</Tag>
+              </Col>
+              <Col xs={12} sm={8} lg={4}>
+                <Text strong>Amount Need Tomorrow: </Text>
+                <Tag color="red">{calculations.formatCurrency(totals.totalAmountNeedTomorrow)}</Tag>
               </Col>
             </Row>
           </Card>

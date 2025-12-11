@@ -1,0 +1,34 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { message } from 'antd';
+import axiosInstance from "../../instance/axiosInstance";
+
+export interface CreateAmountNeedTomorrowPayload {
+  loanAmount: number;
+  savingsWithdrawalAmount: number;
+  expensesAmount: number;
+  notes?: string;
+  date?: string;
+}
+
+const createAmountNeedTomorrow = async (payload: CreateAmountNeedTomorrowPayload) => {
+    const response = await axiosInstance.post('/amount-need-tomorrow', payload);
+    return response.data;
+};
+
+export const useCreateAmountNeedTomorrow = () => {
+    const queryClient = useQueryClient();
+    
+    return useMutation({
+        mutationFn: createAmountNeedTomorrow,
+        onSuccess: (data) => {
+            // Invalidate and refetch
+            queryClient.invalidateQueries({ queryKey: ['amount-need-tomorrow-branch-today'] });
+            queryClient.invalidateQueries({ queryKey: ['amount-need-tomorrow-ho-summary'] });
+            queryClient.invalidateQueries({ queryKey: ['amount-need-tomorrow-history'] });
+            message.success('Amount need tomorrow created successfully');
+        },
+        onError: (error: any) => {
+            message.error(error?.response?.data?.message || 'Failed to create amount need tomorrow');
+        },
+    });
+};

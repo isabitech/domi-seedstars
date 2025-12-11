@@ -88,6 +88,8 @@ export const AppLayout: React.FC = () => {
     if (path.includes('/ho-operations')) return 'ho-operations';
     if (path.includes('/ho-efcc')) return 'ho-efcc';
     if (path.includes('/branch-efcc')) return 'branch-efcc';
+    if (path.includes('/ho-amount-need-tomorrow')) return 'ho-amount-need-tomorrow';
+    if (path.includes('/branch-amount-need-tomorrow')) return 'branch-amount-need-tomorrow';
     if (path.includes('/settings')) return 'settings';
     return 'dashboard';
   };
@@ -143,6 +145,12 @@ export const AppLayout: React.FC = () => {
           icon: <SafetyOutlined />,
           label: 'EFCC Dashboard',
           onClick: () => navigate('/app/ho-efcc'),
+        },
+        {
+          key: 'ho-amount-need-tomorrow',
+          icon: <DollarOutlined />,
+          label: 'Amount Need Tomorrow',
+          onClick: () => navigate('/app/ho-amount-need-tomorrow'),
         },
         
         // {
@@ -216,6 +224,12 @@ export const AppLayout: React.FC = () => {
           label: 'Branch EFCC',
           onClick: () => navigate('/app/branch-efcc'),
         },
+        {
+          key: 'branch-amount-need-tomorrow',
+          icon: <DollarOutlined />,
+          label: 'Amount Need Tomorrow',
+          onClick: () => navigate('/app/branch-amount-need-tomorrow'),
+        },
       ];
     }
   };
@@ -238,6 +252,8 @@ export const AppLayout: React.FC = () => {
       '/app/branch-disbursement-roll': 'Disbursement Roll',
       '/app/branch-efcc': 'Branch EFCC',
       '/app/ho-efcc': 'EFCC Dashboard',
+      '/app/branch-amount-need-tomorrow': 'Amount Need Tomorrow',
+      '/app/ho-amount-need-tomorrow': 'Amount Need Tomorrow - HO Dashboard',
       '/app/reports': 'Reports & Analytics',
       '/app/reports/daily': 'Branch Daily Report',
       // '/app/settings': 'System Settings',

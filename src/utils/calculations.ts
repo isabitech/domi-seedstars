@@ -177,4 +177,12 @@ export const calculations = {
     if (previous === 0) return current > 0 ? 100 : 0;
     return ((current - previous) / previous) * 100;
   },
+
+  // Format number with commas
+  formatNumber(amount: number, decimalPlaces: number = 2): string {
+    return new Intl.NumberFormat('en-NG', {
+      minimumFractionDigits: decimalPlaces,
+      maximumFractionDigits: decimalPlaces,
+    }).format(amount);
+  },
 };

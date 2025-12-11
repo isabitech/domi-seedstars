@@ -36,6 +36,16 @@ export interface Operation {
   updatedAt: string
   __v: number
   predictions: Predictions
+  amountNeedTomorrow?: {
+    branch: string
+    loanAmount: number
+    savingsWithdrawalAmount: number
+    expensesAmount: number
+    total: number
+    notes: string
+    date: string | null
+    submittedBy: string | null
+  }
 }
 
 export interface Branch {
