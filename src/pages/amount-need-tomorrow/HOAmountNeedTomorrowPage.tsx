@@ -175,14 +175,14 @@ const HOAmountNeedTomorrowPage: React.FC = () => {
       dataIndex: 'submittedByUser',
       key: 'submittedBy',
       width: window.innerWidth <= 768 ? 100 : 130,
-      render: (user: { username: string; email: string }) => (
+      render: (user: { username: string; email: string } | null | undefined) => (
         <div>
           <Text style={{ fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>
-            {user.username}
+            {user?.username || 'N/A'}
           </Text>
           <br />
           <Text type="secondary" style={{ fontSize: window.innerWidth <= 768 ? '10px' : '11px' }}>
-            {user.email}
+            {user?.email || 'N/A'}
           </Text>
         </div>
       ),

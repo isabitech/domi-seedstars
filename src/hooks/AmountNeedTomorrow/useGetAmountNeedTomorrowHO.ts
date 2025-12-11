@@ -23,7 +23,7 @@ export interface AmountNeedTomorrowBranchSummary {
   __v: number
   branchName: string
   branchCode: string
-  submittedByUser: SubmittedByUser
+  submittedByUser?: SubmittedByUser | null
 }
 
 export interface SubmittedByUser {
