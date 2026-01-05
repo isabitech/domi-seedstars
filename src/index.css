@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+html,
+#root {
+  height: auto;
+  min-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -28,9 +37,13 @@ body {
   margin: 0;
   padding: 0;
   width: 100%;
-  min-height: 100vh;
+  height: auto;
+  min-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
   background-color: #ffffff;
 }
+
 
 h1 {
   font-size: 3.2em;
@@ -88,9 +101,9 @@ button:focus-visible {
   }
   
   /* Content area mobile optimization */
-  .ant-layout-content {
+  /* .ant-layout-content {
     min-height: calc(100vh - 56px);
-  }
+  } */
   
   /* Menu item mobile styling */
   .ant-menu-item {
