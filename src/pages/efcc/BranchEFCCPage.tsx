@@ -151,7 +151,7 @@ const BranchEFCCPage: React.FC = () => {
           <Col>
             <Title level={2}>
               <SafetyOutlined style={{ marginRight: '8px' }} />
-              Branch EFCC
+              Branch DSA Summary
             </Title>
             <Text type="secondary">
               Expected Financial Compliance Calculation - {dayjs().format('DD MMMM YYYY')}
@@ -172,8 +172,8 @@ const BranchEFCCPage: React.FC = () => {
         {/* Error Alert */}
         {error && (
           <Alert
-            message="Error Loading EFCC Data"
-            description="Failed to load today's EFCC record"
+            message="Error Loading DSA Sumary Data"
+            description="Failed to load today's DSA Sumary record"
             type="error"
             showIcon
             action={
@@ -190,7 +190,7 @@ const BranchEFCCPage: React.FC = () => {
             <div style={{ textAlign: 'center', padding: '50px 0' }}>
               <Spin size="large" />
               <Text style={{ display: 'block', marginTop: 16 }}>
-                {isRefreshing ? 'Refreshing EFCC data...' : 'Loading EFCC data...'}
+                {isRefreshing ? 'Refreshing DSA Summary data...' : 'Loading DSA Summary data...'}
               </Text>
             </div>
           </Card>
@@ -205,7 +205,7 @@ const BranchEFCCPage: React.FC = () => {
                 message={isSubmitted ? "Record Submitted" : "Draft Record"}
                 description={
                   isSubmitted 
-                    ? `This EFCC record was submitted on ${dayjs(currentRecord.efcc.submittedAt).format('DD MMMM YYYY, HH:mm A')}`
+                    ? `This DSA Summary record was submitted on ${dayjs(currentRecord.efcc.submittedAt).format('DD MMMM YYYY, HH:mm A')}`
                     : "You can still modify this record until you submit it"
                 }
                 type={isSubmitted ? "success" : "info"}
@@ -217,7 +217,7 @@ const BranchEFCCPage: React.FC = () => {
             <Row gutter={[24, 24]}>
               {/* Form Section */}
               <Col xs={24} lg={14}>
-                <Card title="EFCC Input Form" size="default">
+                <Card title="DSA Sumary Input Form" size="default">
                   <Form
                     form={form}
                     layout="vertical"
@@ -312,7 +312,7 @@ const BranchEFCCPage: React.FC = () => {
 
               {/* Calculation Summary */}
               <Col xs={24} lg={10}>
-                <Card title="EFCC Calculation" size="default">
+                <Card title="DSA Sumary Calculation" size="default">
                   <Space direction="vertical" size="middle" style={{ width: '100%' }}>
                     {/* Previous Amount */}
                     <Statistic

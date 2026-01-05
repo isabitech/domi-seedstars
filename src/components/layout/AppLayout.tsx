@@ -221,7 +221,7 @@ export const AppLayout: React.FC = () => {
         {
           key: 'branch-efcc',
           icon: <SafetyOutlined />,
-          label: 'Branch EFCC',
+          label: 'Branch DSA Summary',
           onClick: () => navigate('/app/branch-efcc'),
         },
         {

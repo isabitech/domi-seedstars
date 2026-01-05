@@ -74,7 +74,7 @@ export const Homepage: React.FC = () => {
   ];
 
   return (
-    <Layout className="min-h-screen">
+    <Layout className="homepage-layout">
       {/* Header */}
       <Header className="bg-white shadow-md px-12 flex justify-between items-center">
         <div className="flex items-center">
