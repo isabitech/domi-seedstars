@@ -25,10 +25,10 @@ export const useCreateAmountNeedTomorrow = () => {
             queryClient.invalidateQueries({ queryKey: ['amount-need-tomorrow-branch-today'] });
             queryClient.invalidateQueries({ queryKey: ['amount-need-tomorrow-ho-summary'] });
             queryClient.invalidateQueries({ queryKey: ['amount-need-tomorrow-history'] });
-            message.success('Amount need tomorrow created successfully');
+            message.success('Senate Planning created successfully');
         },
         onError: (error: any) => {
-            message.error(error?.response?.data?.message || 'Failed to create amount need tomorrow');
+            message.error(error?.response?.data?.message || 'Failed to create Senate Planning');
         },
     });
 };

@@ -290,7 +290,7 @@ export const BranchDailyReportPage: React.FC = () => {
       { title: 'Prediction No', key: 'predictionNo', getValue: (row) => row.predictions.predictionNo },
       { title: 'Prediction Amount', key: 'predictionAmount', getValue: (row) => row.predictions.predictionAmount },
       { title: 'Prediction Date', key: 'predictionDate', getValue: (row) => row.predictions.predictionDate },
-      // Amount Need Tomorrow
+      // Senate Planning
       { title: 'ANT Loan Amount', key: 'antLoanAmount', getValue: (row) => row.amountNeedTomorrow.loanAmount },
       { title: 'ANT Savings Withdrawal', key: 'antSavingsWithdrawal', getValue: (row) => row.amountNeedTomorrow.savingsWithdrawalAmount },
       { title: 'ANT Expenses', key: 'antExpenses', getValue: (row) => row.amountNeedTomorrow.expensesAmount },
@@ -817,9 +817,9 @@ export const BranchDailyReportPage: React.FC = () => {
         }
       ]
     },
-    // Amount Need Tomorrow Data
+    // Senate Planning Data
     {
-      title: 'Amount Need Tomorrow',
+      title: 'Senate Planning',
       children: [
         {
           title: 'ANT Loan Amount',
@@ -1112,7 +1112,7 @@ export const BranchDailyReportPage: React.FC = () => {
               <Col xs={24} sm={12} lg={6}>
                 <Card>
                   <Statistic
-                    title="Total Amount Need Tomorrow"
+                    title="Total Senate Planning"
                     value={totals.totalAmountNeedTomorrow}
                     precision={2}
                     prefix="₦"
@@ -1220,7 +1220,7 @@ export const BranchDailyReportPage: React.FC = () => {
                 <Tag color="volcano">{calculations.formatCurrency(totals.totalExpenses)}</Tag>
               </Col>
               <Col xs={12} sm={8} lg={4}>
-                <Text strong>Amount Need Tomorrow: </Text>
+                <Text strong>Senate Planning: </Text>
                 <Tag color="red">{calculations.formatCurrency(totals.totalAmountNeedTomorrow)}</Tag>
               </Col>
             </Row>

@@ -1,7 +1,7 @@
-# Amount Need Tomorrow API Documentation
+# Senate Planning API Documentation
 
 ## Overview
-The Amount Need Tomorrow API allows branches to input their expected financial needs for the next day across three categories: loans, savings withdrawals, and expenses. HO can view all branches' needs for planning and cash flow management.
+The Senate Planning API allows branches to input their expected financial needs for the next day across three categories: loans, savings withdrawals, and expenses. HO can view all branches' needs for planning and cash flow management.
 
 ## Base URL
 ```
@@ -18,7 +18,7 @@ Authorization: Bearer <your_jwt_token>
 
 ## Branch Endpoints
 
-### 1. Create/Update Amount Need Tomorrow
+### 1. Create/Update Senate Planning
 **POST** `/api/amount-need-tomorrow`
 
 Creates a new entry or updates existing entry for the current date.
@@ -38,7 +38,7 @@ Creates a new entry or updates existing entry for the current date.
 ```json
 {
   "success": true,
-  "message": "Amount need tomorrow created successfully",
+  "message": "Senate Planning created successfully",
   "data": {
     "_id": "675a1b2c3d4e5f6789abcdef",
     "branch": "692ef30ad6ea4db16c55d78a",
@@ -55,10 +55,10 @@ Creates a new entry or updates existing entry for the current date.
 }
 ```
 
-### 2. Get Latest Amount Need Tomorrow
+### 2. Get Latest Senate Planning
 **GET** `/api/amount-need-tomorrow`
 
-Retrieves the most recent amount need tomorrow entry for the current branch.
+Retrieves the most recent Senate Planning entry for the current branch.
 
 **Response:**
 ```json
@@ -84,10 +84,10 @@ Retrieves the most recent amount need tomorrow entry for the current branch.
 }
 ```
 
-### 3. Get Amount Need Tomorrow by Date
+### 3. Get Senate Planning by Date
 **GET** `/api/amount-need-tomorrow/date/:date`
 
-Retrieves amount need tomorrow entry for a specific date.
+Retrieves Senate Planning entry for a specific date.
 
 **Parameters:**
 - `date` - ISO date string (e.g., "2025-12-12")
@@ -110,7 +110,7 @@ GET /api/amount-need-tomorrow/date/2025-12-12
 ### 4. Get History
 **GET** `/api/amount-need-tomorrow/history?page=1&limit=10`
 
-Retrieves paginated history of amount need tomorrow entries for the current branch.
+Retrieves paginated history of Senate Planning entries for the current branch.
 
 **Query Parameters:**
 - `page` - Page number (default: 1)
@@ -122,7 +122,7 @@ Retrieves paginated history of amount need tomorrow entries for the current bran
   "success": true,
   "data": [
     {
-      // Array of amount need tomorrow entries
+      // Array of Senate Planning entries
     }
   ],
   "pagination": {
@@ -136,7 +136,7 @@ Retrieves paginated history of amount need tomorrow entries for the current bran
 ### 5. Delete Entry
 **DELETE** `/api/amount-need-tomorrow/:id`
 
-Deletes a specific amount need tomorrow entry.
+Deletes a specific Senate Planning entry.
 
 **Parameters:**
 - `id` - Entry ID
@@ -145,7 +145,7 @@ Deletes a specific amount need tomorrow entry.
 ```json
 {
   "success": true,
-  "message": "Amount need tomorrow entry deleted successfully"
+  "message": "Senate Planning entry deleted successfully"
 }
 ```
 
@@ -153,10 +153,10 @@ Deletes a specific amount need tomorrow entry.
 
 ## HO (Admin) Endpoints
 
-### 6. Get All Branches Amount Need Tomorrow
+### 6. Get All Branches Senate Planning
 **GET** `/api/amount-need-tomorrow/all`
 
-Retrieves the latest amount need tomorrow entries for all branches. **Requires admin/superadmin role.**
+Retrieves the latest Senate Planning entries for all branches. **Requires admin/superadmin role.**
 
 **Response:**
 ```json
@@ -191,7 +191,7 @@ Retrieves the latest amount need tomorrow entries for all branches. **Requires a
 
 ## Integration with Operations API
 
-The amount need tomorrow data is automatically included in the operations endpoint:
+The Senate Planning data is automatically included in the operations endpoint:
 
 ### Operations API Integration
 **GET** `/api/operations/all`
@@ -265,7 +265,7 @@ The response now includes `amountNeedTomorrow` field for each operation:
 ```json
 {
   "success": false,
-  "message": "Amount need tomorrow entry not found"
+  "message": "Senate Planning entry not found"
 }
 ```
 
@@ -273,7 +273,7 @@ The response now includes `amountNeedTomorrow` field for each operation:
 ```json
 {
   "success": false,
-  "message": "Failed to save amount need tomorrow",
+  "message": "Failed to save Senate Planning",
   "error": "Database connection error"
 }
 ```
@@ -300,7 +300,7 @@ The response now includes `amountNeedTomorrow` field for each operation:
 ### Frontend Implementation Example
 
 ```javascript
-// Create/Update amount need tomorrow
+// Create/Update Senate Planning
 const createAmountNeed = async (data) => {
   const response = await fetch('/api/amount-need-tomorrow', {
     method: 'POST',

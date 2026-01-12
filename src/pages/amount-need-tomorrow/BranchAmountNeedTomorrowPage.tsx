@@ -12,6 +12,7 @@ import {
   Alert,
   Spin,
   Divider,
+  DatePicker,
 } from 'antd';
 import {
   DollarOutlined,
@@ -20,49 +21,61 @@ import {
   ReloadOutlined,
   ClockCircleOutlined,
   PlusOutlined,
+  CalendarOutlined,
 } from '@ant-design/icons';
-import { useGetAmountNeedTomorrowBranch } from '../../hooks/AmountNeedTomorrow/useGetAmountNeedTomorrowBranch';
-import { useCreateAmountNeedTomorrow } from '../../hooks/AmountNeedTomorrow/useCreateAmountNeedTomorrow';
-import { useUpdateAmountNeedTomorrow } from '../../hooks/AmountNeedTomorrow/useUpdateAmountNeedTomorrow';
+
+import { CURRENT_DATE } from '../../lib/utils';
 import { calculations } from '../../utils/calculations';
 import dayjs from 'dayjs';
 import { toast } from 'sonner';
+import { useCreateSenatePlanning, useGetSenatePlanningByDate, useUpdateSenatePlanning } from '../../hooks/SenatePlanning';
 
 const { Title, Text } = Typography;
 
-interface AmountNeedTomorrowFormData {
-  loanAmount: number;
-  savingsWithdrawalAmount: number;
-  expensesAmount: number;
+interface SenatePlanningFormData {
+  noOfDisbursement: number;
+  disbursementAmount: number;
+  amountToClients: number;
   notes?: string;
 }
 
 const BranchAmountNeedTomorrowPage: React.FC = () => {
   // Form and state
-  const [form] = Form.useForm<AmountNeedTomorrowFormData>();
-  const [formData, setFormData] = useState<AmountNeedTomorrowFormData>({
-    loanAmount: 0,
-    savingsWithdrawalAmount: 0,
-    expensesAmount: 0,
+  const [form] = Form.useForm<SenatePlanningFormData>();
+  const [selectedDate, setSelectedDate] = useState<string>(CURRENT_DATE);
+  const [formData, setFormData] = useState<SenatePlanningFormData>({
+    noOfDisbursement: 0,
+    disbursementAmount: 0,
+    amountToClients: 0,
   });
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Check if selected date is current date
+  const isCurrentDate = selectedDate === CURRENT_DATE;
+
+  // Handle date change
+  const handleDateChange = (date: dayjs.Dayjs | null) => {
+    if (date) {
+      setSelectedDate(date.format('YYYY-MM-DD'));
+    }
+  };
+
   // Hooks
-  const { data: currentRecord, isLoading, error, refetch } = useGetAmountNeedTomorrowBranch();
-  const createMutation = useCreateAmountNeedTomorrow();
-  const updateMutation = useUpdateAmountNeedTomorrow();
+  const { data: currentRecord, isLoading, error, refetch } = useGetSenatePlanningByDate(selectedDate);
+  const createMutation = useCreateSenatePlanning();
+  const updateMutation = useUpdateSenatePlanning();
 
   // Check if this is the first record (no previous record exists)
-  const isFirstRecord = !currentRecord?.amountNeedTomorrow;
+  const isFirstRecord = !currentRecord?.senatePlanning;
 
   // Handle refresh
   const handleRefresh = async () => {
     try {
       setIsRefreshing(true);
       await refetch();
-      toast.success('Amount Need Tomorrow data refreshed successfully');
+      toast.success('Senate Planning data refreshed successfully');
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to refresh Amount Need Tomorrow data');
+      toast.error(error?.response?.data?.message || 'Failed to refresh Senate Planning data');
     } finally {
       setIsRefreshing(false);
     }
@@ -70,12 +83,12 @@ const BranchAmountNeedTomorrowPage: React.FC = () => {
 
   // Initialize form with existing data
   useEffect(() => {
-    if (currentRecord?.amountNeedTomorrow) {
-      const record = currentRecord.amountNeedTomorrow;
+    if (currentRecord?.senatePlanning) {
+      const record = currentRecord.senatePlanning;
       const formValues = {
-        loanAmount: record.loanAmount,
-        savingsWithdrawalAmount: record.savingsWithdrawalAmount,
-        expensesAmount: record.expensesAmount,
+        noOfDisbursement: record.noOfDisbursement || 0,
+        disbursementAmount: record.disbursementAmount || record.loanAmount || 0,
+        amountToClients: record.amountToClients || record.savingsWithdrawalAmount || 0,
         notes: record.notes || '',
       };
       form.setFieldsValue(formValues);
@@ -84,21 +97,26 @@ const BranchAmountNeedTomorrowPage: React.FC = () => {
   }, [currentRecord, form]);
 
   // Handle form submission
-  const handleSubmit = async (values: AmountNeedTomorrowFormData) => {
+  const handleSubmit = async (values: SenatePlanningFormData) => {
+    if (!isCurrentDate) {
+      toast.error('Cannot modify data for past dates');
+      return;
+    }
+
     try {
       const payload = {
-        loanAmount: Number(values.loanAmount) || 0,
-        savingsWithdrawalAmount: Number(values.savingsWithdrawalAmount) || 0,
-        expensesAmount: Number(values.expensesAmount) || 0,
+        noOfDisbursement: Number(values.noOfDisbursement) || 0,
+        disbursementAmount: Number(values.disbursementAmount) || 0,
+        amountToClients: Number(values.amountToClients) || 0,
         notes: values.notes || '',
       };
 
       if (isFirstRecord) {
         await createMutation.mutateAsync(payload);
-        toast.success('Amount Need Tomorrow record created successfully!');
+        toast.success('Senate Planning record created successfully!');
       } else {
         await updateMutation.mutateAsync(payload);
-        toast.success('Amount Need Tomorrow record updated successfully!');
+        toast.success('Senate Planning record updated successfully!');
       }
 
       setFormData(payload);
@@ -110,20 +128,19 @@ const BranchAmountNeedTomorrowPage: React.FC = () => {
 
   // Calculate total
   const calculatedTotal = useMemo(() => {
-    return (formData.loanAmount || 0) + 
-           (formData.savingsWithdrawalAmount || 0) + 
-           (formData.expensesAmount || 0);
+    return (formData.disbursementAmount || 0) + 
+           (formData.amountToClients || 0);
   }, [formData]);
 
   // Check if form data has changed
   const hasChanges = useMemo(() => {
-    if (!currentRecord?.amountNeedTomorrow) return true;
+    if (!currentRecord?.senatePlanning) return true;
     
-    const record = currentRecord.amountNeedTomorrow;
+    const record = currentRecord.senatePlanning;
     return (
-      formData.loanAmount !== record.loanAmount ||
-      formData.savingsWithdrawalAmount !== record.savingsWithdrawalAmount ||
-      formData.expensesAmount !== record.expensesAmount ||
+      formData.noOfDisbursement !== (record.noOfDisbursement || 0) ||
+      formData.disbursementAmount !== (record.disbursementAmount || record.loanAmount || 0) ||
+      formData.amountToClients !== (record.amountToClients || record.savingsWithdrawalAmount || 0) ||
       formData.notes !== record.notes
     );
   }, [formData, currentRecord]);
@@ -138,10 +155,10 @@ const BranchAmountNeedTomorrowPage: React.FC = () => {
           <Col>
             <Title level={2}>
               <DollarOutlined style={{ marginRight: '8px' }} />
-              Amount Need Tomorrow
+              Senate Planning
             </Title>
             <Text type="secondary">
-              Plan your branch's financial needs for tomorrow
+              Plan your branch's financial needs - {dayjs(selectedDate).format('DD MMMM YYYY')}
             </Text>
           </Col>
           <Col>
@@ -156,11 +173,34 @@ const BranchAmountNeedTomorrowPage: React.FC = () => {
           </Col>
         </Row>
 
+        {/* Date Picker */}
+        <Card size="small">
+          <Space>
+            <CalendarOutlined />
+            <Text strong>Select Date:</Text>
+            <DatePicker
+              value={dayjs(selectedDate)}
+              onChange={handleDateChange}
+              format="DD MMMM YYYY"
+              allowClear={false}
+              placeholder="Select date"
+            />
+            {!isCurrentDate && (
+              <Alert
+                message="Historical Data"
+                description="Data for past dates is read-only"
+                type="info"
+                showIcon
+              />
+            )}
+          </Space>
+        </Card>
+
         {/* Error Alert */}
         {error && (
           <Alert
             message="Error Loading Data"
-            description="Failed to load today's Amount Need Tomorrow record"
+            description="Failed to load today's Senate Planning record"
             type="error"
             showIcon
             action={
@@ -177,21 +217,21 @@ const BranchAmountNeedTomorrowPage: React.FC = () => {
             <div style={{ textAlign: 'center', padding: '50px 0' }}>
               <Spin size="large" />
               <Text style={{ display: 'block', marginTop: 16 }}>
-                {isRefreshing ? 'Refreshing Amount Need Tomorrow data...' : 'Loading Amount Need Tomorrow data...'}
+                {isRefreshing ? 'Refreshing Senate Planning data...' : 'Loading Senate Planning data...'}
               </Text>
             </div>
           </Card>
         )}
 
         {/* Main Content */}
-        {!isLoading && !isRefreshing && !error && (
+        {!isLoading && !isRefreshing && (
           <>
             {/* Status Alert */}
-            {currentRecord?.amountNeedTomorrow && (
+            {currentRecord?.senatePlanning && (
               <Alert
                 message="Record Exists"
                 description={
-                  `Amount Need Tomorrow record for today (${dayjs().format('DD MMMM YYYY')}) exists. You can update the values below.`
+                  `Senate Planning record for ${dayjs(selectedDate).format('DD MMMM YYYY')} exists. ${isCurrentDate ? 'You can update the values below.' : 'This is historical data and cannot be modified.'}`
                 }
                 type="info"
                 showIcon
@@ -208,13 +248,13 @@ const BranchAmountNeedTomorrowPage: React.FC = () => {
                     <Space>
                       {isFirstRecord ? <PlusOutlined /> : <CalculatorOutlined />}
                       <Text strong>
-                        {isFirstRecord ? 'Create Amount Need Tomorrow' : 'Update Amount Need Tomorrow'}
+                        {isFirstRecord ? 'Create Senate Planning' : 'Update Senate Planning'}
                       </Text>
                     </Space>
                   }
                   extra={
                     <Text type="secondary">
-                      {dayjs().format('DD MMMM YYYY')}
+                      {dayjs(selectedDate).format('DD MMMM YYYY')}
                     </Text>
                   }
                 >
@@ -224,21 +264,41 @@ const BranchAmountNeedTomorrowPage: React.FC = () => {
                     onFinish={handleSubmit}
                     onValuesChange={(_, allValues) => {
                       setFormData({
-                        loanAmount: Number(allValues.loanAmount) || 0,
-                        savingsWithdrawalAmount: Number(allValues.savingsWithdrawalAmount) || 0,
-                        expensesAmount: Number(allValues.expensesAmount) || 0,
+                        noOfDisbursement: Number(allValues.noOfDisbursement) || 0,
+                        disbursementAmount: Number(allValues.disbursementAmount) || 0,
+                        amountToClients: Number(allValues.amountToClients) || 0,
                         notes: allValues.notes || '',
                       });
                     }}
                     size="large"
+                    disabled={!isCurrentDate}
                   >
-                    {/* Loan Amount */}
+                    {/* No of disbursement */}
                     <Form.Item
-                      name="loanAmount"
-                      label="Loan Amount Needed"
+                      name="noOfDisbursement"
+                      label="No of disbursement"
+                      tooltip="Number of disbursements planned for tomorrow"
+                      rules={[
+                        { required: true, message: 'Please enter number of disbursements' },
+                      ]}
+                    >
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        size="large"
+                        style={{ fontSize: '16px' }}
+                        min={0}
+                        step={1}
+                      />
+                    </Form.Item>
+
+                    {/* Disbursement amount */}
+                    <Form.Item
+                      name="disbursementAmount"
+                      label="Disbursement Amount"
                       tooltip="Amount needed for loan disbursements tomorrow"
                       rules={[
-                        { required: true, message: 'Please enter loan amount' },
+                        { required: true, message: 'Please enter Disbursement amount' },
                       ]}
                     >
                       <Input
@@ -250,32 +310,13 @@ const BranchAmountNeedTomorrowPage: React.FC = () => {
                       />
                     </Form.Item>
 
-                    {/* Savings Withdrawal Amount */}
+                    {/* Amount to clients */}
                     <Form.Item
-                      name="savingsWithdrawalAmount"
-                      label="Savings Withdrawal Amount"
+                      name="amountToClients"
+                      label="Amount to clients"
                       tooltip="Amount needed for savings withdrawals tomorrow"
                       rules={[
-                        { required: true, message: 'Please enter savings withdrawal amount' },
-                        // { type: 'number', min: 0, message: 'Amount must be positive' }
-                      ]}
-                    >
-                      <Input
-                        type="number"
-                        prefix="₦"
-                        placeholder="0.00"
-                        size="large"
-                        style={{ fontSize: '16px' }}
-                      />
-                    </Form.Item>
-
-                    {/* Expenses Amount */}
-                    <Form.Item
-                      name="expensesAmount"
-                      label="Expenses Amount"
-                      tooltip="Amount needed for branch expenses tomorrow"
-                      rules={[
-                        { required: true, message: 'Please enter expenses amount' },
+                        { required: true, message: 'Please enter Amount to clients' },
                         // { type: 'number', min: 0, message: 'Amount must be positive' }
                       ]}
                     >
@@ -304,16 +345,25 @@ const BranchAmountNeedTomorrowPage: React.FC = () => {
 
                     {/* Action Button */}
                     <Form.Item>
-                      <Button
-                        type="primary"
-                        htmlType="submit"
-                        loading={isProcessing}
-                        icon={isFirstRecord ? <PlusOutlined /> : <CalculatorOutlined />}
-                        size="large"
-                        disabled={!hasChanges}
-                      >
-                        {isFirstRecord ? 'Create Record' : 'Update Record'}
-                      </Button>
+                      {isCurrentDate ? (
+                        <Button
+                          type="primary"
+                          htmlType="submit"
+                          loading={isProcessing}
+                          icon={isFirstRecord ? <PlusOutlined /> : <CalculatorOutlined />}
+                          size="large"
+                          disabled={!hasChanges}
+                        >
+                          {isFirstRecord ? 'Create Record' : 'Update Record'}
+                        </Button>
+                      ) : (
+                        <Alert
+                          message="Read-only Mode"
+                          description="Data for past dates cannot be modified"
+                          type="info"
+                          showIcon
+                        />
+                      )}
                     </Form.Item>
                   </Form>
                 </Card>
@@ -327,8 +377,15 @@ const BranchAmountNeedTomorrowPage: React.FC = () => {
                     <Row gutter={[16, 16]}>
                       <Col xs={24} sm={12}>
                         <Statistic
-                          title="Loan Amount"
-                          value={formData.loanAmount || 0}
+                          title="No of disbursement"
+                          value={formData.noOfDisbursement || 0}
+                          valueStyle={{ color: '#722ed1', fontSize: '16px' }}
+                        />
+                      </Col>
+                      <Col xs={24} sm={12}>
+                        <Statistic
+                          title="Disbursement Amount"
+                          value={formData.disbursementAmount || 0}
                           precision={2}
                           prefix="₦"
                           valueStyle={{ color: '#1890ff', fontSize: '16px' }}
@@ -336,20 +393,11 @@ const BranchAmountNeedTomorrowPage: React.FC = () => {
                       </Col>
                       <Col xs={24} sm={12}>
                         <Statistic
-                          title="Savings Withdrawal"
-                          value={formData.savingsWithdrawalAmount || 0}
+                          title="Amount to clients"
+                          value={formData.amountToClients || 0}
                           precision={2}
                           prefix="₦"
                           valueStyle={{ color: '#52c41a', fontSize: '16px' }}
-                        />
-                      </Col>
-                      <Col xs={24} sm={12}>
-                        <Statistic
-                          title="Expenses"
-                          value={formData.expensesAmount || 0}
-                          precision={2}
-                          prefix="₦"
-                          valueStyle={{ color: '#fa8c16', fontSize: '16px' }}
                         />
                       </Col>
                       <Col xs={24} sm={12}>
@@ -370,16 +418,16 @@ const BranchAmountNeedTomorrowPage: React.FC = () => {
                   </Card>
 
                   {/* Record Information */}
-                  {currentRecord?.amountNeedTomorrow && (
+                  {currentRecord?.senatePlanning && (
                     <Card title="Record Information" size="small">
                       <Row gutter={[16, 8]}>
                         <Col xs={24} sm={12}>
                           <Text type="secondary">Created:</Text><br />
-                          <Text>{dayjs(currentRecord.amountNeedTomorrow.createdAt).format('DD MMM YYYY, HH:mm A')}</Text>
+                          <Text>{dayjs(currentRecord.senatePlanning.createdAt).format('DD MMM YYYY, HH:mm A')}</Text>
                         </Col>
                         <Col xs={24} sm={12}>
                           <Text type="secondary">Last Updated:</Text><br />
-                          <Text>{dayjs(currentRecord.amountNeedTomorrow.updatedAt).format('DD MMM YYYY, HH:mm A')}</Text>
+                          <Text>{dayjs(currentRecord.senatePlanning.updatedAt).format('DD MMM YYYY, HH:mm A')}</Text>
                         </Col>
                       </Row>
                     </Card>
@@ -387,25 +435,6 @@ const BranchAmountNeedTomorrowPage: React.FC = () => {
                 </Space>
               </Col>
             </Row>
-
-            {/* Formula Information */}
-            <Card title="Amount Need Tomorrow Formula" size="small">
-              <Row gutter={[16, 8]}>
-                <Col span={24}>
-                  <Text strong style={{ fontSize: '14px' }}>
-                    Total Amount Needed = Loan Amount + Savings Withdrawal Amount + Expenses Amount
-                  </Text>
-                </Col>
-                <Col span={24}>
-                  <Text type="secondary" style={{ fontSize: '12px' }}>
-                    • <strong>Loan Amount:</strong> Expected amount needed for loan disbursements<br />
-                    • <strong>Savings Withdrawal Amount:</strong> Expected amount needed for savings withdrawals<br />
-                    • <strong>Expenses Amount:</strong> Expected amount needed for branch operational expenses<br />
-                    • <strong>Total:</strong> Total amount your branch will need tomorrow for all operations
-                  </Text>
-                </Col>
-              </Row>
-            </Card>
           </>
         )}
       </Space>

@@ -215,7 +215,7 @@ const HOEFCCPage: React.FC = () => {
           <Col>
             <Title level={2}>
               <SafetyOutlined style={{ marginRight: '8px' }} />
-              EFCC Dashboard
+              DSA Summary
             </Title>
             <Text type="secondary">
               Expected Financial Compliance Calculation - All Branches
@@ -320,6 +320,78 @@ const HOEFCCPage: React.FC = () => {
                 </Card>
               </Col>
             </Row>
+
+            {/* Grand Total Card */}
+            <Card 
+              style={{ 
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                border: 'none',
+                borderRadius: '12px'
+              }}
+            >
+              <Row justify="center" align="middle">
+                <Col span={24} style={{ textAlign: 'center' }}>
+                  <Space direction="vertical" size="small">
+                    <Title level={3} style={{ color: 'white', margin: 0 }}>
+                      Grand Total Outstanding
+                    </Title>
+                    <Text style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '16px' }}>
+                      Total amount owed by all branches to Head Office
+                    </Text>
+                    <Title 
+                      level={1} 
+                      style={{ 
+                        color: 'white', 
+                        margin: '16px 0 8px 0',
+                        fontSize: window.innerWidth <= 768 ? '36px' : '48px',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                      }}
+                    >
+                      {calculations.formatCurrency(efccData.totals.totalCurrentOwing)}
+                    </Title>
+                    <Row gutter={[24, 8]} justify="center">
+                      <Col>
+                        <Space direction="vertical" size={0} style={{ textAlign: 'center' }}>
+                          <Text style={{ color: 'rgba(255, 255, 255, 0.9)', fontWeight: 'bold' }}>
+                            Net Change
+                          </Text>
+                          <Text 
+                            style={{ 
+                              color: 'white',
+                              fontSize: '18px',
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            {calculations.formatCurrency(
+                              efccData.totals.totalCurrentOwing - efccData.totals.totalPreviousOwing
+                            )}
+                          </Text>
+                        </Space>
+                      </Col>
+                      <Col>
+                        <Space direction="vertical" size={0} style={{ textAlign: 'center' }}>
+                          <Text style={{ color: 'rgba(255, 255, 255, 0.9)', fontWeight: 'bold' }}>
+                            Collection Rate
+                          </Text>
+                          <Text 
+                            style={{ 
+                              color: 'white',
+                              fontSize: '18px',
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            {efccData.totals.totalTodayRemittance > 0 
+                              ? `${Math.round((efccData.totals.totalAmtRemittingNow / efccData.totals.totalTodayRemittance) * 100)}%`
+                              : '0%'
+                            }
+                          </Text>
+                        </Space>
+                      </Col>
+                    </Row>
+                  </Space>
+                </Col>
+              </Row>
+            </Card>
 
             {/* Submission Progress */}
             <Row gutter={[16, 16]}>
