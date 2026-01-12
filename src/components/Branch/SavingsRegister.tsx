@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   Card,
   Table,
@@ -9,7 +9,6 @@ import {
   Typography,
   Alert,
   Spin,
-  DatePicker,
   Tag,
   Divider,
   Progress,
@@ -17,23 +16,24 @@ import {
 } from 'antd';
 import { toast } from 'sonner';
 import {
-  CalendarOutlined,
   ReloadOutlined,
   DollarCircleOutlined,
   BarChartOutlined,
   BoxPlotOutlined
 } from '@ant-design/icons';
 import { useGetSavingsRegister, type SavingsRegister as SavingsRegisterType } from '../../hooks/Branch/Register/useGetSavingsRegister';
-import { CURRENT_DATE } from '../../lib/utils';
 import { useGetMe } from '../../hooks/Auth/useGetMe';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 
-const SavingsRegister = () => {
+interface SavingsRegisterProps {
+  selectedDate: string;
+}
+
+const SavingsRegister: React.FC<SavingsRegisterProps> = ({ selectedDate }) => {
   const { data: currentUser } = useGetMe();
   const user = currentUser?.data;
-  const [selectedDate, setSelectedDate] = useState(CURRENT_DATE);
   
   const branchSavingsRegister = useGetSavingsRegister(selectedDate, user?.branchId || '');
   
@@ -47,12 +47,6 @@ const SavingsRegister = () => {
       }
     }
   }, [branchSavingsRegister.data, selectedDate]);
-
-  const handleDateChange = (date: dayjs.Dayjs | null) => {
-    if (date) {
-      setSelectedDate(date.format('YYYY-MM-DD'));
-    }
-  };
 
   const handleRefresh = () => {
     branchSavingsRegister.refetch();
@@ -220,28 +214,7 @@ const SavingsRegister = () => {
     <Space direction="vertical" size="large" style={{ width: '100%' }}>
       {/* Header Controls */}
       <Card size="small">
-        <Row justify="space-between" align="middle">
-          <Col>
-            <Space size="large">
-              <div>
-                <Text strong style={{ display: 'block', marginBottom: 4 }}>
-                  Select Date:
-                </Text>
-                <Space>
-                  <CalendarOutlined style={{ color: '#1890ff' }} />
-                  <DatePicker
-                    value={dayjs(selectedDate)}
-                    onChange={handleDateChange}
-                    format="DD/MM/YYYY"
-                    disabledDate={(current) => current && current > dayjs().endOf('day')}
-                    size="large"
-                    style={{ minWidth: 200 }}
-                    placeholder="Select date"
-                  />
-                </Space>
-              </div>
-            </Space>
-          </Col>
+        <Row justify="end" align="middle">
           <Col>
             <Button 
               icon={<ReloadOutlined />} 

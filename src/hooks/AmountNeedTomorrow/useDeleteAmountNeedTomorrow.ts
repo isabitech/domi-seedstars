@@ -17,10 +17,10 @@ export const useDeleteAmountNeedTomorrow = () => {
             queryClient.invalidateQueries({ queryKey: ['amount-need-tomorrow-branch-today'] });
             queryClient.invalidateQueries({ queryKey: ['amount-need-tomorrow-ho-summary'] });
             queryClient.invalidateQueries({ queryKey: ['amount-need-tomorrow-history'] });
-            message.success('Amount need tomorrow entry deleted successfully');
+            message.success('Senate Planning entry deleted successfully');
         },
         onError: (error: any) => {
-            message.error(error?.response?.data?.message || 'Failed to delete amount need tomorrow entry');
+            message.error(error?.response?.data?.message || 'Failed to delete Senate Planning entry');
         },
     });
 };

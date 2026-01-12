@@ -13,6 +13,7 @@ import {
   Alert,
   Spin,
   Divider,
+  DatePicker,
 } from 'antd';
 import {
   SafetyOutlined,
@@ -21,11 +22,14 @@ import {
   CheckCircleOutlined,
   ClockCircleOutlined,
   ReloadOutlined,
+  CalendarOutlined,
 } from '@ant-design/icons';
 import { useGetEFCCBranch, type EFCCBranchResponse } from '../../hooks/EFCC/useGetEFCCBranch';
+import { useGetEFCCByDate } from '../../hooks/EFCC/useGetEFCCByDate';
 import { useCreateEFCC } from '../../hooks/EFCC/useCreateEFCC';
 import { useUpdateEFCC } from '../../hooks/EFCC/useUpdateEFCC';
 import { useSubmitEFCC } from '../../hooks/EFCC/useSubmitEFCC';
+import { CURRENT_DATE } from '../../lib/utils';
 import dayjs from 'dayjs';
 import { toast } from 'sonner';
 
@@ -34,19 +38,29 @@ const { Title, Text } = Typography;
 interface EFCCFormData {
   previousAmountOwing?: number;
   todayRemittance: number;
-  amtRemittingNow: number;
+  amtRemittingNow?: number; // Hidden field
 }
 
 const BranchEFCCPage: React.FC = () => {
   const [form] = Form.useForm<EFCCFormData>();
+  const [selectedDate, setSelectedDate] = useState<string>(CURRENT_DATE);
   const [formData, setFormData] = useState<EFCCFormData>({
     todayRemittance: 0,
-    amtRemittingNow: 0,
   });
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Hooks
-  const { data: currentRecord, isLoading, error, refetch } = useGetEFCCBranch();
+  // Check if selected date is current date
+  const isCurrentDate = selectedDate === CURRENT_DATE;
+
+  // Handle date change
+  const handleDateChange = (date: dayjs.Dayjs | null) => {
+    if (date) {
+      setSelectedDate(date.format('YYYY-MM-DD'));
+    }
+  };
+
+  // Hooks - Use date-based hook for fetching data
+  const { data: currentRecord, isLoading, error, refetch } = useGetEFCCByDate(selectedDate);
   const createMutation = useCreateEFCC();
   const updateMutation = useUpdateEFCC();
   const submitMutation = useSubmitEFCC();
@@ -71,10 +85,9 @@ const BranchEFCCPage: React.FC = () => {
   const currentAmountOwing = useMemo(() => {
     const previousOwing = Number(formData.previousAmountOwing) || (currentRecord?.efcc?.previousAmountOwing ? Number(currentRecord.efcc.previousAmountOwing) : 0);
     const todayRemittance = Number(formData.todayRemittance) || 0;
-    const amtRemittingNow = Number(formData.amtRemittingNow) || 0;
     
-    // Formula: current owing = (previous owing + today's remittance) - Amount remitting now
-    return (previousOwing + todayRemittance) - amtRemittingNow;
+    // Formula: current owing = previous owing + Today's SO
+    return previousOwing + todayRemittance;
   }, [formData, currentRecord]);
 
   // Initialize form with current record data
@@ -83,7 +96,6 @@ const BranchEFCCPage: React.FC = () => {
       const initialData = {
         previousAmountOwing: Number(currentRecord.efcc.previousAmountOwing) || 0,
         todayRemittance: Number(currentRecord.efcc.todayRemittance) || 0,
-        amtRemittingNow: Number(currentRecord.efcc.amtRemittingNow) || 0,
       };
       
       form.setFieldsValue(initialData);
@@ -96,30 +108,24 @@ const BranchEFCCPage: React.FC = () => {
     setFormData({
       previousAmountOwing: Number(allFields.previousAmountOwing) || 0,
       todayRemittance: Number(allFields.todayRemittance) || 0,
-      amtRemittingNow: Number(allFields.amtRemittingNow) || 0,
     });
   };
 
   // Handle form submission
   const handleSubmit = async (values: EFCCFormData) => {
+    if (!isCurrentDate) {
+      toast.error('Cannot modify data for past dates');
+      return;
+    }
+
     try {
-      if (isFirstRecord || !currentRecord?.efcc) {
-        // Create new record
-        await createMutation.mutateAsync({
-          previousAmountOwing: values.previousAmountOwing || 0,
-          todayRemittance: values.todayRemittance,
-          amtRemittingNow: values.amtRemittingNow,
-        });
-        toast.success("EFCC record created successfully");
-      } else {
-        // Update existing record
-        await updateMutation.mutateAsync({
-          previousAmountOwing: values.previousAmountOwing,
-          todayRemittance: values.todayRemittance,
-          amtRemittingNow: values.amtRemittingNow,
-        });
-        toast.success("EFCC record updated successfully");
-      }
+      // Only create new records, no update functionality
+      await createMutation.mutateAsync({
+        previousAmountOwing: values.previousAmountOwing || 0,
+        todayRemittance: values.todayRemittance,
+        amtRemittingNow: 0, // Hidden field, always 0
+      });
+      toast.success("EFCC record created successfully");
       
       await refetch();
     } catch (error: any) {
@@ -130,6 +136,11 @@ const BranchEFCCPage: React.FC = () => {
 
   // Handle final submission
   const handleFinalSubmit = async () => {
+    if (!isCurrentDate) {
+      toast.error('Cannot submit data for past dates');
+      return;
+    }
+
     try {
       await submitMutation.mutateAsync();
       toast.success("EFCC record submitted successfully");
@@ -141,7 +152,7 @@ const BranchEFCCPage: React.FC = () => {
   };
 
   const isSubmitted = currentRecord?.efcc?.isSubmitted || false;
-  const isProcessing = createMutation.isPending || updateMutation.isPending || submitMutation.isPending;
+  const isProcessing = createMutation.isPending || submitMutation.isPending;
 
   return (
     <div style={{ padding: '24px' }}>
@@ -154,7 +165,7 @@ const BranchEFCCPage: React.FC = () => {
               Branch DSA Summary
             </Title>
             <Text type="secondary">
-              Expected Financial Compliance Calculation - {dayjs().format('DD MMMM YYYY')}
+              Expected Financial Compliance Calculation - {dayjs(selectedDate).format('DD MMMM YYYY')}
             </Text>
           </Col>
           <Col>
@@ -168,6 +179,30 @@ const BranchEFCCPage: React.FC = () => {
             </Button>
           </Col>
         </Row>
+
+        {/* Date Picker */}
+        <Card size="small">
+          <Space>
+            <CalendarOutlined />
+            <Text strong>Select Date:</Text>
+            <DatePicker
+              value={dayjs(selectedDate)}
+              onChange={handleDateChange}
+              format="DD MMMM YYYY"
+              allowClear={false}
+              placeholder="Select date"
+              disabledDate={(current) => current && current > dayjs().endOf('day')}
+            />
+            {!isCurrentDate && (
+              <Alert
+                message="Historical Data"
+                description="Data for past dates is read-only"
+                type="info"
+                showIcon
+              />
+            )}
+          </Space>
+        </Card>
 
         {/* Error Alert */}
         {error && (
@@ -223,7 +258,7 @@ const BranchEFCCPage: React.FC = () => {
                     layout="vertical"
                     onFinish={handleSubmit}
                     onValuesChange={handleFormChange}
-                    disabled={isSubmitted}
+                    disabled={isSubmitted || !isCurrentDate}
                   >
                     {/* Previous Amount Owing - Always show for editing */}
                     <Form.Item
@@ -246,9 +281,9 @@ const BranchEFCCPage: React.FC = () => {
                       />
                     </Form.Item>
 
-                    {/* Today's Remittance */}
+                    {/* Today's SO */}
                     <Form.Item
-                      label="Today's Remittance"
+                      label="Today's SO"
                       name="todayRemittance"
                       rules={[
                         { required: true, message: 'Please enter today\'s remittance' },
@@ -264,46 +299,43 @@ const BranchEFCCPage: React.FC = () => {
                       />
                     </Form.Item>
 
-                    {/* Amount Remitting Now */}
-                    <Form.Item
-                      label="Amount Remitting Now"
-                      name="amtRemittingNow"
-                      rules={[
-                        { required: true, message: 'Please enter amount remitting now' },
-                      ]}
-                      tooltip="Amount the branch is sending to Head Office now"
-                    >
-                      <Input
-                        type="number"
-                        prefix="₦"
-                        placeholder="0.00"
-                        size="large"
-                        style={{ fontSize: '16px' }}
-                      />
-                    </Form.Item>
-
                     {/* Action Buttons */}
                     <Space>
-                      <Button
-                        type="primary"
-                        htmlType="submit"
-                        loading={isProcessing}
-                        disabled={isSubmitted}
-                        icon={<DollarOutlined />}
-                      >
-                        {isFirstRecord ? 'Create Record' : 'Update Record'}
-                      </Button>
+                      {isCurrentDate && (
+                        <>
+                          {/* {(!currentRecord?.efcc || isFirstRecord) && (
+                            <Button
+                              type="primary"
+                              htmlType="submit"
+                              loading={isProcessing}
+                              disabled={isSubmitted}
+                              icon={<DollarOutlined />}
+                            >
+                              Create Record
+                            </Button>
+                          )} */}
+                          
+                            <Button
+                              type="default"
+                              onClick={handleFinalSubmit}
+                              loading={submitMutation.isPending}
+                              icon={<CheckCircleOutlined />}
+                              style={{ backgroundColor: '#52c41a', color: 'white', borderColor: '#52c41a' }}
+                            >
+                              Submit Record
+                            </Button>
+                          {/* {currentRecord?.efcc && !isSubmitted && !isFirstRecord && (
+                          )} */}
+                        </>
+                      )}
                       
-                      {currentRecord?.efcc && !isSubmitted && (
-                        <Button
-                          type="default"
-                          onClick={handleFinalSubmit}
-                          loading={submitMutation.isPending}
-                          icon={<CheckCircleOutlined />}
-                          style={{ backgroundColor: '#52c41a', color: 'white', borderColor: '#52c41a' }}
-                        >
-                          Submit Final Record
-                        </Button>
+                      {!isCurrentDate && (
+                        <Alert
+                          message="Read-only Mode"
+                          description="Data for past dates cannot be modified"
+                          type="info"
+                          showIcon
+                        />
                       )}
                     </Space>
                   </Form>
@@ -325,24 +357,13 @@ const BranchEFCCPage: React.FC = () => {
 
                     <Divider style={{ margin: '12px 0' }}>+</Divider>
 
-                    {/* Today's Remittance */}
+                    {/* Today's SO */}
                     <Statistic
-                      title="Today's Remittance"
+                      title="Today's SO"
                       value={Number(formData.todayRemittance) || 0}
                       precision={2}
                       prefix="₦"
                       valueStyle={{ color: '#52c41a' }}
-                    />
-
-                    <Divider style={{ margin: '12px 0' }}>-</Divider>
-
-                    {/* Amount Remitting */}
-                    <Statistic
-                      title="Amount Remitting Now"
-                      value={Number(formData.amtRemittingNow) || 0}
-                      precision={2}
-                      prefix="₦"
-                      valueStyle={{ color: '#f5222d' }}
                     />
 
                     <Divider style={{ margin: '12px 0' }}>=</Divider>
@@ -369,7 +390,7 @@ const BranchEFCCPage: React.FC = () => {
                     <Card size="small" style={{ backgroundColor: '#f9f9f9' }}>
                       <Text type="secondary" style={{ fontSize: '12px' }}>
                         <strong>Formula:</strong><br />
-                        Current Owing = (Previous Owing + Today's Remittance) - Amount Remitting Now
+                        Current Owing = Previous Owing + Today's SO
                       </Text>
                     </Card>
                   </Space>

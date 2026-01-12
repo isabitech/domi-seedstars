@@ -2,12 +2,10 @@ import axios from "axios";
 import { retrieveTokenFromStorage } from "../utils/helpers";
 
 // const baseURL = "https://domi-be.onrender.com/api/v1" 
-const baseURL = "https://domi-be-twxq.onrender.com/api/v1"
+// const baseURL = "https://domi-be-twxq.onrender.com/api/v1"
 
-// const baseURLLocal = "http://localhost:5000/api/v1";
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || baseURL,
-  // baseURL: baseURLLocal,
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
 });
 

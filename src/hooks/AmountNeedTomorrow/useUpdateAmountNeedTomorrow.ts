@@ -18,10 +18,10 @@ export const useUpdateAmountNeedTomorrow = () => {
             queryClient.invalidateQueries({ queryKey: ['amount-need-tomorrow-branch-today'] });
             queryClient.invalidateQueries({ queryKey: ['amount-need-tomorrow-ho-summary'] });
             queryClient.invalidateQueries({ queryKey: ['amount-need-tomorrow-history'] });
-            message.success('Amount need tomorrow updated successfully');
+            message.success('Senate Planning updated successfully');
         },
         onError: (error: any) => {
-            message.error(error?.response?.data?.message || 'Failed to update amount need tomorrow');
+            message.error(error?.response?.data?.message || 'Failed to update Senate Planning');
         },
     });
 };

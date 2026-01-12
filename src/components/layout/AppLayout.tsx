@@ -143,13 +143,13 @@ export const AppLayout: React.FC = () => {
         {
           key: 'ho-efcc',
           icon: <SafetyOutlined />,
-          label: 'EFCC Dashboard',
+          label: 'DSA Summary',
           onClick: () => navigate('/app/ho-efcc'),
         },
         {
           key: 'ho-amount-need-tomorrow',
           icon: <DollarOutlined />,
-          label: 'Amount Need Tomorrow',
+          label: 'Senate Planning',
           onClick: () => navigate('/app/ho-amount-need-tomorrow'),
         },
         
@@ -227,7 +227,7 @@ export const AppLayout: React.FC = () => {
         {
           key: 'branch-amount-need-tomorrow',
           icon: <DollarOutlined />,
-          label: 'Amount Need Tomorrow',
+          label: 'Senate Planning',
           onClick: () => navigate('/app/branch-amount-need-tomorrow'),
         },
       ];
@@ -250,10 +250,10 @@ export const AppLayout: React.FC = () => {
       '/app/branch-savings-register': 'Savings Register',
       '/app/branch-loan-register': 'Loan Register',
       '/app/branch-disbursement-roll': 'Disbursement Roll',
-      '/app/branch-efcc': 'Branch EFCC',
-      '/app/ho-efcc': 'EFCC Dashboard',
-      '/app/branch-amount-need-tomorrow': 'Amount Need Tomorrow',
-      '/app/ho-amount-need-tomorrow': 'Amount Need Tomorrow - HO Dashboard',
+      '/app/branch-efcc': 'Branch DSA Summary',
+      '/app/ho-efcc': 'DSA Summary',
+      '/app/branch-amount-need-tomorrow': 'Senate Planning',
+      '/app/ho-amount-need-tomorrow': 'Senate Planning - HO Dashboard',
       '/app/reports': 'Reports & Analytics',
       '/app/reports/daily': 'Branch Daily Report',
       // '/app/settings': 'System Settings',

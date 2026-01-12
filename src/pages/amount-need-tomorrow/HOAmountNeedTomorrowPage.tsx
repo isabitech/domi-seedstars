@@ -33,7 +33,7 @@ const HOAmountNeedTomorrowPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(dayjs().add(1, 'day')); // Tomorrow's date
   const [isRefreshing, setIsRefreshing] = useState(false);
   
-  // Fetch Amount Need Tomorrow summary data
+  // Fetch Senate Planning summary data
   const { data: amountNeedData, isLoading, error, refetch } = useGetAmountNeedTomorrowHO(
     selectedDate.format('YYYY-MM-DD')
   );
@@ -48,9 +48,9 @@ const HOAmountNeedTomorrowPage: React.FC = () => {
     try {
       setIsRefreshing(true);
       await refetch();
-      toast.success('Amount Need Tomorrow data refreshed successfully');
+      toast.success('Senate Planning data refreshed successfully');
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to refresh Amount Need Tomorrow data');
+      toast.error(error?.response?.data?.message || 'Failed to refresh Senate Planning data');
     } finally {
       setIsRefreshing(false);
     }
@@ -214,7 +214,7 @@ const HOAmountNeedTomorrowPage: React.FC = () => {
           <Col>
             <Title level={2}>
               <DollarOutlined style={{ marginRight: '8px' }} />
-              Amount Need Tomorrow - HO Dashboard
+              Senate Planning - HO Dashboard
             </Title>
             <Text type="secondary">
               All branches' expected financial needs for tomorrow
@@ -243,8 +243,8 @@ const HOAmountNeedTomorrowPage: React.FC = () => {
         {/* Error Alert */}
         {error && (
           <Alert
-            message="Error Loading Amount Need Tomorrow Data"
-            description="Failed to load amount need tomorrow summary for all branches"
+            message="Error Loading Senate Planning Data"
+            description="Failed to load Senate Planning summary for all branches"
             type="error"
             showIcon
             action={
@@ -261,7 +261,7 @@ const HOAmountNeedTomorrowPage: React.FC = () => {
             <div style={{ textAlign: 'center', padding: '50px 0' }}>
               <Spin size="large" />
               <Text style={{ display: 'block', marginTop: 16 }}>
-                {isRefreshing ? 'Refreshing amount need tomorrow data...' : 'Loading amount need tomorrow data...'}
+                {isRefreshing ? 'Refreshing Senate Planning data...' : 'Loading Senate Planning data...'}
               </Text>
             </div>
           </Card>
@@ -371,7 +371,7 @@ const HOAmountNeedTomorrowPage: React.FC = () => {
               <Space>
                 <BankOutlined />
                 <Text strong>
-                  Amount Need Tomorrow - {selectedDate.format('DD MMMM YYYY')}
+                  Senate Planning - {selectedDate.format('DD MMMM YYYY')}
                 </Text>
               </Space>
             }
@@ -384,7 +384,7 @@ const HOAmountNeedTomorrowPage: React.FC = () => {
             {amountNeedData.data.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '50px 0' }}>
                 <Text type="secondary">
-                  No amount need tomorrow data available for {selectedDate.format('DD MMMM YYYY')}
+                  No Senate Planning data available for {selectedDate.format('DD MMMM YYYY')}
                 </Text>
               </div>
             ) : (
@@ -459,7 +459,7 @@ const HOAmountNeedTomorrowPage: React.FC = () => {
 
         {/* Formula Information */}
         {!isLoading && !isRefreshing && !error && (
-          <Card title="Amount Need Tomorrow Formula" size="small">
+          <Card title="Senate Planning Formula" size="small">
             <Row gutter={[16, 8]}>
               <Col span={24}>
                 <Text strong style={{ fontSize: '14px' }}>
