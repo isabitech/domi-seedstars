@@ -3,7 +3,7 @@ import axiosInstance from '../../instance/axiosInstance';
 import type { SenatePlanningBranchResponse } from './useGetSenatePlanningBranch';
 
 const getSenatePlanningByDate = async (date: string): Promise<SenatePlanningBranchResponse> => {
-  const { data } = await axiosInstance.get(`/senate-planning/branch/date=${date}`);
+  const { data } = await axiosInstance.get(`/senate-planning/branch/${date}`);
   return data;
 };
 

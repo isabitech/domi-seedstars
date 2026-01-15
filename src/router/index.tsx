@@ -24,7 +24,7 @@ import BranchEFCCPage from '../pages/efcc/BranchEFCCPage';
 import HOEFCCPage from '../pages/efcc/HOEFCCPage';
 import BranchAmountNeedTomorrowPage from '../pages/amount-need-tomorrow/BranchAmountNeedTomorrowPage';
 import HOAmountNeedTomorrowPage from '../pages/amount-need-tomorrow/HOAmountNeedTomorrowPage';
-import BranchAbiyeReport from '../pages/abiye-report/BranchABiyeReport';
+import BranchAbiyeReport from '../pages/abiye-report/BranchAbiyeReport';
 import HOAbiyeReport from '../pages/abiye-report/HOAbiyeReport';
 
 export const router = createBrowserRouter([
@@ -111,18 +111,18 @@ export const router = createBrowserRouter([
         path: 'branch-efcc',
         element: <BranchEFCCPage />,
       },
-      {
-        path: 'branch-amount-need-tomorrow',
-        element: <BranchAmountNeedTomorrowPage />,
-      },
+      // {
+      //   path: 'branch-amount-need-tomorrow',
+      //   element: <BranchAmountNeedTomorrowPage />,
+      // },
       {
         path: 'ho-efcc',
         element: <HOEFCCPage />,
       },
-      {
-        path: 'ho-amount-need-tomorrow',
-        element: <HOAmountNeedTomorrowPage />,
-      },
+      // {
+      //   path: 'ho-amount-need-tomorrow',
+      //   element: <HOAmountNeedTomorrowPage />,
+      // },
       {
         path: 'branch-abiye-report',
         element: <BranchAbiyeReport />,
