@@ -1,0 +1,39 @@
+.table-row-light {
+  background-color: #fafafa;
+}
+
+.table-row-dark {
+  background-color: #ffffff;
+}
+
+.ant-table-tbody > tr.table-row-light:hover > td,
+.ant-table-tbody > tr.table-row-dark:hover > td {
+  background-color: #e6f7ff !important;
+}
+
+/* Custom table styling for better readability */
+.ant-table-thead > tr > th {
+  background-color: #f0f2f5;
+  font-weight: 600;
+}
+
+.ant-statistic-title {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.ant-statistic-content {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .ant-statistic-title {
+    font-size: 11px;
+  }
+  
+  .ant-statistic-content {
+    font-size: 14px;
+  }
+}

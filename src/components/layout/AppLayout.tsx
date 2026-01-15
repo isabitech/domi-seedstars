@@ -90,6 +90,8 @@ export const AppLayout: React.FC = () => {
     if (path.includes('/branch-efcc')) return 'branch-efcc';
     if (path.includes('/ho-amount-need-tomorrow')) return 'ho-amount-need-tomorrow';
     if (path.includes('/branch-amount-need-tomorrow')) return 'branch-amount-need-tomorrow';
+    if (path.includes('/ho-abiye-report')) return 'ho-abiye-report';
+    if (path.includes('/branch-abiye-report')) return 'branch-abiye-report';
     if (path.includes('/settings')) return 'settings';
     return 'dashboard';
   };
@@ -151,6 +153,12 @@ export const AppLayout: React.FC = () => {
           icon: <DollarOutlined />,
           label: 'Senate Planning',
           onClick: () => navigate('/app/ho-amount-need-tomorrow'),
+        },
+        {
+          key: 'ho-abiye-report',
+          icon: <FileTextOutlined />,
+          label: 'Abiye Report',
+          onClick: () => navigate('/app/ho-abiye-report'),
         },
         
         // {
@@ -230,6 +238,12 @@ export const AppLayout: React.FC = () => {
           label: 'Senate Planning',
           onClick: () => navigate('/app/branch-amount-need-tomorrow'),
         },
+        {
+          key: 'branch-abiye-report',
+          icon: <FileTextOutlined />,
+          label: 'Abiye Report',
+          onClick: () => navigate('/app/branch-abiye-report'),
+        },
       ];
     }
   };
@@ -254,6 +268,8 @@ export const AppLayout: React.FC = () => {
       '/app/ho-efcc': 'DSA Summary',
       '/app/branch-amount-need-tomorrow': 'Senate Planning',
       '/app/ho-amount-need-tomorrow': 'Senate Planning - HO Dashboard',
+      '/app/branch-abiye-report': 'Abiye Report',
+      '/app/ho-abiye-report': 'Abiye Report - HO Dashboard',
       '/app/reports': 'Reports & Analytics',
       '/app/reports/daily': 'Branch Daily Report',
       // '/app/settings': 'System Settings',
