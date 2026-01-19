@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   Card,
   Form,
@@ -51,6 +51,7 @@ const BranchAbiyeReport: React.FC = () => {
   const [form] = Form.useForm<AbiyeReportFormData>();
   const [selectedDate, setSelectedDate] = useState<string>(CURRENT_DATE);
   const [resolutionMethods, setResolutionMethods] = useState<string[]>([]);
+  const isSubmittingRef = useRef(false);
 
   const submitMutation = useSubmitAbiyeReport();
 
@@ -75,7 +76,14 @@ const BranchAbiyeReport: React.FC = () => {
     form.setFieldValue('ldResolutionMethods', values);
   };
 
-  const handleSubmit = async (values: AbiyeReportFormData) => {
+  const handleSubmit = useCallback(async (values: AbiyeReportFormData) => {
+    // Guarantee single call - immediate synchronous check
+    if (isSubmittingRef.current) {
+      return;
+    }
+
+    isSubmittingRef.current = true;
+
     try {
       const reportData = {
         ...values,
@@ -91,8 +99,10 @@ const BranchAbiyeReport: React.FC = () => {
       setResolutionMethods([]);
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Failed to submit Abiye Report');
+    } finally {
+      isSubmittingRef.current = false;
     }
-  };
+  }, [selectedDate, resolutionMethods, submitMutation, form]);
 
   // Calculate totals
   const watchedValues = Form.useWatch([], form);
@@ -100,6 +110,12 @@ const BranchAbiyeReport: React.FC = () => {
   const amountToClients = watchedValues?.amountToClients || 0;
   const ajoWithdrawalAmount = watchedValues?.ajoWithdrawalAmount || 0;
   const totalDisbursed = amountToClients + ajoWithdrawalAmount;
+  
+  // Calculate client metrics
+  const totalClients = watchedValues?.totalClients || 0;
+  const clientsThatPaidToday = watchedValues?.clientsThatPaidToday || 0;
+  const ldSolvedToday = watchedValues?.ldSolvedToday || 0;
+  const totalCurrentLdNo = totalClients - clientsThatPaidToday - ldSolvedToday;
 
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -306,6 +322,33 @@ const BranchAbiyeReport: React.FC = () => {
             </Col>
           </Row>
 
+          {/* Client Metrics Summary */}
+          {(totalClients > 0 || clientsThatPaidToday > 0 || ldSolvedToday > 0) && (
+            <Row gutter={24} style={{ marginTop: '16px' }}>
+              <Col xs={24} sm={8}>
+                <Alert
+                  message={`Payment Rate: ${totalClients > 0 ? ((clientsThatPaidToday / totalClients) * 100).toFixed(1) : 0}%`}
+                  type="info"
+                  showIcon
+                />
+              </Col>
+              <Col xs={24} sm={8}>
+                <Alert
+                  message={`Total Current LD No: ${Math.max(0, totalCurrentLdNo)}`}
+                  type={totalCurrentLdNo > 0 ? "warning" : "success"}
+                  showIcon
+                />
+              </Col>
+              <Col xs={24} sm={8}>
+                <Alert
+                  message={`LD Resolution: ${ldSolvedToday} cases`}
+                  type="info"
+                  showIcon
+                />
+              </Col>
+            </Row>
+          )}
+
           <Divider orientation="left">
             <Space>
               <CheckCircleOutlined />
@@ -393,6 +436,7 @@ const BranchAbiyeReport: React.FC = () => {
                   type="primary"
                   htmlType="submit"
                   loading={submitMutation.isPending}
+                  disabled={submitMutation.isPending}
                   icon={<FileTextOutlined />}
                   size="large"
                 >

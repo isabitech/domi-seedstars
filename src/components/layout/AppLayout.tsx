@@ -86,10 +86,6 @@ export const AppLayout: React.FC = () => {
     if (path.includes('/reports/daily')) return 'daily-report';
     if (path.includes('/reports')) return 'reports';
     if (path.includes('/ho-operations')) return 'ho-operations';
-    if (path.includes('/ho-efcc')) return 'ho-efcc';
-    if (path.includes('/branch-efcc')) return 'branch-efcc';
-    if (path.includes('/ho-amount-need-tomorrow')) return 'ho-amount-need-tomorrow';
-    if (path.includes('/branch-amount-need-tomorrow')) return 'branch-amount-need-tomorrow';
     if (path.includes('/ho-abiye-report')) return 'ho-abiye-report';
     if (path.includes('/branch-abiye-report')) return 'branch-abiye-report';
     if (path.includes('/settings')) return 'settings';
@@ -141,18 +137,6 @@ export const AppLayout: React.FC = () => {
           icon: <FileTextOutlined />,
           label: 'Reports Overview',
           onClick: () => navigate('/app/reports'),
-        },
-        {
-          key: 'ho-efcc',
-          icon: <SafetyOutlined />,
-          label: 'DSA Summary',
-          onClick: () => navigate('/app/ho-efcc'),
-        },
-        {
-          key: 'ho-amount-need-tomorrow',
-          icon: <DollarOutlined />,
-          label: 'Senate Planning',
-          onClick: () => navigate('/app/ho-amount-need-tomorrow'),
         },
         {
           key: 'ho-abiye-report',
@@ -227,18 +211,6 @@ export const AppLayout: React.FC = () => {
           onClick: () => navigate('/app/branch-disbursement-roll'),
         },
         {
-          key: 'branch-efcc',
-          icon: <SafetyOutlined />,
-          label: 'Branch DSA Summary',
-          onClick: () => navigate('/app/branch-efcc'),
-        },
-        {
-          key: 'branch-amount-need-tomorrow',
-          icon: <DollarOutlined />,
-          label: 'Senate Planning',
-          onClick: () => navigate('/app/branch-amount-need-tomorrow'),
-        },
-        {
           key: 'branch-abiye-report',
           icon: <FileTextOutlined />,
           label: 'Abiye Report',
@@ -264,10 +236,6 @@ export const AppLayout: React.FC = () => {
       '/app/branch-savings-register': 'Savings Register',
       '/app/branch-loan-register': 'Loan Register',
       '/app/branch-disbursement-roll': 'Disbursement Roll',
-      '/app/branch-efcc': 'Branch DSA Summary',
-      '/app/ho-efcc': 'DSA Summary',
-      '/app/branch-amount-need-tomorrow': 'Senate Planning',
-      '/app/ho-amount-need-tomorrow': 'Senate Planning - HO Dashboard',
       '/app/branch-abiye-report': 'Abiye Report',
       '/app/ho-abiye-report': 'Abiye Report - HO Dashboard',
       '/app/reports': 'Reports & Analytics',

@@ -97,6 +97,7 @@ const HOAbiyeReport: React.FC = () => {
         totalClients: 0,
         totalLdSolved: 0,
         totalClientsPaid: 0,
+        totalCurrentLdNo: 0,
         paymentRate: 0,
         ldResolutionRate: 0,
       };
@@ -127,6 +128,7 @@ const HOAbiyeReport: React.FC = () => {
 
     return {
       ...stats,
+      totalCurrentLdNo: stats.totalClients - stats.totalClientsPaid - stats.totalLdSolved,
       paymentRate: stats.totalClients > 0 ? (stats.totalClientsPaid / stats.totalClients) * 100 : 0,
       ldResolutionRate: stats.totalLdSolved > 0 ? (stats.totalLdSolved / stats.totalBranches) * 100 : 0,
     };
@@ -428,7 +430,7 @@ const HOAbiyeReport: React.FC = () => {
 
       {/* Additional Summary Cards */}
       <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
-        <Col xs={24} sm={8}>
+        <Col xs={24} sm={12} md={6}>
           <Card size="small">
             <Statistic
               title="Amount to Clients"
@@ -438,7 +440,7 @@ const HOAbiyeReport: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={8}>
+        <Col xs={24} sm={12} md={6}>
           <Card size="small">
             <Statistic
               title="AJO Withdrawals"
@@ -448,12 +450,23 @@ const HOAbiyeReport: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={8}>
+        <Col xs={24} sm={12} md={6}>
           <Card size="small">
             <Statistic
               title="LD Cases Solved"
               value={summaryStats.totalLdSolved}
               prefix={<CheckCircleOutlined />}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card size="small">
+            <Statistic
+              title="Total Current LD No"
+              value={summaryStats.totalCurrentLdNo}
+              valueStyle={{ 
+                color: summaryStats.totalCurrentLdNo > 0 ? '#cf1322' : '#3f8600'
+              }}
             />
           </Card>
         </Col>
