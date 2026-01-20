@@ -173,7 +173,7 @@ const BranchAbiyeReport: React.FC = () => {
           <Divider orientation="left">
             <Space>
               <DollarOutlined />
-              <Text strong>Disbursement Information</Text>
+              <Text strong> Tomorrow Disbursement Information</Text>
             </Space>
           </Divider>
 
@@ -181,16 +181,16 @@ const BranchAbiyeReport: React.FC = () => {
           <Row gutter={24}>
             <Col xs={24} sm={8}>
               <Form.Item
-                label="Disbursement Number"
+                label="Tomorrow Disbursement Number"
                 name="disbursementNo"
                 rules={[
-                  { required: true, message: 'Please enter disbursement number' },
+                  { required: true, message: 'Please enter tomorrow disbursement number' },
                   { type: 'number', min: 0, message: 'Must be a positive number' }
                 ]}
               >
                 <InputNumber
                   style={{ width: '100%' }}
-                  placeholder="Enter disbursement number"
+                  placeholder="Enter tomorrow disbursement number"
                   min={0}
                   formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={(value) => {
@@ -203,16 +203,16 @@ const BranchAbiyeReport: React.FC = () => {
             
             <Col xs={24} sm={8}>
               <Form.Item
-                label="Disbursement Amount (₦)"
+                label="Tomorrow Disbursement Amount (₦)"
                 name="disbursementAmount"
                 rules={[
-                  { required: true, message: 'Please enter disbursement amount' },
+                  { required: true, message: 'Please enter tomorrow disbursement amount' },
                   { type: 'number', min: 0, message: 'Must be a positive number' }
                 ]}
               >
                 <InputNumber
                   style={{ width: '100%' }}
-                  placeholder="Enter total disbursement amount"
+                  placeholder="Enter total tomorrow disbursement amount"
                   min={0}
                   formatter={(value) => `₦ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={(value) => {
@@ -227,10 +227,10 @@ const BranchAbiyeReport: React.FC = () => {
           <Row gutter={24}>
             <Col xs={24} sm={8}>
               <Form.Item
-                label="Amount to Clients (₦)"
+                label="Amount to Clients (₦) Tomorrow"
                 name="amountToClients"
                 rules={[
-                  { required: true, message: 'Please enter amount to clients' },
+                  { required: true, message: 'Please enter amount to clients tomorrow' },
                   { type: 'number', min: 0, message: 'Must be a positive number' }
                 ]}
               >
@@ -249,7 +249,7 @@ const BranchAbiyeReport: React.FC = () => {
             
             <Col xs={24} sm={8}>
               <Form.Item
-                label="AJO Withdrawal Amount (₦)"
+                label="AJO Withdrawal Amount (₦) Tomorrow"
                 name="ajoWithdrawalAmount"
                 rules={[
                   { required: true, message: 'Please enter AJO withdrawal amount' },
@@ -271,7 +271,7 @@ const BranchAbiyeReport: React.FC = () => {
 
             <Col xs={24} sm={8}>
               <Alert
-                message={`Total Disbursed: ₦${totalDisbursed.toLocaleString()}`}
+                message={`Total to be  Disbursed Tomorrow: ₦${totalDisbursed.toLocaleString()}`}
                 type="info"
                 showIcon
               />

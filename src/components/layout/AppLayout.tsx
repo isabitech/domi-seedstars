@@ -168,12 +168,12 @@ export const AppLayout: React.FC = () => {
           label: 'Bank Statements',
           onClick: () => navigate('/app/bank-statements'),
         },
-        {
-          key: 'predictions',
-          icon: <RiseOutlined />,
-          label: 'Predictions',
-          onClick: () => navigate('/app/predictions'),
-        },
+        // {
+        //   key: 'predictions',
+        //   icon: <RiseOutlined />,
+        //   label: 'Predictions',
+        //   onClick: () => navigate('/app/predictions'),
+        // },
         {
           key: 'online-cih',
           icon: <DollarOutlined />,
