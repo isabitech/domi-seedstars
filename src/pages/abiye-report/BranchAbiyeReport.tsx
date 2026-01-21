@@ -45,9 +45,11 @@ interface AbiyeReportFormData {
   clientsThatPaidToday: number;
   ldResolutionMethods: string[];
   reportDate: dayjs.Dayjs | string;
-  totalNewClientsTomorrow: number;
-  totalOldClientsTomorrow: number;
-  totalPreviousSOOwn: number;
+  totalNoOfNewClientTomorrow: number;
+  totalNoOfOldClientTomorrow: number;
+  totalPreviousSoOwn: number;
+  totalAmountNeeded: number;
+  currentLDNo: number;
 }
 
 const BranchAbiyeReport: React.FC = () => {
@@ -79,6 +81,19 @@ const BranchAbiyeReport: React.FC = () => {
     form.setFieldValue('ldResolutionMethods', values);
   };
 
+  // Calculate totals and client metrics
+  const watchedValues = Form.useWatch([], form);
+  const disbursementAmount = watchedValues?.disbursementAmount || 0;
+  const amountToClients = watchedValues?.amountToClients || 0;
+  const ajoWithdrawalAmount = watchedValues?.ajoWithdrawalAmount || 0;
+  const totalDisbursed = amountToClients + ajoWithdrawalAmount;
+  
+  // Calculate client metrics
+  const totalClients = watchedValues?.totalClients || 0;
+  const clientsThatPaidToday = watchedValues?.clientsThatPaidToday || 0;
+  const ldSolvedToday = watchedValues?.ldSolvedToday || 0;
+  const totalCurrentLdNo = totalClients - clientsThatPaidToday - ldSolvedToday;
+
   const handleSubmit = useCallback(async (values: AbiyeReportFormData) => {
     // Guarantee single call - immediate synchronous check
     if (isSubmittingRef.current) {
@@ -94,6 +109,8 @@ const BranchAbiyeReport: React.FC = () => {
           ? values.reportDate.format('YYYY-MM-DD')
           : selectedDate,
         ldResolutionMethods: resolutionMethods,
+        currentLDNo: Math.max(0, totalCurrentLdNo), // Auto-calculated value
+        totalAmountNeeded: 0, // Set default value since field is removed
       };
 
       await submitMutation.mutateAsync(reportData);
@@ -105,20 +122,7 @@ const BranchAbiyeReport: React.FC = () => {
     } finally {
       isSubmittingRef.current = false;
     }
-  }, [selectedDate, resolutionMethods, submitMutation, form]);
-
-  // Calculate totals
-  const watchedValues = Form.useWatch([], form);
-  const disbursementAmount = watchedValues?.disbursementAmount || 0;
-  const amountToClients = watchedValues?.amountToClients || 0;
-  const ajoWithdrawalAmount = watchedValues?.ajoWithdrawalAmount || 0;
-  const totalDisbursed = amountToClients + ajoWithdrawalAmount;
-  
-  // Calculate client metrics
-  const totalClients = watchedValues?.totalClients || 0;
-  const clientsThatPaidToday = watchedValues?.clientsThatPaidToday || 0;
-  const ldSolvedToday = watchedValues?.ldSolvedToday || 0;
-  const totalCurrentLdNo = totalClients - clientsThatPaidToday - ldSolvedToday;
+  }, [selectedDate, resolutionMethods, submitMutation, form, totalCurrentLdNo]);
 
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -151,9 +155,11 @@ const BranchAbiyeReport: React.FC = () => {
             ldSolvedToday: 0,
             clientsThatPaidToday: 0,
             ldResolutionMethods: [],
-            totalNewClientsTomorrow: 0,
-            totalOldClientsTomorrow: 0,
-            totalPreviousSOOwn: 0,
+            totalNoOfNewClientTomorrow: 0,
+            totalNoOfOldClientTomorrow: 0,
+            totalPreviousSoOwn: 0,
+            totalAmountNeeded: 0,
+            currentLDNo: 0,
           }}
         >
           {/* Date Selection */}
@@ -282,6 +288,41 @@ const BranchAbiyeReport: React.FC = () => {
                 showIcon
               />
             </Col>
+
+            <Col xs={24} sm={8}>
+              <Form.Item
+                label="Total No of New Clients Tomorrow"
+                name="totalNoOfNewClientTomorrow"
+                rules={[
+                  { required: true, message: 'Please enter total number of new clients tomorrow' },
+                  { type: 'number', min: 0, message: 'Must be a positive number' }
+                ]}
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  placeholder="Enter total new clients tomorrow"
+                  min={0}
+                />
+              </Form.Item>
+            </Col>
+            
+            <Col xs={24} sm={8}>
+              <Form.Item
+                label="Total No of Old Clients Tomorrow"
+                name="totalNoOfOldClientTomorrow"
+                rules={[
+                  { required: true, message: 'Please enter total number of old clients tomorrow' },
+                  { type: 'number', min: 0, message: 'Must be a positive number' }
+                ]}
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  placeholder="Enter total old clients tomorrow"
+                  min={0}
+                />
+              </Form.Item>
+            </Col>
+            
           </Row>
 
           <Divider orientation="left">
@@ -326,48 +367,16 @@ const BranchAbiyeReport: React.FC = () => {
                 />
               </Form.Item>
             </Col>
+            
           </Row>
 
           {/* Tomorrow Client Information */}
           <Row gutter={24} style={{ marginTop: '16px' }}>
-            <Col xs={24} sm={8}>
-              <Form.Item
-                label="Total No of New Clients Tomorrow"
-                name="totalNewClientsTomorrow"
-                rules={[
-                  { required: true, message: 'Please enter total number of new clients tomorrow' },
-                  { type: 'number', min: 0, message: 'Must be a positive number' }
-                ]}
-              >
-                <InputNumber
-                  style={{ width: '100%' }}
-                  placeholder="Enter total new clients tomorrow"
-                  min={0}
-                />
-              </Form.Item>
-            </Col>
-            
-            <Col xs={24} sm={8}>
-              <Form.Item
-                label="Total No of Old Clients Tomorrow"
-                name="totalOldClientsTomorrow"
-                rules={[
-                  { required: true, message: 'Please enter total number of old clients tomorrow' },
-                  { type: 'number', min: 0, message: 'Must be a positive number' }
-                ]}
-              >
-                <InputNumber
-                  style={{ width: '100%' }}
-                  placeholder="Enter total old clients tomorrow"
-                  min={0}
-                />
-              </Form.Item>
-            </Col>
             
             <Col xs={24} sm={8}>
               <Form.Item
                 label="Total Previous S.O Own"
-                name="totalPreviousSOOwn"
+                name="totalPreviousSoOwn"
                 rules={[
                   { required: true, message: 'Please enter total previous S.O own' },
                   { type: 'number', min: 0, message: 'Must be a positive number' }
@@ -377,7 +386,32 @@ const BranchAbiyeReport: React.FC = () => {
                   style={{ width: '100%' }}
                   placeholder="Enter total previous S.O own"
                   min={0}
+                  formatter={(value) => `₦ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  parser={(value) => {
+                    const num = value!.replace(/₦\s?|(,*)/g, '');
+                    return Number(num) as any;
+                  }}
                 />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          {/* Additional Fields */}
+          <Row gutter={24} style={{ marginTop: '16px' }}>
+            <Col xs={24} sm={12}>
+              <Form.Item label="Current LD No (Auto-calculated)">
+                <Alert
+                  message={`Current LD No: ${Math.max(0, totalCurrentLdNo)}`}
+                  type={totalCurrentLdNo > 0 ? "warning" : "success"}
+                  showIcon
+                  style={{ 
+                    backgroundColor: totalCurrentLdNo > 0 ? '#fff2f0' : '#f6ffed',
+                    border: `1px solid ${totalCurrentLdNo > 0 ? '#ffccc7' : '#b7eb8f'}`,
+                  }}
+                />
+                <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '4px' }}>
+                  Formula: Total Clients - Clients Paid Today - LD Cases Solved Today
+                </Text>
               </Form.Item>
             </Col>
           </Row>

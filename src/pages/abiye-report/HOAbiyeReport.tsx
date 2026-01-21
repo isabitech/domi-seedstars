@@ -48,6 +48,11 @@ interface AbiyeReportData {
   ldSolvedToday: number;
   clientsThatPaidToday: number;
   ldResolutionMethods: string[];
+  totalNoOfNewClientTomorrow: number;
+  totalNoOfOldClientTomorrow: number;
+  totalPreviousSoOwn: number;
+  totalAmountNeeded: number;
+  currentLDNo: number;
   reportDate: string;
   submittedAt: string;
   submittedBy: string;
@@ -79,6 +84,11 @@ const HOAbiyeReport: React.FC = () => {
       ldSolvedToday: item.ldSolvedToday || 0,
       clientsThatPaidToday: item.clientsThatPaidToday || 0,
       ldResolutionMethods: item.ldResolutionMethods || [],
+      totalNoOfNewClientTomorrow: item.totalNoOfNewClientTomorrow || 0,
+      totalNoOfOldClientTomorrow: item.totalNoOfOldClientTomorrow || 0,
+      totalPreviousSoOwn: item.totalPreviousSoOwn || 0,
+      totalAmountNeeded: item.totalAmountNeeded || 0,
+      currentLDNo: item.currentLDNo || 0,
       reportDate: item.reportDate || CURRENT_DATE,
       submittedAt: item.createdAt || item.submittedAt,
       submittedBy: item.createdBy || item.submittedBy || 'Unknown',
@@ -98,6 +108,10 @@ const HOAbiyeReport: React.FC = () => {
         totalLdSolved: 0,
         totalClientsPaid: 0,
         totalCurrentLdNo: 0,
+        totalNewClientsTomorrow: 0,
+        totalOldClientsTomorrow: 0,
+        totalPreviousSoOwn: 0,
+        totalAmountNeeded: 0,
         paymentRate: 0,
         ldResolutionRate: 0,
       };
@@ -113,6 +127,10 @@ const HOAbiyeReport: React.FC = () => {
         totalClients: acc.totalClients + item.totalClients,
         totalLdSolved: acc.totalLdSolved + item.ldSolvedToday,
         totalClientsPaid: acc.totalClientsPaid + item.clientsThatPaidToday,
+        totalNewClientsTomorrow: acc.totalNewClientsTomorrow + item.totalNoOfNewClientTomorrow,
+        totalOldClientsTomorrow: acc.totalOldClientsTomorrow + item.totalNoOfOldClientTomorrow,
+        totalPreviousSoOwn: acc.totalPreviousSoOwn + item.totalPreviousSoOwn,
+        totalAmountNeeded: acc.totalAmountNeeded + item.totalAmountNeeded,
       }),
       {
         totalBranches: 0,
@@ -123,6 +141,10 @@ const HOAbiyeReport: React.FC = () => {
         totalClients: 0,
         totalLdSolved: 0,
         totalClientsPaid: 0,
+        totalNewClientsTomorrow: 0,
+        totalOldClientsTomorrow: 0,
+        totalPreviousSoOwn: 0,
+        totalAmountNeeded: 0,
       }
     );
 
@@ -167,6 +189,11 @@ const HOAbiyeReport: React.FC = () => {
         'Total Clients': item.totalClients,
         'Clients Paid Today': item.clientsThatPaidToday,
         'LD Cases Solved': item.ldSolvedToday,
+        'New Clients Tomorrow': item.totalNoOfNewClientTomorrow,
+        'Old Clients Tomorrow': item.totalNoOfOldClientTomorrow,
+        'Previous S.O Own (₦)': item.totalPreviousSoOwn.toLocaleString(),
+        'Amount Needed (₦)': item.totalAmountNeeded.toLocaleString(),
+        'Current LD No': item.currentLDNo,
         'Resolution Methods': item.ldResolutionMethods.join(', '),
         'Submitted At': dayjs(item.submittedAt).format('YYYY-MM-DD HH:mm'),
         'Submitted By': item.submittedBy,
@@ -286,6 +313,58 @@ const HOAbiyeReport: React.FC = () => {
           </div>
         </div>
       ),
+    },
+    {
+      title: 'Tomorrow Clients',
+      key: 'tomorrowClients',
+      width: 140,
+      render: (record: AbiyeReportData) => (
+        <div>
+          <div>
+            <Text type="secondary">New:</Text>
+            <br />
+            <Badge count={record.totalNoOfNewClientTomorrow} showZero />
+          </div>
+          <div style={{ marginTop: '4px' }}>
+            <Text type="secondary">Old:</Text>
+            <br />
+            <Badge count={record.totalNoOfOldClientTomorrow} showZero />
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: 'Financial Info',
+      key: 'financialInfo',
+      width: 160,
+      render: (record: AbiyeReportData) => (
+        <div>
+          <div>
+            <Text type="secondary">Previous S.O:</Text>
+            <br />
+            <Text strong>₦{record.totalPreviousSoOwn.toLocaleString()}</Text>
+          </div>
+          <div style={{ marginTop: '4px' }}>
+            <Text type="secondary">Amount Needed:</Text>
+            <br />
+            <Text strong>₦{record.totalAmountNeeded.toLocaleString()}</Text>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: 'Current LD',
+      dataIndex: 'currentLDNo',
+      key: 'currentLDNo',
+      width: 100,
+      render: (value: number) => (
+        <Badge 
+          count={value} 
+          showZero 
+          style={{ backgroundColor: value > 0 ? '#f5222d' : '#52c41a' }}
+        />
+      ),
+      sorter: (a: AbiyeReportData, b: AbiyeReportData) => a.currentLDNo - b.currentLDNo,
     },
     {
       title: 'Resolution Methods',
@@ -467,6 +546,48 @@ const HOAbiyeReport: React.FC = () => {
               valueStyle={{ 
                 color: summaryStats.totalCurrentLdNo > 0 ? '#cf1322' : '#3f8600'
               }}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Tomorrow Clients & Financial Summary */}
+      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+        <Col xs={24} sm={12} md={6}>
+          <Card size="small">
+            <Statistic
+              title="New Clients Tomorrow"
+              value={summaryStats.totalNewClientsTomorrow}
+              prefix={<UserOutlined />}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card size="small">
+            <Statistic
+              title="Old Clients Tomorrow"
+              value={summaryStats.totalOldClientsTomorrow}
+              prefix={<UserOutlined />}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card size="small">
+            <Statistic
+              title="Total Previous S.O Own"
+              value={summaryStats.totalPreviousSoOwn}
+              prefix="₦"
+              formatter={(value) => value?.toLocaleString()}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card size="small">
+            <Statistic
+              title="Total Amount Needed"
+              value={summaryStats.totalAmountNeeded}
+              prefix="₦"
+              formatter={(value) => value?.toLocaleString()}
             />
           </Card>
         </Col>
