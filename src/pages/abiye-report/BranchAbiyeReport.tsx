@@ -116,8 +116,6 @@ const BranchAbiyeReport: React.FC = () => {
 
       await submitMutation.mutateAsync(reportData);
       toast.success('Abiye Report submitted successfully!');
-      form.resetFields();
-      setResolutionMethods([]);
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Failed to submit Abiye Report');
     } finally {
