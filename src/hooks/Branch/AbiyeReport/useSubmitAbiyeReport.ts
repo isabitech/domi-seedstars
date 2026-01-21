@@ -11,6 +11,9 @@ ldSolvedToday: number;
 clientsThatPaidToday: number;
 ldResolutionMethods: string[];
 reportDate: string;
+totalNewClientsTomorrow: number;
+totalOldClientsTomorrow: number;
+totalPreviousSOOwn: number;
 }
 
 const submitAbiyeReport = async (reportData: AbiyeReportRequest): Promise<any> => {

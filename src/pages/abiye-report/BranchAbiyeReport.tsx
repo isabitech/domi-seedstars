@@ -45,6 +45,9 @@ interface AbiyeReportFormData {
   clientsThatPaidToday: number;
   ldResolutionMethods: string[];
   reportDate: dayjs.Dayjs | string;
+  totalNewClientsTomorrow: number;
+  totalOldClientsTomorrow: number;
+  totalPreviousSOOwn: number;
 }
 
 const BranchAbiyeReport: React.FC = () => {
@@ -148,6 +151,9 @@ const BranchAbiyeReport: React.FC = () => {
             ldSolvedToday: 0,
             clientsThatPaidToday: 0,
             ldResolutionMethods: [],
+            totalNewClientsTomorrow: 0,
+            totalOldClientsTomorrow: 0,
+            totalPreviousSOOwn: 0,
           }}
         >
           {/* Date Selection */}
@@ -316,6 +322,60 @@ const BranchAbiyeReport: React.FC = () => {
                 <InputNumber
                   style={{ width: '100%' }}
                   placeholder="Enter number of clients that paid"
+                  min={0}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          {/* Tomorrow Client Information */}
+          <Row gutter={24} style={{ marginTop: '16px' }}>
+            <Col xs={24} sm={8}>
+              <Form.Item
+                label="Total No of New Clients Tomorrow"
+                name="totalNewClientsTomorrow"
+                rules={[
+                  { required: true, message: 'Please enter total number of new clients tomorrow' },
+                  { type: 'number', min: 0, message: 'Must be a positive number' }
+                ]}
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  placeholder="Enter total new clients tomorrow"
+                  min={0}
+                />
+              </Form.Item>
+            </Col>
+            
+            <Col xs={24} sm={8}>
+              <Form.Item
+                label="Total No of Old Clients Tomorrow"
+                name="totalOldClientsTomorrow"
+                rules={[
+                  { required: true, message: 'Please enter total number of old clients tomorrow' },
+                  { type: 'number', min: 0, message: 'Must be a positive number' }
+                ]}
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  placeholder="Enter total old clients tomorrow"
+                  min={0}
+                />
+              </Form.Item>
+            </Col>
+            
+            <Col xs={24} sm={8}>
+              <Form.Item
+                label="Total Previous S.O Own"
+                name="totalPreviousSOOwn"
+                rules={[
+                  { required: true, message: 'Please enter total previous S.O own' },
+                  { type: 'number', min: 0, message: 'Must be a positive number' }
+                ]}
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  placeholder="Enter total previous S.O own"
                   min={0}
                 />
               </Form.Item>
