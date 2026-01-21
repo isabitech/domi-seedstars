@@ -62,6 +62,7 @@ const BranchAbiyeReport: React.FC = () => {
 
   // Predefined resolution methods options
   const resolutionOptions = [
+    'payment',
     'closed',
     'properties',
     'promise undertaking',
@@ -92,7 +93,7 @@ const BranchAbiyeReport: React.FC = () => {
   const totalClients = watchedValues?.totalClients || 0;
   const clientsThatPaidToday = watchedValues?.clientsThatPaidToday || 0;
   const ldSolvedToday = watchedValues?.ldSolvedToday || 0;
-  const totalCurrentLdNo = totalClients - clientsThatPaidToday - ldSolvedToday;
+  const totalCurrentLdNo = totalClients - clientsThatPaidToday;
 
   const handleSubmit = useCallback(async (values: AbiyeReportFormData) => {
     // Guarantee single call - immediate synchronous check
@@ -283,7 +284,7 @@ const BranchAbiyeReport: React.FC = () => {
 
             <Col xs={24} sm={8}>
               <Alert
-                message={`Total to be  Disbursed Tomorrow: ₦${totalDisbursed.toLocaleString()}`}
+                message={`Total to be needed Tomorrow: ₦${totalDisbursed.toLocaleString()}`}
                 type="info"
                 showIcon
               />
@@ -410,7 +411,7 @@ const BranchAbiyeReport: React.FC = () => {
                   }}
                 />
                 <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '4px' }}>
-                  Formula: Total Clients - Clients Paid Today - LD Cases Solved Today
+                  Formula: Total Clients - Clients Paid Today
                 </Text>
               </Form.Item>
             </Col>
