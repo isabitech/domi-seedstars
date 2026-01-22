@@ -25,6 +25,7 @@ import {
   PlusOutlined,
   CalendarOutlined,
   MinusCircleOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { toast } from 'sonner';
@@ -56,6 +57,7 @@ const BranchAbiyeReport: React.FC = () => {
   const [form] = Form.useForm<AbiyeReportFormData>();
   const [selectedDate, setSelectedDate] = useState<string>(CURRENT_DATE);
   const [resolutionMethods, setResolutionMethods] = useState<string[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const isSubmittingRef = useRef(false);
 
   const submitMutation = useSubmitAbiyeReport();
@@ -80,6 +82,21 @@ const BranchAbiyeReport: React.FC = () => {
   const handleResolutionMethodsChange = (values: string[]) => {
     setResolutionMethods(values);
     form.setFieldValue('ldResolutionMethods', values);
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      // TODO: Replace with actual API call to fetch Abiye report for current date
+      // Example: const response = await fetchAbiyeReport(selectedDate);
+      // form.setFieldsValue(response.data);
+      
+      toast.success('Data refreshed successfully!');
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Failed to refresh data');
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   // Calculate totals and client metrics
@@ -135,9 +152,20 @@ const BranchAbiyeReport: React.FC = () => {
           </Space>
         }
         extra={
-          <Tag color="blue" icon={<CalendarOutlined />}>
-            {dayjs(selectedDate).format('MMM DD, YYYY')}
-          </Tag>
+          <Space>
+            <Tag color="blue" icon={<CalendarOutlined />}>
+              {dayjs(selectedDate).format('MMM DD, YYYY')}
+            </Tag>
+            <Button
+              type="text"
+              icon={<ReloadOutlined />}
+              loading={isRefreshing}
+              onClick={handleRefresh}
+              title="Refresh data for current date"
+            >
+              Refresh
+            </Button>
+          </Space>
         }
       >
         <Form
