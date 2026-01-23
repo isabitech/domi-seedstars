@@ -30,6 +30,7 @@ import {
 import dayjs from 'dayjs';
 import { toast } from 'sonner';
 import { useSubmitAbiyeReport } from '../../hooks/Branch/AbiyeReport/useSubmitAbiyeReport';
+import { useGetBranchAbiyeReport } from '../../hooks/Branch/AbiyeReport/useGetAbiyeReport';
 import { CURRENT_DATE } from '../../lib/utils';
 
 const { Title, Text } = Typography;
@@ -61,6 +62,7 @@ const BranchAbiyeReport: React.FC = () => {
   const isSubmittingRef = useRef(false);
 
   const submitMutation = useSubmitAbiyeReport();
+  const { data: abiyeReports, refetch: refetchAbiyeReports, isLoading: isLoadingReports } = useGetBranchAbiyeReport();
 
   // Predefined resolution methods options
   const resolutionOptions = [
@@ -90,6 +92,7 @@ const BranchAbiyeReport: React.FC = () => {
       // TODO: Replace with actual API call to fetch Abiye report for current date
       // Example: const response = await fetchAbiyeReport(selectedDate);
       // form.setFieldsValue(response.data);
+      await refetchAbiyeReports();
       
       toast.success('Data refreshed successfully!');
     } catch (error: any) {
@@ -112,6 +115,20 @@ const BranchAbiyeReport: React.FC = () => {
   const ldSolvedToday = watchedValues?.ldSolvedToday || 0;
   const totalCurrentLdNo = totalClients - clientsThatPaidToday;
 
+  // Form validation for submit button
+  const isFormValid = watchedValues?.reportDate &&
+    watchedValues?.disbursementNo !== undefined && watchedValues?.disbursementNo !== null &&
+    watchedValues?.disbursementAmount !== undefined && watchedValues?.disbursementAmount !== null &&
+    watchedValues?.amountToClients !== undefined && watchedValues?.amountToClients !== null &&
+    watchedValues?.ajoWithdrawalAmount !== undefined && watchedValues?.ajoWithdrawalAmount !== null &&
+    watchedValues?.totalClients !== undefined && watchedValues?.totalClients !== null &&
+    watchedValues?.ldSolvedToday !== undefined && watchedValues?.ldSolvedToday !== null &&
+    watchedValues?.clientsThatPaidToday !== undefined && watchedValues?.clientsThatPaidToday !== null &&
+    watchedValues?.totalNoOfNewClientTomorrow !== undefined && watchedValues?.totalNoOfNewClientTomorrow !== null &&
+    watchedValues?.totalNoOfOldClientTomorrow !== undefined && watchedValues?.totalNoOfOldClientTomorrow !== null &&
+    watchedValues?.totalPreviousSoOwn !== undefined && watchedValues?.totalPreviousSoOwn !== null &&
+    resolutionMethods.length > 0;
+
   const handleSubmit = useCallback(async (values: AbiyeReportFormData) => {
     // Guarantee single call - immediate synchronous check
     if (isSubmittingRef.current) {
@@ -133,6 +150,9 @@ const BranchAbiyeReport: React.FC = () => {
 
       await submitMutation.mutateAsync(reportData);
       toast.success('Abiye Report submitted successfully!');
+      
+      // Refetch the reports to show the submitted data
+      await refetchAbiyeReports();
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Failed to submit Abiye Report');
     } finally {
@@ -557,7 +577,7 @@ const BranchAbiyeReport: React.FC = () => {
                   type="primary"
                   htmlType="submit"
                   loading={submitMutation.isPending}
-                  disabled={submitMutation.isPending}
+                  disabled={submitMutation.isPending || !isFormValid}
                   icon={<FileTextOutlined />}
                   size="large"
                 >
@@ -577,6 +597,70 @@ const BranchAbiyeReport: React.FC = () => {
           </div>
         )}
       </Card>
+
+      {/* Display Submitted Reports */}
+      {abiyeReports && abiyeReports.length > 0 && (
+        <Card
+          title={
+            <Space>
+              <FileTextOutlined />
+              <Title level={4} style={{ margin: 0 }}>
+                Recent Abiye Reports
+              </Title>
+            </Space>
+          }
+          style={{ marginTop: '24px' }}
+          loading={isLoadingReports}
+        >
+          {abiyeReports.slice(0, 3).map((report: any, index: number) => (
+            <Card
+              key={report.id || index}
+              type="inner"
+              title={`Report - ${dayjs(report.reportDate).format('MMM DD, YYYY')}`}
+              style={{ marginBottom: '16px' }}
+            >
+              <Row gutter={16}>
+                <Col xs={24} sm={12} md={8}>
+                  <Space direction="vertical" size="small">
+                    <Text strong>Disbursement Info:</Text>
+                    <Text>Number: {report.disbursementNo?.toLocaleString() || 'N/A'}</Text>
+                    <Text>Amount: ₦{report.disbursementAmount?.toLocaleString() || '0'}</Text>
+                    <Text>To Clients: ₦{report.amountToClients?.toLocaleString() || '0'}</Text>
+                    <Text>AJO Withdrawal: ₦{report.ajoWithdrawalAmount?.toLocaleString() || '0'}</Text>
+                  </Space>
+                </Col>
+                <Col xs={24} sm={12} md={8}>
+                  <Space direction="vertical" size="small">
+                    <Text strong>Client Info:</Text>
+                    <Text>Total Clients: {report.totalClients || 0}</Text>
+                    <Text>Paid Today: {report.clientsThatPaidToday || 0}</Text>
+                    <Text>Current LD No: {report.currentLDNo || 0}</Text>
+                    <Text>LD Solved: {report.ldSolvedToday || 0}</Text>
+                  </Space>
+                </Col>
+                <Col xs={24} sm={12} md={8}>
+                  <Space direction="vertical" size="small">
+                    <Text strong>Tomorrow's Plan:</Text>
+                    <Text>New Clients: {report.totalNoOfNewClientTomorrow || 0}</Text>
+                    <Text>Old Clients: {report.totalNoOfOldClientTomorrow || 0}</Text>
+                    <Text>Previous S.O Own: ₦{report.totalPreviousSoOwn?.toLocaleString() || '0'}</Text>
+                  </Space>
+                </Col>
+              </Row>
+              {report.ldResolutionMethods && report.ldResolutionMethods.length > 0 && (
+                <div style={{ marginTop: '12px' }}>
+                  <Text strong>Resolution Methods: </Text>
+                  {report.ldResolutionMethods.map((method: string, idx: number) => (
+                    <Tag key={idx} color="processing" style={{ margin: '2px' }}>
+                      {method}
+                    </Tag>
+                  ))}
+                </div>
+              )}
+            </Card>
+          ))}
+        </Card>
+      )}
     </div>
   );
 };
