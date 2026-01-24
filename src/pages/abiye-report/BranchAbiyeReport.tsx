@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   Card,
   Form,
@@ -59,10 +59,66 @@ const BranchAbiyeReport: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>(CURRENT_DATE);
   const [resolutionMethods, setResolutionMethods] = useState<string[]>([]);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [hasSubmittedToday, setHasSubmittedToday] = useState<boolean>(false);
   const isSubmittingRef = useRef(false);
 
   const submitMutation = useSubmitAbiyeReport();
   const { data: abiyeReports, refetch: refetchAbiyeReports, isLoading: isLoadingReports } = useGetBranchAbiyeReport();
+
+  // Check if report exists for selected date and populate form
+  useEffect(() => {
+    if (abiyeReports?.data) {
+      const existingReport = abiyeReports.data.find(
+        report => dayjs(report.reportDate).format('YYYY-MM-DD') === selectedDate
+      );
+      
+      setHasSubmittedToday(!!existingReport);
+      
+      if (existingReport) {
+        // Populate form with existing data
+        form.setFieldsValue({
+          reportDate: dayjs(existingReport.reportDate),
+          disbursementNo: existingReport.disbursementNo,
+          disbursementAmount: existingReport.disbursementAmount,
+          amountToClients: existingReport.amountToClients,
+          ajoWithdrawalAmount: existingReport.ajoWithdrawalAmount,
+          totalClients: existingReport.totalClients,
+          ldSolvedToday: existingReport.ldSolvedToday,
+          clientsThatPaidToday: existingReport.clientsThatPaidToday,
+          totalNoOfNewClientTomorrow: existingReport.totalNoOfNewClientTomorrow,
+          totalNoOfOldClientTomorrow: existingReport.totalNoOfOldClientTomorrow,
+          totalPreviousSoOwn: existingReport.totalPreviousSoOwn,
+          totalAmountNeeded: existingReport.totalAmountNeeded,
+          currentLDNo: existingReport.currentLDNo,
+        });
+        
+        // Set resolution methods
+        if (existingReport.ldResolutionMethods) {
+          setResolutionMethods(existingReport.ldResolutionMethods);
+          form.setFieldValue('ldResolutionMethods', existingReport.ldResolutionMethods);
+        }
+      } else {
+        // Reset form for new date without existing data
+        form.resetFields();
+        form.setFieldsValue({
+          reportDate: dayjs(selectedDate),
+          disbursementNo: 0,
+          disbursementAmount: 0,
+          amountToClients: 0,
+          ajoWithdrawalAmount: 0,
+          totalClients: 0,
+          ldSolvedToday: 0,
+          clientsThatPaidToday: 0,
+          totalNoOfNewClientTomorrow: 0,
+          totalNoOfOldClientTomorrow: 0,
+          totalPreviousSoOwn: 0,
+          totalAmountNeeded: 0,
+          currentLDNo: 0,
+        });
+        setResolutionMethods([]);
+      }
+    }
+  }, [abiyeReports?.data, selectedDate, form]);
 
   // Predefined resolution methods options
   const resolutionOptions = [
@@ -77,7 +133,7 @@ const BranchAbiyeReport: React.FC = () => {
     if (date) {
       const formattedDate = date.format('YYYY-MM-DD');
       setSelectedDate(formattedDate);
-      form.setFieldValue('reportDate', date);
+      // Form population will be handled by useEffect
     }
   };
 
@@ -129,6 +185,8 @@ const BranchAbiyeReport: React.FC = () => {
     watchedValues?.totalPreviousSoOwn !== undefined && watchedValues?.totalPreviousSoOwn !== null &&
     resolutionMethods.length > 0;
 
+  const canSubmit = isFormValid && !hasSubmittedToday && !submitMutation.isPending;
+
   const handleSubmit = useCallback(async (values: AbiyeReportFormData) => {
     // Guarantee single call - immediate synchronous check
     if (isSubmittingRef.current) {
@@ -153,6 +211,9 @@ const BranchAbiyeReport: React.FC = () => {
       
       // Refetch the reports to show the submitted data
       await refetchAbiyeReports();
+      
+      // Set submitted state to disable further submissions
+      setHasSubmittedToday(true);
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Failed to submit Abiye Report');
     } finally {
@@ -176,6 +237,11 @@ const BranchAbiyeReport: React.FC = () => {
             <Tag color="blue" icon={<CalendarOutlined />}>
               {dayjs(selectedDate).format('MMM DD, YYYY')}
             </Tag>
+            {hasSubmittedToday && (
+              <Tag color="success" icon={<CheckCircleOutlined />}>
+                Report Exists
+              </Tag>
+            )}
             <Button
               type="text"
               icon={<ReloadOutlined />}
@@ -564,26 +630,21 @@ const BranchAbiyeReport: React.FC = () => {
           {/* Submit Section */}
           <Row justify="end">
             <Col>
-              <Space>
-                <Button
-                  onClick={() => {
-                    form.resetFields();
-                    setResolutionMethods([]);
-                  }}
-                >
-                  Reset
-                </Button>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={submitMutation.isPending}
-                  disabled={submitMutation.isPending || !isFormValid}
-                  icon={<FileTextOutlined />}
-                  size="large"
-                >
-                  Submit Abiye Report
-                </Button>
-              </Space>
+              <Button
+                type={hasSubmittedToday ? "default" : "primary"}
+                htmlType="submit"
+                loading={submitMutation.isPending}
+                disabled={!canSubmit}
+                icon={<FileTextOutlined />}
+                size="large"
+                style={{
+                  backgroundColor: hasSubmittedToday ? '#52c41a' : undefined,
+                  borderColor: hasSubmittedToday ? '#52c41a' : undefined,
+                  color: hasSubmittedToday ? '#fff' : undefined,
+                }}
+              >
+                {hasSubmittedToday ? 'Report Already Submitted' : 'Submit Abiye Report'}
+              </Button>
             </Col>
           </Row>
         </Form>
@@ -599,7 +660,7 @@ const BranchAbiyeReport: React.FC = () => {
       </Card>
 
       {/* Display Submitted Reports */}
-      {abiyeReports && abiyeReports.length > 0 && (
+      {abiyeReports?.data && abiyeReports.data.length > 0 && (
         <Card
           title={
             <Space>
@@ -612,9 +673,9 @@ const BranchAbiyeReport: React.FC = () => {
           style={{ marginTop: '24px' }}
           loading={isLoadingReports}
         >
-          {abiyeReports.slice(0, 3).map((report: any, index: number) => (
+          {abiyeReports.data.slice(0, 3).map((report: any, index: number) => (
             <Card
-              key={report.id || index}
+              key={report._id || index}
               type="inner"
               title={`Report - ${dayjs(report.reportDate).format('MMM DD, YYYY')}`}
               style={{ marginBottom: '16px' }}
