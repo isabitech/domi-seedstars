@@ -383,7 +383,7 @@ const BranchAbiyeReport: React.FC = () => {
           <Row gutter={24}>
             <Col xs={24} sm={8}>
               <Form.Item
-                label="Total Clients"
+                label="Total Clients in Branch"
                 name="totalClients"
                 rules={[
                   { required: true, message: 'Please enter total number of clients' },

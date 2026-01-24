@@ -151,6 +151,7 @@ const HOAbiyeReport: React.FC = () => {
     return {
       ...stats,
       totalCurrentLdNo: stats.totalClients - stats.totalClientsPaid - stats.totalLdSolved,
+      totalTomorrowDisbursementNumber: stats.totalNewClientsTomorrow + stats.totalOldClientsTomorrow,
       paymentRate: stats.totalClients > 0 ? (stats.totalClientsPaid / stats.totalClients) * 100 : 0,
       ldResolutionRate: stats.totalLdSolved > 0 ? (stats.totalLdSolved / stats.totalBranches) * 100 : 0,
     };
@@ -503,6 +504,40 @@ const HOAbiyeReport: React.FC = () => {
                        summaryStats.paymentRate >= 50 ? '#fa8c16' : '#cf1322'
               }}
             />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* New Statistics Row */}
+      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+        <Col xs={24} sm={12} md={6}>
+          <Card size="small">
+            <Statistic
+              title="Total Clients That Pays Today"
+              value={summaryStats.totalClientsPaid}
+              prefix={<CheckCircleOutlined />}
+              valueStyle={{ color: '#3f8600' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card size="small">
+            <Statistic
+              title="Total Tomorrow Disbursement Number"
+              value={summaryStats.totalTomorrowDisbursementNumber}
+              prefix={<CalendarOutlined />}
+              valueStyle={{ color: '#1890ff' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card size="small">
+            {/* Empty card for spacing */}
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card size="small">
+            {/* Empty card for spacing */}
           </Card>
         </Col>
       </Row>
