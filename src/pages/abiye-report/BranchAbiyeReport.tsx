@@ -129,10 +129,20 @@ const BranchAbiyeReport: React.FC = () => {
     'police'
   ];
 
-  const handleDateChange = (date: dayjs.Dayjs | null) => {
+  const handleDateChange = async (date: dayjs.Dayjs | null) => {
     if (date) {
       const formattedDate = date.format('YYYY-MM-DD');
       setSelectedDate(formattedDate);
+      
+      // Since the hook depends on selectedDate, we need to ensure
+      // the refetch happens with the new date
+      try {
+        await refetchAbiyeReports();
+        toast.success(abiyeReports?.message || 'Data loaded for selected date');
+      } catch (error) {
+        console.error('Failed to refetch abiye reports:', error);
+        toast.error('Failed to load data for selected date');
+      }
       // Form population will be handled by useEffect
     }
   };
