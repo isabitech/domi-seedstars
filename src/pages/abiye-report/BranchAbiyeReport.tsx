@@ -63,7 +63,7 @@ const BranchAbiyeReport: React.FC = () => {
   const isSubmittingRef = useRef(false);
 
   const submitMutation = useSubmitAbiyeReport();
-  const { data: abiyeReports, refetch: refetchAbiyeReports, isLoading: isLoadingReports } = useGetBranchAbiyeReport();
+  const { data: abiyeReports, refetch: refetchAbiyeReports, isLoading: isLoadingReports } = useGetBranchAbiyeReport(selectedDate);
 
   // Check if report exists for selected date and populate form
   useEffect(() => {

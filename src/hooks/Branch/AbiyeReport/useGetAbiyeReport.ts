@@ -31,12 +31,12 @@ export interface Daum {
   __v: number
 }
 
-const getBranchAbiyeReport = async () : Promise<Root> => {
-    const response = await axiosInstance.get('/biye-reports');
+const getBranchAbiyeReport = async (date: string) : Promise<Root> => {
+    const response = await axiosInstance.get(`/biye-reports?today?startDate=${date}&endDate=${date}`);
     return response.data;
 }
 
-export const useGetBranchAbiyeReport = () => useQuery({
-    queryKey: ['branchAbiyeReport'],
-    queryFn: () => getBranchAbiyeReport(),
+export const useGetBranchAbiyeReport = (date: string) => useQuery({
+    queryKey: ['branchAbiyeReport', date],
+    queryFn: () => getBranchAbiyeReport(date),
 });
