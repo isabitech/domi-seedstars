@@ -524,7 +524,7 @@ const HOAbiyeReport: React.FC = () => {
           <Card size="small">
             <Statistic
               title="Total Tomorrow Disbursement Number"
-              value={summaryStats.totalTomorrowDisbursementNumber}
+              value={summaryStats?.totalDisbursements}
               prefix={<CalendarOutlined />}
               valueStyle={{ color: '#1890ff' }}
             />

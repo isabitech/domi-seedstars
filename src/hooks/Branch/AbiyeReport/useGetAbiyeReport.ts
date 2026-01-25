@@ -32,7 +32,7 @@ export interface Daum {
 }
 
 const getBranchAbiyeReport = async (date: string) : Promise<Root> => {
-    const response = await axiosInstance.get(`/biye-reports?today?startDate=${date}&endDate=${date}`);
+    const response = await axiosInstance.get(`/biye-reports?startDate=${date}&endDate=${date}`);
     return response.data;
 }
 
