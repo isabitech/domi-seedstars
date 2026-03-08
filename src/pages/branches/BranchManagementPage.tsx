@@ -222,7 +222,7 @@ export const BranchManagementPage: React.FC = () => {
           username: values.username,
           branchId: values.branchId,
           password: values.password,
-          
+          name: values.name,
         };
         
         await updateUserMutation.mutateAsync({
