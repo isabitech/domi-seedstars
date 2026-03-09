@@ -13,6 +13,7 @@ import { useUpdateUser } from '../../hooks/Users(Head Office - HO)/useUpdateUser
 import { useDeleteUser } from '../../hooks/Users(Head Office - HO)/useDeleteUser';
 import type { User } from '../../hooks/Auth/useGetMe';
 import { queryClient } from '../../lib/queryClient';
+import Password from 'antd/es/input/Password';
 
 const { Title } = Typography;
 
@@ -219,7 +220,9 @@ export const BranchManagementPage: React.FC = () => {
         const updateData: any = {
           email: values.email,
           username: values.username,
-          branchId: values.branchId
+          branchId: values.branchId,
+          password: values.password,
+          name: values.name,
         };
         
         await updateUserMutation.mutateAsync({
