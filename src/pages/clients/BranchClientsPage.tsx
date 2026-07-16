@@ -37,6 +37,7 @@ interface ClientFormValues {
   guarantorNickName?: string;
   partnerReferrerName: string;
   partnerReferrerPhone: string;
+  partnerReferrerNickName?: string;
   status?: 'active' | 'inactive';
 }
 
@@ -97,6 +98,7 @@ export const BranchClientsPage: React.FC = () => {
       guarantorNickName: client.guarantorNickName,
       partnerReferrerName: client.partnerReferrerName,
       partnerReferrerPhone: client.partnerReferrerPhone,
+      partnerReferrerNickName: client.partnerReferrerNickName,
       status: client.status || 'active',
     });
     setIsModalOpen(true);
@@ -153,6 +155,7 @@ export const BranchClientsPage: React.FC = () => {
       'GUARANTOR NICKNAME': client.guarantorNickName || '',
       'PARTNER/REFEERER NAME': client.partnerReferrerName || '',
       'PARTNER/REFEERER PHONE NUMBER': client.partnerReferrerPhone || '',
+      'PARTNER/REFEERER NICKNAME': client.partnerReferrerNickName || '',
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(rows);
@@ -220,6 +223,12 @@ export const BranchClientsPage: React.FC = () => {
       title: 'Phone Number',
       dataIndex: 'partnerReferrerPhone',
       key: 'partnerReferrerPhone',
+      render: (value: string | undefined) => value || '-',
+    },
+    {
+      title: 'Nickname',
+      dataIndex: 'partnerReferrerNickName',
+      key: 'partnerReferrerNickName',
       render: (value: string | undefined) => value || '-',
     },
     {
@@ -395,9 +404,18 @@ export const BranchClientsPage: React.FC = () => {
             </Col>
           </Row>
 
-          <Form.Item label="Phone Number" name="partnerReferrerPhone" rules={[{ required: true, message: 'Partner/Refeerer phone number is required' }]}>
-            <Input placeholder="Enter partner/refeerer phone number" />
-          </Form.Item>
+          <Row gutter={12}>
+            <Col span={12}>
+              <Form.Item label="Phone Number" name="partnerReferrerPhone" rules={[{ required: true, message: 'Partner/Refeerer phone number is required' }]}>
+                <Input placeholder="Enter partner/refeerer phone number" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Partner/Refeerer Nick Name" name="partnerReferrerNickName">
+                <Input placeholder="Enter partner/refeerer nick name" />
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Form.Item label="Status" name="status">
             <Select>

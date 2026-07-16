@@ -12,6 +12,7 @@ export interface Client {
   guarantorNickName?: string;
   partnerReferrerName: string;
   partnerReferrerPhone: string;
+  partnerReferrerNickName?: string;
 
   // Legacy optional fields kept for backward compatibility with existing records.
   firstName?: string;

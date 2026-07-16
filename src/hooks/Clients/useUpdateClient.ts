@@ -13,6 +13,7 @@ export interface UpdateClientRequest {
   guarantorNickName?: string;
   partnerReferrerName?: string;
   partnerReferrerPhone?: string;
+  partnerReferrerNickName?: string;
   status?: 'active' | 'inactive';
 }
 

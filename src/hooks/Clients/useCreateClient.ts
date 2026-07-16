@@ -12,6 +12,7 @@ export interface CreateClientRequest {
   guarantorNickName?: string;
   partnerReferrerName: string;
   partnerReferrerPhone: string;
+  partnerReferrerNickName?: string;
   status?: 'active' | 'inactive';
   branchId?: string;
 }
