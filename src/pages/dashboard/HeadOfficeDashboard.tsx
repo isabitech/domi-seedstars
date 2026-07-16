@@ -130,7 +130,8 @@ export const HeadOfficeDashboard: React.FC = () => {
     totalDisbursementRollNo: 0,
     totalCollections: 0,
     activeBranches: [],
-    totalOperations: 0
+    totalOperations: 0,
+    totalClients: 0,
   };
 
   const branchTableColumns = [
@@ -226,6 +227,15 @@ export const HeadOfficeDashboard: React.FC = () => {
         }}>
           {calculations.formatCurrency(record.totalTSO || 0)}
         </Text>
+      )
+    },
+    {
+      title: 'Clients',
+      key: 'totalClients',
+      width: 100,
+      align: 'center' as const,
+      render: (_: unknown, record: any) => (
+        <Tag color="geekblue">{record.totalClients || 0}</Tag>
       )
     },
     {
@@ -594,6 +604,20 @@ export const HeadOfficeDashboard: React.FC = () => {
                 prefix={<TransactionOutlined />}
                 valueStyle={{ 
                   color: '#eb2f96', 
+                  fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                }}
+              />
+            </Card>
+          </Col>
+
+          <Col xs={24} sm={12} lg={6}>
+            <Card size="small" style={{ textAlign: 'center' }}>
+              <Statistic
+                title={<Text style={{ fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>Total Clients</Text>}
+                value={totals.totalClients || 0}
+                prefix={<TeamOutlined />}
+                valueStyle={{
+                  color: '#1677ff',
                   fontSize: window.innerWidth <= 768 ? '14px' : '16px'
                 }}
               />

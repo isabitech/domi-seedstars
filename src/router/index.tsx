@@ -26,6 +26,8 @@ import BranchAmountNeedTomorrowPage from '../pages/amount-need-tomorrow/BranchAm
 import HOAmountNeedTomorrowPage from '../pages/amount-need-tomorrow/HOAmountNeedTomorrowPage';
 import BranchAbiyeReport from '../pages/abiye-report/BranchAbiyeReport';
 import HOAbiyeReport from '../pages/abiye-report/HOAbiyeReport';
+import { BranchClientsPage } from '../pages/clients/BranchClientsPage';
+import { StaffInformationPage } from '../pages/staff/StaffInformationPage';
 
 export const router = createBrowserRouter([
   {
@@ -134,6 +136,18 @@ export const router = createBrowserRouter([
       {
         path: 'branches',
         element: <BranchManagementPage />,
+      },
+      {
+        path: 'branches/:branchId/clients',
+        element: <BranchClientsPage />,
+      },
+      {
+        path: 'clients',
+        element: <BranchClientsPage />,
+      },
+      {
+        path: 'staff-information',
+        element: <StaffInformationPage />,
       },
       {
         path: 'reports',

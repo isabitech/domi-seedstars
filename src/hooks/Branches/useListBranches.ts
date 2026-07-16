@@ -88,15 +88,32 @@ export interface ListBranchesParams {
   search?: string;
 }
 
+const MAX_BRANCH_LIMIT = 100;
+
+const sanitizeBranchParams = (params: ListBranchesParams = {}): ListBranchesParams => {
+  const safePage = params.page && params.page > 0 ? params.page : 1;
+  const requestedLimit = params.limit ?? 10;
+  const safeLimit = Math.min(Math.max(requestedLimit, 1), MAX_BRANCH_LIMIT);
+
+  return {
+    ...params,
+    page: safePage,
+    limit: safeLimit,
+  };
+};
+
 const getBranches = async (params: ListBranchesParams = {}): Promise<ListBranchesResponse> => {
-  const { data } = await axiosInstance.get('/branches', { params });
+  const safeParams = sanitizeBranchParams(params);
+  const { data } = await axiosInstance.get('/branches', { params: safeParams });
   return data;
 };
 
 export const useListBranches = (params: ListBranchesParams = {}) => {
+  const safeParams = sanitizeBranchParams(params);
+
   return useQuery({
-    queryKey: ['branches', 'list', params],
-    queryFn: () => getBranches(params),
+    queryKey: ['branches', 'list', safeParams],
+    queryFn: () => getBranches(safeParams),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };

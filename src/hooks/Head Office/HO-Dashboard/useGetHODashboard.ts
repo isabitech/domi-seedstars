@@ -48,6 +48,7 @@ export interface ConsolidatedSummary {
   totalCollections: number
   activeBranches: string[]
   totalOperations: number
+  totalClients?: number
 }
 
 
@@ -62,6 +63,7 @@ export interface BranchPerformance {
   totalTSO: number
   operationDays: number
   lastOperation: string
+  totalClients?: number
 }
 
 export interface TodayStatu {

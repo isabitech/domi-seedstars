@@ -14,7 +14,7 @@ import {
   DollarOutlined,
   CalendarOutlined,
   MenuOutlined,
-  SafetyOutlined
+  TeamOutlined
 } from '@ant-design/icons';
 import { useGetMe } from '../../hooks/Auth/useGetMe';
 import { useLogout } from '../../hooks/Auth/useLogout';
@@ -80,6 +80,8 @@ export const AppLayout: React.FC = () => {
     if (path.includes('/branch-savings-register')) return 'savings-register';
     if (path.includes('/branch-loan-register')) return 'loan-register';
     if (path.includes('/branch-disbursement-roll')) return 'disbursement-roll';
+    if (path.includes('/clients')) return 'clients';
+    if (path.includes('/staff-information')) return 'staff-information';
     if (path.includes('/branches')) return 'branches';
     if (path.includes('/daily-report')) return 'daily-report';
     if (path.includes('/daily-operations')) return 'daily-operations';
@@ -125,6 +127,12 @@ export const AppLayout: React.FC = () => {
           icon: <BankOutlined />,
           label: 'Branch Management',
           onClick: () => navigate('/app/branches'),
+        },
+        {
+          key: 'staff-information',
+          icon: <TeamOutlined />,
+          label: 'Staff Information',
+          onClick: () => navigate('/app/staff-information'),
         },
         {
           key: 'ho-operations',
@@ -193,6 +201,12 @@ export const AppLayout: React.FC = () => {
           onClick: () => navigate('/app/daily-report'),
         },
         {
+          key: 'clients',
+          icon: <TeamOutlined />,
+          label: 'Client Information',
+          onClick: () => navigate('/app/clients'),
+        },
+        {
           key: 'savings-register',
           icon: <FileTextOutlined />,
           label: 'Savings Register',
@@ -226,12 +240,14 @@ export const AppLayout: React.FC = () => {
       '/app/dashboard': user?.role === 'HO' ? 'Head Office Dashboard' : 'Branch Dashboard',
       '/app/dashboard/branch': 'Branch Dashboard',
       '/app/branches': 'Branch Management',
+      '/app/staff-information': 'Staff Information',
       '/app/ho-operations': 'HO Operations',
       '/app/cashbook': 'Daily Cashbook',
       '/app/daily-operations': 'Daily Operations',
       '/app/daily-report': ' Daily Branch Report',
       '/app/predictions': 'Predictions',
       '/app/online-cih': 'Online CIH',
+      '/app/clients': 'Client Information',
       '/app/bank-statements': 'Bank Statements',
       '/app/branch-savings-register': 'Savings Register',
       '/app/branch-loan-register': 'Loan Register',
@@ -243,6 +259,10 @@ export const AppLayout: React.FC = () => {
       // '/app/settings': 'System Settings',
     };
     
+    if (path.includes('/branches/') && path.includes('/clients')) {
+      return 'Branch Clients';
+    }
+
     return titles[path] || 'Dashboard';
   };
 

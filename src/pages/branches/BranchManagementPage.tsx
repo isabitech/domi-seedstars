@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Row, Col, Button, Modal, App, Space, Table, Tag, Typography, Form, Input, Spin, Tabs, Select, Dropdown } from 'antd';
 import { toast } from 'sonner';
-import { PlusOutlined, EditOutlined, DeleteOutlined, BankOutlined, UserAddOutlined, MoreOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, BankOutlined, UserAddOutlined, MoreOutlined, TeamOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useListBranches, type ListBranchesParams, type Branch } from '../../hooks/Branches/useListBranches';
 import { useCreateBranch } from '../../hooks/Branches/useCreateBranch';
@@ -14,6 +14,8 @@ import { useDeleteUser } from '../../hooks/Users(Head Office - HO)/useDeleteUser
 import type { User } from '../../hooks/Auth/useGetMe';
 import { queryClient } from '../../lib/queryClient';
 import Password from 'antd/es/input/Password';
+import { useNavigate } from 'react-router-dom';
+import { useGetClientSummary } from '../../hooks/Clients/useGetClientSummary';
 
 const { Title } = Typography;
 
@@ -43,6 +45,7 @@ interface UserFormData {
 }
 
 export const BranchManagementPage: React.FC = () => {
+  const navigate = useNavigate();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
   const [form] = Form.useForm<BranchFormData>();
@@ -86,10 +89,15 @@ export const BranchManagementPage: React.FC = () => {
   const createUserMutation = useCreateUser();
   const updateUserMutation = useUpdateUser();
   const deleteUserMutation = useDeleteUser();
+  const { data: clientSummaryData } = useGetClientSummary();
 
   const branches = branchesData?.data?.branches || [];
   const allBranches = allBranchesData?.data?.branches || [];
   const users = usersData?.data?.users || [];
+  const branchClientCountMap = (clientSummaryData?.data?.branches || []).reduce((acc, item) => {
+    acc[item.branchId] = item.totalClients;
+    return acc;
+  }, {} as Record<string, number>);
 
   const handleAddBranch = () => {
     setEditingBranch(null);
@@ -377,6 +385,13 @@ export const BranchManagementPage: React.FC = () => {
       key: 'email',
     },
     {
+      title: 'Total Clients',
+      key: 'totalClients',
+      render: (_, record: Branch) => (
+        <Tag color="blue">{branchClientCountMap[record._id] || 0}</Tag>
+      ),
+    },
+    {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
@@ -398,6 +413,15 @@ export const BranchManagementPage: React.FC = () => {
       width: 80,
       render: (_, record: Branch) => {
         const items = [
+          {
+            key: 'view-clients',
+            label: (
+              <span onClick={() => navigate(`/app/branches/${record._id}/clients`)}>
+                <TeamOutlined style={{ marginRight: 8 }} />
+                View Clients
+              </span>
+            ),
+          },
           {
             key: 'edit',
             label: (

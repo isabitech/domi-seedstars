@@ -33,6 +33,17 @@ Most endpoints require a Bearer token (`Authorization: Bearer <token>`). Obtain 
 
 ---
 
+## Staff Information (HO Only)
+
+| Endpoint         | Method | Body/Params | Description |
+|------------------|--------|-------------|-------------|
+| `/staff`         | GET    | `?page&limit&search&branchId&gender` | List staff records (HO/admin only) |
+| `/staff`         | POST   | `{ staffName, staffIdNumber, employmentDate, currentPosition, currentBranch, branchId, residentialAddress, guarantorName, guarantorNumber, gender }` | Create staff record (HO/admin only) |
+| `/staff/:id`     | PUT    | Partial of staff payload | Update staff record (HO/admin only) |
+| `/staff/:id`     | DELETE | - | Delete staff record (HO/admin only) |
+
+---
+
 ## Branches
 
 | Endpoint         | Method | Body/Params | Description |
