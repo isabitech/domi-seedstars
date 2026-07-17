@@ -25,6 +25,19 @@
 - Loading states and error boundaries
 - Refresh functionality
 
+### 2b. HO Information Modules ✅
+**Components**: `StaffInformationPage.tsx`, `InvestorInformationPage.tsx`
+**Hooks Integrated**:
+- Staff: `useListStaff`, `useCreateStaff`, `useUpdateStaff`, `useDeleteStaff`
+- Investor: `useListInvestors`, `useCreateInvestor`, `useUpdateInvestor`, `useDeleteInvestor`
+
+**Features Added**:
+- HO-only access for both modules
+- Full CRUD workflows (create, list, edit, delete)
+- Search and filter support
+- XLSX download for current table view
+- Consistent modal form validation and mutation feedback
+
 ### 3. Head Office Dashboard ✅
 **Component**: `HeadOfficeDashboard.tsx`
 **Hooks Integrated**:

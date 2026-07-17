@@ -82,6 +82,7 @@ export const AppLayout: React.FC = () => {
     if (path.includes('/branch-disbursement-roll')) return 'disbursement-roll';
     if (path.includes('/clients')) return 'clients';
     if (path.includes('/staff-information')) return 'staff-information';
+    if (path.includes('/investor-information')) return 'investor-information';
     if (path.includes('/branches')) return 'branches';
     if (path.includes('/daily-report')) return 'daily-report';
     if (path.includes('/daily-operations')) return 'daily-operations';
@@ -133,6 +134,12 @@ export const AppLayout: React.FC = () => {
           icon: <TeamOutlined />,
           label: 'Staff Information',
           onClick: () => navigate('/app/staff-information'),
+        },
+        {
+          key: 'investor-information',
+          icon: <TeamOutlined />,
+          label: 'Investor Information',
+          onClick: () => navigate('/app/investor-information'),
         },
         {
           key: 'ho-operations',
@@ -241,6 +248,7 @@ export const AppLayout: React.FC = () => {
       '/app/dashboard/branch': 'Branch Dashboard',
       '/app/branches': 'Branch Management',
       '/app/staff-information': 'Staff Information',
+      '/app/investor-information': 'Investor Information',
       '/app/ho-operations': 'HO Operations',
       '/app/cashbook': 'Daily Cashbook',
       '/app/daily-operations': 'Daily Operations',

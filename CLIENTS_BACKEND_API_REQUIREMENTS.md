@@ -535,3 +535,194 @@ Recommended indexes:
 
 Frontend currently exports current staff table view to `.xlsx` with all required columns.
 No dedicated export endpoint is required for now.
+
+---
+
+## Investor Information (HO Only)
+
+### Investor Data Format (Required)
+Each investor record must support all fields below:
+
+1. S/N (frontend-generated serial number for table display only)
+2. INVESTOR NAME
+3. GENDER
+4. PHONE
+5. R.I.O DATE
+6. STATUS (paid, update, withdrawal)
+
+### Canonical API Field Names
+Use these JSON keys in request/response payloads:
+
+- investorName
+- gender (`male | female`)
+- phone
+- rioDate
+- status (`paid | update | withdrawal`)
+
+`S/N` is not persisted in backend; it is computed in frontend from pagination.
+
+### Frontend Behavior Expected
+
+1. Investor Information appears in HO sidebar only.
+2. HO can create, edit, delete, and list investor information records.
+3. Investor table and downloaded list include all required fields above.
+4. BR users are not allowed to access investor endpoints or investor page.
+
+### Required Endpoints
+
+#### 1) List Investors
+`GET /api/v1/investors`
+
+Query params:
+
+- page (number, optional)
+- limit (number, optional)
+- search (string, optional)
+- gender (`male | female`, optional)
+- status (`paid | update | withdrawal`, optional)
+
+Search should match at least:
+
+- investorName
+- phone
+- status
+
+Role rules:
+
+- HO/admin: full access.
+- BR: no access (403).
+
+Response example:
+
+```json
+{
+  "success": true,
+  "data": {
+    "investors": [
+      {
+        "_id": "6878a0e66bbf0f2f9f42a999",
+        "investorName": "AYODEJI ADEMOLA",
+        "gender": "male",
+        "phone": "08031112222",
+        "rioDate": "2026-07-15",
+        "status": "paid",
+        "createdAt": "2026-07-16T09:30:00.000Z",
+        "updatedAt": "2026-07-16T09:30:00.000Z"
+      }
+    ],
+    "count": 10,
+    "total": 42,
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "pages": 5,
+      "total": 42,
+      "hasNext": true,
+      "hasPrev": false
+    }
+  },
+  "message": "Investor records fetched successfully"
+}
+```
+
+#### 2) Create Investor Record
+`POST /api/v1/investors`
+
+Request body:
+
+```json
+{
+  "investorName": "AYODEJI ADEMOLA",
+  "gender": "male",
+  "phone": "08031112222",
+  "rioDate": "2026-07-15",
+  "status": "paid"
+}
+```
+
+Role rules:
+
+- HO/admin only.
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "investor": {
+      "_id": "6878a0e66bbf0f2f9f42a999"
+    }
+  },
+  "message": "Investor record created successfully"
+}
+```
+
+#### 3) Update Investor Record
+`PUT /api/v1/investors/:id`
+
+Partial update body example:
+
+```json
+{
+  "phone": "08032223333",
+  "status": "withdrawal"
+}
+```
+
+Role rules:
+
+- HO/admin only.
+
+#### 4) Delete Investor Record
+`DELETE /api/v1/investors/:id`
+
+Role rules:
+
+- HO/admin only.
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Investor record deleted successfully"
+}
+```
+
+### Suggested Investor Data Model
+
+Collection: `investors`
+
+Fields:
+
+- _id
+- investorName (required)
+- gender (`male | female`, required)
+- phone (required)
+- rioDate (required)
+- status (`paid | update | withdrawal`, required)
+- createdBy (ObjectId ref users)
+- updatedBy (ObjectId ref users)
+- createdAt
+- updatedAt
+
+Recommended indexes:
+
+- `{ status: 1, rioDate: -1 }`
+- `{ gender: 1, status: 1 }`
+- `{ phone: 1 }`
+- text index across investorName, phone, status
+
+### Validation Rules
+
+- Required: investorName, gender, phone, rioDate, status.
+- rioDate should be a valid date (frontend sends `YYYY-MM-DD`).
+- gender must be `male` or `female`.
+- status must be `paid`, `update`, or `withdrawal`.
+- phone should pass phone format validation.
+
+### Investor Download Notes
+
+Frontend currently exports current investor table view to `.xlsx` with all required columns.
+No dedicated export endpoint is required for now.

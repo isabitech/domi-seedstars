@@ -44,6 +44,17 @@ Most endpoints require a Bearer token (`Authorization: Bearer <token>`). Obtain 
 
 ---
 
+## Investor Information (HO Only)
+
+| Endpoint           | Method | Body/Params | Description |
+|--------------------|--------|-------------|-------------|
+| `/investors`       | GET    | `?page&limit&search&gender&status` | List investor records (HO/admin only) |
+| `/investors`       | POST   | `{ investorName, gender, phone, rioDate, status }` | Create investor record (HO/admin only) |
+| `/investors/:id`   | PUT    | Partial of investor payload | Update investor record (HO/admin only) |
+| `/investors/:id`   | DELETE | - | Delete investor record (HO/admin only) |
+
+---
+
 ## Branches
 
 | Endpoint         | Method | Body/Params | Description |

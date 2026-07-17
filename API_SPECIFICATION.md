@@ -182,6 +182,170 @@ This document defines the API endpoints and data structures for the Dominion See
 
 ---
 
+## 1.3 HO Information Modules (HO Only)
+
+### 1.3.1 Staff Information
+
+#### GET `/staff`
+**Description**: List staff records
+```json
+// Query Params
+// page: number (optional)
+// limit: number (optional)
+// branchId: string (optional)
+// search: string (optional)
+// gender: "male" | "female" (optional)
+
+// Response (200 OK)
+{
+  "success": true,
+  "data": {
+    "staff": [
+      {
+        "_id": "string",
+        "staffName": "string",
+        "staffIdNumber": "string",
+        "employmentDate": "YYYY-MM-DD",
+        "currentPosition": "string",
+        "currentBranch": "string",
+        "branchId": "string",
+        "residentialAddress": "string",
+        "guarantorName": "string",
+        "guarantorNumber": "string",
+        "gender": "male" | "female",
+        "createdAt": "ISO8601 string",
+        "updatedAt": "ISO8601 string"
+      }
+    ],
+    "count": 10,
+    "total": 42,
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "pages": 5,
+      "total": 42,
+      "hasNext": true,
+      "hasPrev": false
+    }
+  },
+  "message": "Staff records fetched successfully"
+}
+```
+
+#### POST `/staff`
+**Description**: Create staff record
+```json
+// Request Body
+{
+  "staffName": "string",
+  "staffIdNumber": "string",
+  "employmentDate": "YYYY-MM-DD",
+  "currentPosition": "string",
+  "currentBranch": "string",
+  "branchId": "string",
+  "residentialAddress": "string",
+  "guarantorName": "string",
+  "guarantorNumber": "string",
+  "gender": "male" | "female"
+}
+
+// Response (201 Created)
+{
+  "success": true,
+  "data": {
+    "staff": {
+      "_id": "string"
+    }
+  },
+  "message": "Staff record created successfully"
+}
+```
+
+#### PUT `/staff/:id`
+**Description**: Update staff record (partial update)
+
+#### DELETE `/staff/:id`
+**Description**: Delete staff record
+
+### 1.3.2 Investor Information
+
+#### GET `/investors`
+**Description**: List investor records
+```json
+// Query Params
+// page: number (optional)
+// limit: number (optional)
+// search: string (optional)
+// gender: "male" | "female" (optional)
+// status: "paid" | "update" | "withdrawal" (optional)
+
+// Response (200 OK)
+{
+  "success": true,
+  "data": {
+    "investors": [
+      {
+        "_id": "string",
+        "investorName": "string",
+        "gender": "male" | "female",
+        "phone": "string",
+        "rioDate": "YYYY-MM-DD",
+        "status": "paid" | "update" | "withdrawal",
+        "createdAt": "ISO8601 string",
+        "updatedAt": "ISO8601 string"
+      }
+    ],
+    "count": 10,
+    "total": 42,
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "pages": 5,
+      "total": 42,
+      "hasNext": true,
+      "hasPrev": false
+    }
+  },
+  "message": "Investor records fetched successfully"
+}
+```
+
+#### POST `/investors`
+**Description**: Create investor record
+```json
+// Request Body
+{
+  "investorName": "string",
+  "gender": "male" | "female",
+  "phone": "string",
+  "rioDate": "YYYY-MM-DD",
+  "status": "paid" | "update" | "withdrawal"
+}
+
+// Response (201 Created)
+{
+  "success": true,
+  "data": {
+    "investor": {
+      "_id": "string"
+    }
+  },
+  "message": "Investor record created successfully"
+}
+```
+
+#### PUT `/investors/:id`
+**Description**: Update investor record (partial update)
+
+#### DELETE `/investors/:id`
+**Description**: Delete investor record
+
+Role rules for both modules:
+- HO/admin: full access
+- BR: no access (403)
+
+---
+
 ## 2. Branch Management
 
 ### 2.1 Branch Operations

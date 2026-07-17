@@ -18,6 +18,12 @@
 - [x] Error states and loading indicators
 - [x] Server-side calculations display
 
+### HO Information Modules
+- [x] Staff Information page wired to API hooks and CRUD endpoints
+- [x] Investor Information page wired to API hooks and CRUD endpoints
+- [x] HO-only route/menu gating for both modules
+- [x] XLSX export from table data for both modules
+
 ## In Progress 🚧
 
 ### Cashbook2 Component

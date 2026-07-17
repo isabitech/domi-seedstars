@@ -28,6 +28,7 @@ import BranchAbiyeReport from '../pages/abiye-report/BranchAbiyeReport';
 import HOAbiyeReport from '../pages/abiye-report/HOAbiyeReport';
 import { BranchClientsPage } from '../pages/clients/BranchClientsPage';
 import { StaffInformationPage } from '../pages/staff/StaffInformationPage';
+import { InvestorInformationPage } from '../pages/staff/InvestorInformationPage';
 
 export const router = createBrowserRouter([
   {
@@ -148,6 +149,10 @@ export const router = createBrowserRouter([
       {
         path: 'staff-information',
         element: <StaffInformationPage />,
+      },
+      {
+        path: 'investor-information',
+        element: <InvestorInformationPage />,
       },
       {
         path: 'reports',
