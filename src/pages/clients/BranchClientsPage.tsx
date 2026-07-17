@@ -21,6 +21,7 @@ import { DeleteOutlined, DownloadOutlined, EditOutlined, PlusOutlined, TeamOutli
 import { useParams } from 'react-router-dom';
 import { useGetMe } from '../../hooks/Auth/useGetMe';
 import { useListClients, type Client } from '../../hooks/Clients/useListClients';
+import { useListBranches } from '../../hooks/Branches/useListBranches';
 import { useCreateClient } from '../../hooks/Clients/useCreateClient';
 import { useUpdateClient } from '../../hooks/Clients/useUpdateClient';
 import { useDeleteClient } from '../../hooks/Clients/useDeleteClient';
@@ -49,7 +50,10 @@ export const BranchClientsPage: React.FC = () => {
   const { data: currentUser } = useGetMe();
 
   const isHO = currentUser?.data?.role === 'HO';
-  const effectiveBranchId = routeBranchId || currentUser?.data?.branchId;
+  const [selectedBranchId, setSelectedBranchId] = useState<string>('all');
+  const effectiveBranchId = isHO
+    ? (selectedBranchId === 'all' ? undefined : selectedBranchId)
+    : (routeBranchId || currentUser?.data?.branchId);
   const canManageClients = !isHO;
 
   const [search, setSearch] = useState('');
@@ -67,6 +71,11 @@ export const BranchClientsPage: React.FC = () => {
     sortOrder: 'asc',
   });
 
+  const { data: branchesData, isLoading: isBranchesLoading } = useListBranches({
+    page: 1,
+    limit: 100,
+  });
+
   const createClient = useCreateClient();
   const updateClient = useUpdateClient();
   const deleteClient = useDeleteClient();
@@ -79,13 +88,34 @@ export const BranchClientsPage: React.FC = () => {
     [clientsData?.data?.clients],
   );
   const total = clientsData?.data?.total || 0;
+  const branches = branchesData?.data?.branches || [];
+  const activeClientsCount = useMemo(
+    () => clients.filter((client) => (client.status || 'active') === 'active').length,
+    [clients],
+  );
+  const inactiveClientsCount = useMemo(
+    () => clients.filter((client) => client.status === 'inactive').length,
+    [clients],
+  );
 
   const branchName = useMemo(() => {
+    if (isHO && selectedBranchId === 'all') {
+      return 'All Branches';
+    }
+
+    if (isHO && selectedBranchId !== 'all') {
+      const selectedBranch = branches.find((branch) => branch._id === selectedBranchId);
+      if (selectedBranch?.name) {
+        return selectedBranch.name;
+      }
+    }
+
     if (clients.length > 0) {
       return clients[0].branch?.name || currentUser?.data?.branchName || 'Branch';
     }
+
     return currentUser?.data?.branchName || 'Branch';
-  }, [clients, currentUser?.data?.branchName]);
+  }, [branches, clients, currentUser?.data?.branchName, isHO, selectedBranchId]);
 
   const openCreateModal = () => {
     setEditingClient(null);
@@ -247,6 +277,13 @@ export const BranchClientsPage: React.FC = () => {
         <Tag color={status === 'inactive' ? 'red' : 'green'}>{status === 'inactive' ? 'Inactive' : 'Active'}</Tag>
       ),
     },
+    ...(isHO
+      ? [{
+          title: 'Branch',
+          key: 'branch',
+          render: (_: unknown, record: Client) => record.branch?.name || '-',
+        }]
+      : []),
     {
       title: 'Actions',
       key: 'actions',
@@ -296,6 +333,24 @@ export const BranchClientsPage: React.FC = () => {
             </Col>
             <Col>
               <Space wrap>
+                {isHO && (
+                  <Select
+                    value={selectedBranchId}
+                    onChange={(value) => {
+                      setSelectedBranchId(value);
+                      setPagination((prev) => ({ ...prev, current: 1 }));
+                    }}
+                    loading={isBranchesLoading}
+                    style={{ minWidth: 220 }}
+                    options={[
+                      { label: 'All Branches', value: 'all' },
+                      ...branches.map((branch) => ({
+                        label: branch.name,
+                        value: branch._id,
+                      })),
+                    ]}
+                  />
+                )}
                 <Input.Search
                   allowClear
                   placeholder="Search clients"
@@ -320,6 +375,36 @@ export const BranchClientsPage: React.FC = () => {
             </Col>
           </Row>
         </Card>
+
+        {isHO && (
+          <Row gutter={[12, 12]}>
+            <Col xs={24} sm={12} lg={8}>
+              <Card>
+                <Text type="secondary">Total Clients</Text>
+                <Title level={3} style={{ margin: '8px 0 0 0' }}>
+                  {total}
+                </Title>
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} lg={8}>
+              <Card>
+                <Text type="secondary">Active Clients</Text>
+                <Title level={3} style={{ margin: '8px 0 0 0', color: '#389e0d' }}>
+                  {activeClientsCount}
+                </Title>
+                <Text type="secondary">Inactive: {inactiveClientsCount}</Text>
+              </Card>
+            </Col>
+            <Col xs={24} sm={24} lg={8}>
+              <Card>
+                <Text type="secondary">Selected Branch</Text>
+                <Title level={4} style={{ margin: '8px 0 0 0' }}>
+                  {branchName}
+                </Title>
+              </Card>
+            </Col>
+          </Row>
+        )}
 
         <Card>
           <Table

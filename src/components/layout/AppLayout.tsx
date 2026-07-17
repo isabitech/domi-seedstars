@@ -142,6 +142,12 @@ export const AppLayout: React.FC = () => {
           onClick: () => navigate('/app/investor-information'),
         },
         {
+          key: 'clients',
+          icon: <TeamOutlined />,
+          label: 'Client Management',
+          onClick: () => navigate('/app/clients'),
+        },
+        {
           key: 'ho-operations',
           icon: <HomeOutlined />,
           label: 'HO Operations',
@@ -255,7 +261,7 @@ export const AppLayout: React.FC = () => {
       '/app/daily-report': ' Daily Branch Report',
       '/app/predictions': 'Predictions',
       '/app/online-cih': 'Online CIH',
-      '/app/clients': 'Client Information',
+      '/app/clients': user?.role === 'HO' ? 'Client Management' : 'Client Information',
       '/app/bank-statements': 'Bank Statements',
       '/app/branch-savings-register': 'Savings Register',
       '/app/branch-loan-register': 'Loan Register',
