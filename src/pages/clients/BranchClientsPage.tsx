@@ -63,13 +63,21 @@ export const BranchClientsPage: React.FC = () => {
     limit: pagination.pageSize,
     branchId: effectiveBranchId,
     search: search || undefined,
+    sortBy: 'createdAt',
+    sortOrder: 'asc',
   });
 
   const createClient = useCreateClient();
   const updateClient = useUpdateClient();
   const deleteClient = useDeleteClient();
 
-  const clients = clientsData?.data?.clients || [];
+  const clients = useMemo(
+    () =>
+      [...(clientsData?.data?.clients || [])].sort(
+        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      ),
+    [clientsData?.data?.clients],
+  );
   const total = clientsData?.data?.total || 0;
 
   const branchName = useMemo(() => {

@@ -28,6 +28,8 @@ export interface ListStaffParams {
   branchId?: string;
   search?: string;
   gender?: 'male' | 'female';
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface ListStaffResponse {

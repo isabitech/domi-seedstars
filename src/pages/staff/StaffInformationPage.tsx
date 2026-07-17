@@ -60,6 +60,8 @@ export const StaffInformationPage: React.FC = () => {
     limit: pagination.pageSize,
     search: search || undefined,
     gender: genderFilter,
+    sortBy: 'createdAt',
+    sortOrder: 'asc',
   });
 
   const createStaff = useCreateStaff();
@@ -67,7 +69,13 @@ export const StaffInformationPage: React.FC = () => {
   const deleteStaff = useDeleteStaff();
 
   const branches = branchesData?.data?.branches || [];
-  const staff = staffData?.data?.staff || [];
+  const staff = useMemo(
+    () =>
+      [...(staffData?.data?.staff || [])].sort(
+        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      ),
+    [staffData?.data?.staff],
+  );
   const total = staffData?.data?.total || 0;
 
   const branchLookup = useMemo(() => {

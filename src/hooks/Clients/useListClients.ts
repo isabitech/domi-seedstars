@@ -40,6 +40,8 @@ export interface ListClientsParams {
   branchId?: string;
   search?: string;
   status?: 'active' | 'inactive';
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface ListClientsResponse {

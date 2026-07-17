@@ -20,6 +20,8 @@ export interface ListInvestorsParams {
   search?: string;
   gender?: 'male' | 'female';
   status?: InvestorStatus;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface ListInvestorsResponse {

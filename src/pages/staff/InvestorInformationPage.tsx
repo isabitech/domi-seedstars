@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Button,
   Card,
@@ -54,13 +54,21 @@ export const InvestorInformationPage: React.FC = () => {
     search: search || undefined,
     gender: genderFilter,
     status: statusFilter,
+    sortBy: 'createdAt',
+    sortOrder: 'asc',
   });
 
   const createInvestor = useCreateInvestor();
   const updateInvestor = useUpdateInvestor();
   const deleteInvestor = useDeleteInvestor();
 
-  const investors = investorsData?.data?.investors || [];
+  const investors = useMemo(
+    () =>
+      [...(investorsData?.data?.investors || [])].sort(
+        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      ),
+    [investorsData?.data?.investors],
+  );
   const total = investorsData?.data?.total || 0;
 
   if (!isHO) {
