@@ -40,6 +40,7 @@ interface ClientFormValues {
   partnerReferrerPhone: string;
   partnerReferrerNickName?: string;
   status?: 'active' | 'inactive';
+  clientCategory?: 'loan_only' | 'savings_only' | 'loan_and_savings';
 }
 
 const getClientName = (client: Client) => client.clientName || client.fullName || `${client.firstName || ''} ${client.lastName || ''}`.trim();
@@ -138,6 +139,7 @@ export const BranchClientsPage: React.FC = () => {
       partnerReferrerPhone: client.partnerReferrerPhone,
       partnerReferrerNickName: client.partnerReferrerNickName,
       status: client.status || 'active',
+      clientCategory: client.clientCategory,
     });
     setIsModalOpen(true);
   };
@@ -194,6 +196,7 @@ export const BranchClientsPage: React.FC = () => {
       'PARTNER/REFEERER NAME': client.partnerReferrerName || '',
       'PARTNER/REFEERER PHONE NUMBER': client.partnerReferrerPhone || '',
       'PARTNER/REFEERER NICKNAME': client.partnerReferrerNickName || '',
+      'CLIENT CATEGORY': client.clientCategory ? client.clientCategory.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : 'N/A',
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(rows);
@@ -275,6 +278,16 @@ export const BranchClientsPage: React.FC = () => {
       key: 'status',
       render: (status: string | undefined) => (
         <Tag color={status === 'inactive' ? 'red' : 'green'}>{status === 'inactive' ? 'Inactive' : 'Active'}</Tag>
+      ),
+    },
+    {
+      title: 'Category',
+      dataIndex: 'clientCategory',
+      key: 'clientCategory',
+      render: (category: string | undefined) => (
+        <Tag color="blue">
+          {category ? category.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : 'N/A'}
+        </Tag>
       ),
     },
     ...(isHO
@@ -514,6 +527,14 @@ export const BranchClientsPage: React.FC = () => {
             <Select>
               <Select.Option value="active">Active</Select.Option>
               <Select.Option value="inactive">Inactive</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item label="Category" name="clientCategory">
+            <Select placeholder="Select client category">
+              <Select.Option value="loan_only">Loan only</Select.Option>
+              <Select.Option value="savings_only">Savings only</Select.Option>
+              <Select.Option value="loan_and_savings">Loan and Savings</Select.Option>
             </Select>
           </Form.Item>
 

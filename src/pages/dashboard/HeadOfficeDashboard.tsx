@@ -48,6 +48,8 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { useGetOnlineCIHTSO } from '../../hooks/Metrics/useGetOnlineCIH-TSO';
 import { calculations } from '../../utils/calculations';
 import { useGetHODashboard, } from '../../hooks/Head Office/HO-Dashboard/useGetHODashboard';
+import { useListStaff } from '../../hooks/Staff/useListStaff';
+import { useListInvestors } from '../../hooks/Investors/useListInvestors';
 
 dayjs.extend(relativeTime);
 
@@ -79,6 +81,12 @@ export const HeadOfficeDashboard: React.FC = () => {
     isLoading: isMetricsLoading,
     refetch: refetchMetrics 
   } = useGetOnlineCIHTSO({ date: selectedDate });
+
+  const { data: staffData } = useListStaff({ page: 1, limit: 1 });
+  const { data: investorsData } = useListInvestors({ page: 1, limit: 1 });
+
+  const totalStaff = staffData?.data?.total || 0;
+  const totalInvestors = investorsData?.data?.total || 0;
 
   const isLoading = isDashboardLoading || isMetricsLoading;
 
@@ -618,6 +626,34 @@ export const HeadOfficeDashboard: React.FC = () => {
                 prefix={<TeamOutlined />}
                 valueStyle={{
                   color: '#1677ff',
+                  fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                }}
+              />
+            </Card>
+          </Col>
+
+          <Col xs={24} sm={12} lg={6}>
+            <Card size="small" style={{ textAlign: 'center' }}>
+              <Statistic
+                title={<Text style={{ fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>Total Staff</Text>}
+                value={totalStaff}
+                prefix={<TeamOutlined />}
+                valueStyle={{
+                  color: '#0958d9',
+                  fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                }}
+              />
+            </Card>
+          </Col>
+
+          <Col xs={24} sm={12} lg={6}>
+            <Card size="small" style={{ textAlign: 'center' }}>
+              <Statistic
+                title={<Text style={{ fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>Total Investors</Text>}
+                value={totalInvestors}
+                prefix={<TrophyOutlined />}
+                valueStyle={{
+                  color: '#ad6800',
                   fontSize: window.innerWidth <= 768 ? '14px' : '16px'
                 }}
               />

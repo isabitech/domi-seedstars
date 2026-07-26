@@ -15,6 +15,7 @@ export interface UpdateClientRequest {
   partnerReferrerPhone?: string;
   partnerReferrerNickName?: string;
   status?: 'active' | 'inactive';
+  clientCategory?: 'loan_only' | 'savings_only' | 'loan_and_savings';
 }
 
 export interface UpdateClientResponse {

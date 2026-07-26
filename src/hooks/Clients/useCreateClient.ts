@@ -14,6 +14,7 @@ export interface CreateClientRequest {
   partnerReferrerPhone: string;
   partnerReferrerNickName?: string;
   status?: 'active' | 'inactive';
+  clientCategory?: 'loan_only' | 'savings_only' | 'loan_and_savings';
   branchId?: string;
 }
 
