@@ -115,6 +115,14 @@ export interface Summary {
   avgOnlineCIH: number
   totalTSO: number
   operationDays: number
+  totalClients?: number
+  activeClients?: number
+  inactiveClients?: number
+  clientCategories?: {
+    loan_only?: number
+    savings_only?: number
+    loan_and_savings?: number
+  }
 }
 
 export interface TrendDaum {

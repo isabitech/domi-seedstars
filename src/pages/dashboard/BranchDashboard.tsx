@@ -570,6 +570,71 @@ export const BranchDashboard: React.FC = () => {
                 />
               </Col>
             </Row>
+            <Divider />
+            <Row gutter={[16, 16]}>
+              <Col xs={24} sm={8} lg={6}>
+                <Statistic
+                  title="Total Clients"
+                  value={summary.totalClients || 0}
+                  valueStyle={{
+                    color: '#1677ff',
+                    fontSize: window.innerWidth <= 768 ? '16px' : '18px'
+                  }}
+                />
+              </Col>
+              <Col xs={24} sm={8} lg={6}>
+                <Statistic
+                  title="Active Clients"
+                  value={summary.activeClients || 0}
+                  valueStyle={{
+                    color: '#389e0d',
+                    fontSize: window.innerWidth <= 768 ? '16px' : '18px'
+                  }}
+                />
+              </Col>
+              <Col xs={24} sm={8} lg={6}>
+                <Statistic
+                  title="Inactive Clients"
+                  value={summary.inactiveClients || 0}
+                  valueStyle={{
+                    color: '#cf1322',
+                    fontSize: window.innerWidth <= 768 ? '16px' : '18px'
+                  }}
+                />
+              </Col>
+            </Row>
+            <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+              <Col xs={24} sm={8} lg={8}>
+                <Statistic
+                  title="Savings-only Clients"
+                  value={summary.clientCategories?.savings_only || 0}
+                  valueStyle={{
+                    color: '#52c41a',
+                    fontSize: window.innerWidth <= 768 ? '16px' : '18px'
+                  }}
+                />
+              </Col>
+              <Col xs={24} sm={8} lg={8}>
+                <Statistic
+                  title="Loan-only Clients"
+                  value={summary.clientCategories?.loan_only || 0}
+                  valueStyle={{
+                    color: '#1890ff',
+                    fontSize: window.innerWidth <= 768 ? '16px' : '18px'
+                  }}
+                />
+              </Col>
+              <Col xs={24} sm={8} lg={8}>
+                <Statistic
+                  title="Loan & Savings Clients"
+                  value={summary.clientCategories?.loan_and_savings || 0}
+                  valueStyle={{
+                    color: '#722ed1',
+                    fontSize: window.innerWidth <= 768 ? '16px' : '18px'
+                  }}
+                />
+              </Col>
+            </Row>
           </Card>
         )}
 

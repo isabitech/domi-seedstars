@@ -140,6 +140,11 @@ export const HeadOfficeDashboard: React.FC = () => {
     activeBranches: [],
     totalOperations: 0,
     totalClients: 0,
+    totalActiveClients: 0,
+    totalInactiveClients: 0,
+    totalSavingsOnlyClients: 0,
+    totalLoanOnlyClients: 0,
+    totalLoanAndSavingsClients: 0,
   };
 
   const branchTableColumns = [
@@ -635,11 +640,67 @@ export const HeadOfficeDashboard: React.FC = () => {
           <Col xs={24} sm={12} lg={6}>
             <Card size="small" style={{ textAlign: 'center' }}>
               <Statistic
-                title={<Text style={{ fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>Total Staff</Text>}
-                value={totalStaff}
+                title={<Text style={{ fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>Total Active Clients</Text>}
+                value={totals.totalActiveClients || 0}
                 prefix={<TeamOutlined />}
                 valueStyle={{
-                  color: '#0958d9',
+                  color: '#389e0d',
+                  fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                }}
+              />
+            </Card>
+          </Col>
+
+          <Col xs={24} sm={12} lg={6}>
+            <Card size="small" style={{ textAlign: 'center' }}>
+              <Statistic
+                title={<Text style={{ fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>Total Inactive Clients</Text>}
+                value={totals.totalInactiveClients || 0}
+                prefix={<TeamOutlined />}
+                valueStyle={{
+                  color: '#cf1322',
+                  fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                }}
+              />
+            </Card>
+          </Col>
+
+          <Col xs={24} sm={12} lg={6}>
+            <Card size="small" style={{ textAlign: 'center' }}>
+              <Statistic
+                title={<Text style={{ fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>Savings-only Clients</Text>}
+                value={totals.totalSavingsOnlyClients || 0}
+                prefix={<DollarCircleOutlined />}
+                valueStyle={{
+                  color: '#52c41a',
+                  fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                }}
+              />
+            </Card>
+          </Col>
+
+          <Col xs={24} sm={12} lg={6}>
+            <Card size="small" style={{ textAlign: 'center' }}>
+              <Statistic
+                title={<Text style={{ fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>Loan-only Clients</Text>}
+                value={totals.totalLoanOnlyClients || 0}
+                prefix={<CreditCardOutlined />}
+                valueStyle={{
+                  color: '#1890ff',
+                  fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                }}
+              />
+            </Card>
+          </Col>
+
+          <Col xs={24} sm={12} lg={6}>
+            <Card size="small" style={{ textAlign: 'center' }}>
+              <Statistic
+                title={<Text style={{ fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>Loan & Savings Clients</Text>}
+                value={totals.totalLoanAndSavingsClients || 0}
+                prefix={<SwapOutlined />}
+                valueStyle={{
+                  color: '#722ed1',
                   fontSize: window.innerWidth <= 768 ? '14px' : '16px'
                 }}
               />

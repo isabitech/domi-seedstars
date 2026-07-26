@@ -17,7 +17,7 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import { DeleteOutlined, DownloadOutlined, EditOutlined, PlusOutlined, TeamOutlined } from '@ant-design/icons';
+import { DeleteOutlined, DownloadOutlined, EditOutlined, PlusOutlined, ReloadOutlined, TeamOutlined } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import { useGetMe } from '../../hooks/Auth/useGetMe';
 import { useListClients, type Client } from '../../hooks/Clients/useListClients';
@@ -63,7 +63,7 @@ export const BranchClientsPage: React.FC = () => {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [form] = Form.useForm<ClientFormValues>();
 
-  const { data: clientsData, isLoading } = useListClients({
+  const { data: clientsData, isLoading, isFetching, refetch } = useListClients({
     page: pagination.current,
     limit: pagination.pageSize,
     branchId: effectiveBranchId,
@@ -373,6 +373,9 @@ export const BranchClientsPage: React.FC = () => {
                   }}
                   style={{ width: 220 }}
                 />
+                <Button icon={<ReloadOutlined />} loading={isFetching} onClick={() => refetch()}>
+                  Refresh
+                </Button>
                 <Button icon={<DownloadOutlined />} onClick={handleExport}>
                   Download List
                 </Button>

@@ -49,6 +49,11 @@ export interface ConsolidatedSummary {
   activeBranches: string[]
   totalOperations: number
   totalClients?: number
+  totalActiveClients?: number
+  totalInactiveClients?: number
+  totalSavingsOnlyClients?: number
+  totalLoanOnlyClients?: number
+  totalLoanAndSavingsClients?: number
 }
 
 
