@@ -17,7 +17,7 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import { DeleteOutlined, DownloadOutlined, EditOutlined, PlusOutlined, ReloadOutlined, TeamOutlined } from '@ant-design/icons';
+import { CreditCardOutlined, DeleteOutlined, DollarCircleOutlined, DownloadOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SwapOutlined, TeamOutlined } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import { useGetMe } from '../../hooks/Auth/useGetMe';
 import { useListClients, type Client } from '../../hooks/Clients/useListClients';
@@ -96,6 +96,18 @@ export const BranchClientsPage: React.FC = () => {
   );
   const inactiveClientsCount = useMemo(
     () => clients.filter((client) => client.status === 'inactive').length,
+    [clients],
+  );
+  const savingsOnlyClientsCount = useMemo(
+    () => clients.filter((client) => client.clientCategory === 'savings_only').length,
+    [clients],
+  );
+  const loanOnlyClientsCount = useMemo(
+    () => clients.filter((client) => client.clientCategory === 'loan_only').length,
+    [clients],
+  );
+  const loanAndSavingsClientsCount = useMemo(
+    () => clients.filter((client) => client.clientCategory === 'loan_and_savings').length,
     [clients],
   );
 
@@ -392,25 +404,25 @@ export const BranchClientsPage: React.FC = () => {
           </Row>
         </Card>
 
-        {isHO && (
-          <Row gutter={[12, 12]}>
-            <Col xs={24} sm={12} lg={8}>
-              <Card>
-                <Text type="secondary">Total Clients</Text>
-                <Title level={3} style={{ margin: '8px 0 0 0' }}>
-                  {total}
-                </Title>
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} lg={8}>
-              <Card>
-                <Text type="secondary">Active Clients</Text>
-                <Title level={3} style={{ margin: '8px 0 0 0', color: '#389e0d' }}>
-                  {activeClientsCount}
-                </Title>
-                <Text type="secondary">Inactive: {inactiveClientsCount}</Text>
-              </Card>
-            </Col>
+        <Row gutter={[12, 12]}>
+          <Col xs={24} sm={12} lg={8}>
+            <Card>
+              <Text type="secondary">Total Clients</Text>
+              <Title level={3} style={{ margin: '8px 0 0 0' }}>
+                {total}
+              </Title>
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} lg={8}>
+            <Card>
+              <Text type="secondary">Active Clients</Text>
+              <Title level={3} style={{ margin: '8px 0 0 0', color: '#389e0d' }}>
+                {activeClientsCount}
+              </Title>
+              <Text type="secondary">Inactive: {inactiveClientsCount}</Text>
+            </Card>
+          </Col>
+          {isHO && (
             <Col xs={24} sm={24} lg={8}>
               <Card>
                 <Text type="secondary">Selected Branch</Text>
@@ -419,8 +431,35 @@ export const BranchClientsPage: React.FC = () => {
                 </Title>
               </Card>
             </Col>
-          </Row>
-        )}
+          )}
+        </Row>
+
+        <Row gutter={[12, 12]} style={{ marginTop: 8 }}>
+          <Col xs={24} sm={8}>
+            <Card>
+              <Text type="secondary">Savings-only Clients</Text>
+              <Title level={3} style={{ margin: '8px 0 0 0', color: '#52c41a' }}>
+                {savingsOnlyClientsCount}
+              </Title>
+            </Card>
+          </Col>
+          <Col xs={24} sm={8}>
+            <Card>
+              <Text type="secondary">Loan-only Clients</Text>
+              <Title level={3} style={{ margin: '8px 0 0 0', color: '#1890ff' }}>
+                {loanOnlyClientsCount}
+              </Title>
+            </Card>
+          </Col>
+          <Col xs={24} sm={8}>
+            <Card>
+              <Text type="secondary">Loan & Savings Clients</Text>
+              <Title level={3} style={{ margin: '8px 0 0 0', color: '#722ed1' }}>
+                {loanAndSavingsClientsCount}
+              </Title>
+            </Card>
+          </Col>
+        </Row>
 
         <Card>
           <Table

@@ -668,48 +668,6 @@ export const HeadOfficeDashboard: React.FC = () => {
           <Col xs={24} sm={12} lg={6}>
             <Card size="small" style={{ textAlign: 'center' }}>
               <Statistic
-                title={<Text style={{ fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>Savings-only Clients</Text>}
-                value={totals.totalSavingsOnlyClients || 0}
-                prefix={<DollarCircleOutlined />}
-                valueStyle={{
-                  color: '#52c41a',
-                  fontSize: window.innerWidth <= 768 ? '14px' : '16px'
-                }}
-              />
-            </Card>
-          </Col>
-
-          <Col xs={24} sm={12} lg={6}>
-            <Card size="small" style={{ textAlign: 'center' }}>
-              <Statistic
-                title={<Text style={{ fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>Loan-only Clients</Text>}
-                value={totals.totalLoanOnlyClients || 0}
-                prefix={<CreditCardOutlined />}
-                valueStyle={{
-                  color: '#1890ff',
-                  fontSize: window.innerWidth <= 768 ? '14px' : '16px'
-                }}
-              />
-            </Card>
-          </Col>
-
-          <Col xs={24} sm={12} lg={6}>
-            <Card size="small" style={{ textAlign: 'center' }}>
-              <Statistic
-                title={<Text style={{ fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>Loan & Savings Clients</Text>}
-                value={totals.totalLoanAndSavingsClients || 0}
-                prefix={<SwapOutlined />}
-                valueStyle={{
-                  color: '#722ed1',
-                  fontSize: window.innerWidth <= 768 ? '14px' : '16px'
-                }}
-              />
-            </Card>
-          </Col>
-
-          <Col xs={24} sm={12} lg={6}>
-            <Card size="small" style={{ textAlign: 'center' }}>
-              <Statistic
                 title={<Text style={{ fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>Total Investors</Text>}
                 value={totalInvestors}
                 prefix={<TrophyOutlined />}
