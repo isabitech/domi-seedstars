@@ -668,6 +668,20 @@ export const HeadOfficeDashboard: React.FC = () => {
           <Col xs={24} sm={12} lg={6}>
             <Card size="small" style={{ textAlign: 'center' }}>
               <Statistic
+                title={<Text style={{ fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>Total Staff</Text>}
+                value={totalStaff}
+                prefix={<TeamOutlined />}
+                valueStyle={{
+                  color: '#722ed1',
+                  fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                }}
+              />
+            </Card>
+          </Col>
+
+          <Col xs={24} sm={12} lg={6}>
+            <Card size="small" style={{ textAlign: 'center' }}>
+              <Statistic
                 title={<Text style={{ fontSize: window.innerWidth <= 768 ? '11px' : '13px' }}>Total Investors</Text>}
                 value={totalInvestors}
                 prefix={<TrophyOutlined />}
