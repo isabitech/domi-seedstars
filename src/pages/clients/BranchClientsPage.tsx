@@ -235,7 +235,9 @@ export const BranchClientsPage: React.FC = () => {
     {
       title: 'Clients Name',
       key: 'name',
-      render: (_, record) => <Text strong>{getClientName(record)}</Text>,
+      width: 220,
+      minWidth: 220,
+      render: (_, record) => <Text strong style={{ whiteSpace: 'nowrap' }}>{getClientName(record)}</Text>,
     },
     {
       title: 'Phone Number',
