@@ -41,6 +41,7 @@ interface ClientFormValues {
   partnerReferrerNickName?: string;
   status?: 'active' | 'inactive';
   clientCategory?: 'loan_only' | 'savings_only' | 'loan_and_savings';
+  disbursementDate?: string;
 }
 
 const getClientName = (client: Client) => client.clientName || client.fullName || `${client.firstName || ''} ${client.lastName || ''}`.trim();
@@ -89,7 +90,7 @@ export const BranchClientsPage: React.FC = () => {
     [clientsData?.data?.clients],
   );
   const total = clientsData?.data?.total || 0;
-  const branches = branchesData?.data?.branches || [];
+  const branches = useMemo(() => branchesData?.data?.branches || [], [branchesData?.data?.branches]);
   const activeClientsCount = useMemo(
     () => clients.filter((client) => (client.status || 'active') === 'active').length,
     [clients],
@@ -152,6 +153,7 @@ export const BranchClientsPage: React.FC = () => {
       partnerReferrerNickName: client.partnerReferrerNickName,
       status: client.status || 'active',
       clientCategory: client.clientCategory,
+      disbursementDate: client.disbursementDate || '',
     });
     setIsModalOpen(true);
   };
@@ -303,6 +305,12 @@ export const BranchClientsPage: React.FC = () => {
           {category ? category.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : 'N/A'}
         </Tag>
       ),
+    },
+    {
+      title: 'Dis. Date',
+      key: 'disbursementDate',
+      width: 120,
+      render: (_, record) => record.disbursementDate ? new Date(record.disbursementDate).toLocaleDateString() : '-',
     },
     ...(isHO
       ? [{
@@ -567,19 +575,28 @@ export const BranchClientsPage: React.FC = () => {
             </Col>
           </Row>
 
-          <Form.Item label="Status" name="status">
-            <Select>
-              <Select.Option value="active">Active</Select.Option>
-              <Select.Option value="inactive">Inactive</Select.Option>
-            </Select>
-          </Form.Item>
+          <Row gutter={12}>
+            <Col span={12}>
+              <Form.Item label="Status" name="status">
+                <Select>
+                  <Select.Option value="active">Active</Select.Option>
+                  <Select.Option value="inactive">Inactive</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Category" name="clientCategory">
+                <Select placeholder="Select client category">
+                  <Select.Option value="loan_only">Loan only</Select.Option>
+                  <Select.Option value="savings_only">Savings only</Select.Option>
+                  <Select.Option value="loan_and_savings">Loan and Savings</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item label="Category" name="clientCategory">
-            <Select placeholder="Select client category">
-              <Select.Option value="loan_only">Loan only</Select.Option>
-              <Select.Option value="savings_only">Savings only</Select.Option>
-              <Select.Option value="loan_and_savings">Loan and Savings</Select.Option>
-            </Select>
+          <Form.Item label="Disbursement Date" name="disbursementDate">
+            <Input type="date" />
           </Form.Item>
 
           <Form.Item>

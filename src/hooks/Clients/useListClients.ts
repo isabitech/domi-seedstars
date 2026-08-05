@@ -25,6 +25,7 @@ export interface Client {
   clientCode?: string;
   status?: 'active' | 'inactive';
   clientCategory?: 'loan_only' | 'savings_only' | 'loan_and_savings';
+  disbursementDate?: string | null;
   branch?: {
     _id: string;
     name: string;
